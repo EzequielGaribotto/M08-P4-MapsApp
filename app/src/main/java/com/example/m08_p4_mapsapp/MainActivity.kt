@@ -35,7 +35,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.m08_p4_mapsapp.ui.theme.M08P45MapsAppTheme
+import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             BottomNavigationScreens.FavsScreen,
         )
         setContent {
-            M08P45MapsAppTheme {
+            M08P4MapsAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
