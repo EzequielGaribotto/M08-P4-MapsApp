@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -18,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -48,17 +54,21 @@ import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.DarkerGreen
 import com.example.m08_p4_mapsapp.ui.theme.IntermediateGreen
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
-import com.example.m08_p4_mapsapp.view.DetailScreen
-import com.example.m08_p4_mapsapp.view.FavsScreen
-import com.example.m08_p4_mapsapp.view.ListScreen
+import com.example.m08_p4_mapsapp.view.AddMarkerScreen
+import com.example.m08_p4_mapsapp.view.MarkerListScreen
+import com.example.m08_p4_mapsapp.view.MapScreen
+import com.example.m08_p4_mapsapp.view.LoginScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val apiViewModel by viewModels<APIViewModel>()
         val bottomNavigationItems = listOf(
-            BottomNavigationScreens.ListScreen,
-            BottomNavigationScreens.FavsScreen,
+            BottomNavigationScreens.MapScreen,
+            BottomNavigationScreens.MarkerListScreen,
+            BottomNavigationScreens.AddMarkerScreen,
         )
         setContent {
             M08P4MapsAppTheme {
@@ -105,55 +115,92 @@ fun MapScreen() {
 fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNavigationScreens>) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
-    val state:DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
         ModalDrawerSheet {
-            Text("Drawer title", modifier = Modifier.padding(16.dp))
+
+            Icon(imageVector = Icons.Filled.Menu, contentDescription = "Search")
+            Text("Menu", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.headlineLarge)
             Divider()
+            NavigationDrawerItem(label = { Text(text = "Map") },
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                    navigationController.navigate(Routes.MapScreen.route)
+                })
+            Divider()
+            NavigationDrawerItem(label = { Text(text = "Marker List") },
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                    navigationController.navigate(Routes.MarkerListScreen.route)
+                })
+            Divider()
+            NavigationDrawerItem(label = { Text(text =  "Add Marker") },
+                selected = false,
+                onClick = {
+                    scope.launch {
+                        state.close()
+                    }
+                    navigationController.navigate(Routes.AddMarkerScreen.route)
+                })
+
         }
     }) {
-        MyScaffold(myViewModel, state, bottomNavigationItems)
+        MyScaffold(myViewModel, state, bottomNavigationItems, scope, navigationController)
     }
 }
 
+
 @Composable
-fun MyScaffold(myViewModel: APIViewModel, state: DrawerState, bottomNavigationItems:List<BottomNavigationScreens>) {
-    val navigationController = rememberNavController()
+fun MyScaffold(
+    myViewModel: APIViewModel,
+    state: DrawerState,
+    bottomNavigationItems: List<BottomNavigationScreens>,
+    scope: CoroutineScope,
+    navigationController:NavHostController
+) {
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    Scaffold(
-        topBar = {
-            if (currentRoute != null) {
-                MyTopAppBar(myViewModel, currentRoute)
-            }
-        },
-        bottomBar = {
-            if (currentRoute != null) {
-                MyBottomBar(navigationController, bottomNavigationItems, currentRoute)
-            }
-        })
-    { paddingValues ->
+    Scaffold(topBar = {
+        if (currentRoute != null) {
+            MyTopAppBar(currentRoute, state, scope, navigationController)
+        }
+    }, bottomBar = {
+        if (currentRoute != null) {
+            MyBottomBar(navigationController, bottomNavigationItems, currentRoute)
+        }
+    }) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             NavHost(
-                navController = navigationController,
-                startDestination = Routes.ListScreen.route
+                navController = navigationController, startDestination = Routes.MapScreen.route
             ) {
-                composable(Routes.ListScreen.route) {
-                    ListScreen(
+                composable(Routes.LoginScreen.route) {
+                    LoginScreen(
                         navigationController, myViewModel
                     )
                 }
-                composable(Routes.FavsScreen.route) {
-                    FavsScreen(
+                composable(Routes.MapScreen.route) {
+                    MapScreen(
                         navigationController, myViewModel
                     )
                 }
-                composable(Routes.DetailScreen.route) {
-                    DetailScreen(
+                composable(Routes.MarkerListScreen.route) {
+                    MarkerListScreen(
+                        myViewModel,
+                    )
+                }
+                composable(Routes.AddMarkerScreen.route) {
+                    AddMarkerScreen(
                         myViewModel,
                     )
                 }
@@ -163,7 +210,11 @@ fun MyScaffold(myViewModel: APIViewModel, state: DrawerState, bottomNavigationIt
 }
 
 @Composable
-fun MyBottomBar(navigationController: NavController, bottomNavigationItems: List<BottomNavigationScreens>, currentRoute: String) {
+fun MyBottomBar(
+    navigationController: NavController,
+    bottomNavigationItems: List<BottomNavigationScreens>,
+    currentRoute: String
+) {
     BottomNavigation(backgroundColor = LightGreen, contentColor = Color.White) {
         bottomNavigationItems.forEach { item ->
             BottomNavigationItem(icon = { Icon(item.icon, contentDescription = item.label) },
@@ -181,17 +232,39 @@ fun MyBottomBar(navigationController: NavController, bottomNavigationItems: List
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopAppBar(apiViewModel: Any, currentRoute: Any) {
-    if (currentRoute == Routes.ListScreen.route) {
+fun MyTopAppBar(
+    currentRoute: String,
+    state: DrawerState,
+    scope: CoroutineScope,
+    navigationController: NavHostController
+) {
+    if (currentRoute != Routes.LoginScreen.route) {
 
-        TopAppBar(title = { Text(text = "") },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = LightGreen,
-                titleContentColor = Color.White,
-                navigationIconContentColor = Color.White,
-                actionIconContentColor = Color.Black,
-            ), actions = {
+        TopAppBar(title = { Text(text = "Los Mapas") }, colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = LightGreen,
+            titleContentColor = Color.White,
+            navigationIconContentColor = Color.White,
+            actionIconContentColor = Color.Black,
 
-            })
+            ), navigationIcon = {
+            EnableDrawerButton(state, scope)
+        }, actions = {
+            IconButton(onClick = {
+                navigationController.navigate(Routes.LoginScreen.route)
+            }) {
+                Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "User")
+            }
+        })
+    }
+}
+
+@Composable
+private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
+    IconButton(onClick = {
+        scope.launch {
+            state.open()
+        }
+    }) {
+        Icon(imageVector = Icons.Filled.Menu, contentDescription = "Search")
     }
 }

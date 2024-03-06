@@ -14,7 +14,7 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun FavsScreen(navController: NavController, avm: APIViewModel) {
+fun MapScreen(navController: NavController, avm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
