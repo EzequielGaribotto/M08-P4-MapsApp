@@ -49,7 +49,6 @@ fun AddMarkerScreen(avm: APIViewModel) {
                     expanded = expanded,
                     onDismissRequest = { avm.switchExpandFile(false) }
                 ) {
-                    // Aquí puedes agregar los elementos del menú desplegable (opciones de archivos)
                     DropdownMenuItem(onClick = {
                         avm.modSelectedFile("Archivo 1")
                         avm.switchExpandFile(false)
@@ -62,7 +61,6 @@ fun AddMarkerScreen(avm: APIViewModel) {
                     }) {
                         Text("Archivo 2")
                     }
-                    // Agrega más elementos DropdownMenuItem según sea necesario
                 }
             }
         }

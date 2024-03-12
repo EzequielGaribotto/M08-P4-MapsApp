@@ -21,6 +21,6 @@ fun MapScreen(navController: NavController, avm: APIViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        MapScreen()
+        MapScreen(avm)
     }
 }
