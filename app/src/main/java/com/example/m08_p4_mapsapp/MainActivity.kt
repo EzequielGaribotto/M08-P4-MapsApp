@@ -1,6 +1,8 @@
 package com.example.m08_p4_mapsapp
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -16,7 +18,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -25,7 +26,6 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
@@ -40,12 +40,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -53,23 +58,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 import com.example.m08_p4_mapsapp.navigation.BottomNavigationScreens
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.DarkerGreen
 import com.example.m08_p4_mapsapp.ui.theme.IntermediateGreen
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
+import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
-import com.example.m08_p4_mapsapp.view.MarkerListScreen
-import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
+import com.example.m08_p4_mapsapp.view.MapScreen
+import com.example.m08_p4_mapsapp.view.MarkerListScreen
+import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -87,28 +95,49 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    MyDrawer(apiViewModel, bottomNavigationItems)
+                    GeoPermission(apiViewModel, bottomNavigationItems)
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun GeoPermission(avm: APIViewModel, bottomNavigationItems: List<BottomNavigationScreens>) {
+    val permissionState =
+        rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
+    LaunchedEffect(Unit) {
+        permissionState.launchPermissionRequest()
+    }
+    if (permissionState.status.isGranted) {
+        MyDrawer(myViewModel = avm, bottomNavigationItems = bottomNavigationItems)
+    }
+}
+
+@SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(myViewModel: APIViewModel) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        val itb = LatLng(41.4534265, 2.1837151)
+        val context = LocalContext.current
+        val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+        val latLng by myViewModel.marcadorActual.observeAsState()
         val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(itb, 10f)
+            position = latLng?.let { CameraPosition.fromLatLngZoom(it, 18f) }!!
         }
+        val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
+        locationResult.addOnCompleteListener(context as MainActivity) { task ->
+            if (task.isSuccessful) {
+                myViewModel.modMarcadorActual(task.result.latitude, task.result.longitude)
+            } else {
+                Log.e("Error", "Exception: %s", task.exception)
+            }
+        }
+
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            onMapClick = {
-                TODO()
-            },
             onMapLongClick = {
                 myViewModel.modInputLat(it.latitude.toString())
                 myViewModel.modInputLong(it.longitude.toString())
@@ -133,7 +162,7 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = true, drawerContent = {
+    ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
         ModalDrawerSheet {
 
             Icon(imageVector = Icons.Filled.Menu, contentDescription = "Search")
@@ -143,14 +172,12 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
                 style = MaterialTheme.typography.headlineLarge
             )
             Divider()
-            NavigationDrawerItem(label = { Text(text = "Map") },
-                selected = false,
-                onClick = {
-                    scope.launch {
-                        state.close()
-                    }
-                    navigationController.navigate(Routes.MapScreen.route)
-                })
+            NavigationDrawerItem(label = { Text(text = "Map") }, selected = false, onClick = {
+                scope.launch {
+                    state.close()
+                }
+                navigationController.navigate(Routes.MapScreen.route)
+            })
             Divider()
             NavigationDrawerItem(label = { Text(text = "Marker List") },
                 selected = false,
@@ -220,7 +247,7 @@ fun MyScaffold(
                 }
                 composable(Routes.MarkerListScreen.route) {
                     MarkerListScreen(
-                        myViewModel,
+                        navigationController, myViewModel,
                     )
                 }
                 composable(Routes.AddMarkerScreen.route) {
@@ -235,17 +262,15 @@ fun MyScaffold(
             ModalBottomSheet(
                 onDismissRequest = {
                     myViewModel.switchBottomSheet(false)
-                },
-                sheetState = sheetState
+                }, sheetState = sheetState
             ) {
-                IconButton(
-                    onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                myViewModel.switchBottomSheet(false)
-                            }
+                IconButton(onClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            myViewModel.switchBottomSheet(false)
                         }
-                    }) {
+                    }
+                }) {
                     Icon(Icons.Filled.Clear, contentDescription = "Close")
                     BottomSheetContent(myViewModel)
                 }
@@ -326,29 +351,20 @@ fun BottomSheetContent(avm: APIViewModel) {
         val selectedFile by avm.selectedFile.observeAsState("")
         val expanded by avm.expandedFile.observeAsState(false)
         Column {
-            TextField(
-                value = name,
+            TextField(value = name,
                 onValueChange = { avm.modMarkerName(it) },
-                label = { Text("Nombre") }
-            )
-            TextField(
-                value = lat,
+                label = { Text("Nombre") })
+            TextField(value = lat,
                 onValueChange = { avm.modInputLat(it) },
-                label = { Text("Latitud") }
-            )
-            TextField(
-                value = long,
+                label = { Text("Latitud") })
+            TextField(value = long,
                 onValueChange = { avm.modInputLong(it) },
-                label = { Text("Longitud") }
-            )
+                label = { Text("Longitud") })
             Box(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    "Seleccionar archivo: $selectedFile",
+                Text("Seleccionar archivo: $selectedFile",
                     modifier = Modifier.clickable { avm.switchExpandFile(true) })
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { avm.switchExpandFile(false) }
-                ) {
+                DropdownMenu(expanded = expanded,
+                    onDismissRequest = { avm.switchExpandFile(false) }) {
                     DropdownMenuItem(onClick = {
                         avm.modSelectedFile("Archivo 1")
                         avm.switchExpandFile(false)

@@ -12,13 +12,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 import com.google.maps.android.compose.MarkerState
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MarkerListScreen(avm: APIViewModel) {
+fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -27,10 +29,15 @@ fun MarkerListScreen(avm: APIViewModel) {
         val markers by avm.markers.observeAsState(mutableMapOf())
         markers?.forEach {
             Card {
+                val lat = it.value.position.latitude
+                val long = it.value.position.longitude
                 Text(it.key)
-                Text(text = it.value.position.latitude.toString())
-                Text(text = it.value.position.longitude.toString())
-                Button(onClick = { /*TODO*/ }) {
+                Text(text = lat.toString())
+                Text(text = long.toString())
+                Button(onClick = {
+                    avm.modMarcadorActual(lat, long)
+                    navController.navigate(Routes.MapScreen.route)
+                }) {
                     Text("GO!")
                 }
             }

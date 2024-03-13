@@ -51,6 +51,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.2")
     implementation("androidx.compose.material:material:1.6.2")
     implementation("com.google.maps.android:maps-compose:2.11.4")
