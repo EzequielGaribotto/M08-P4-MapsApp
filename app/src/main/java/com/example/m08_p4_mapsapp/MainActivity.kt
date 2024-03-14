@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,10 +44,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,7 +73,6 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -122,10 +120,11 @@ fun MapScreen(myViewModel: APIViewModel) {
         modifier = Modifier.fillMaxSize()
     ) {
         val context = LocalContext.current
-        val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-        val latLng by myViewModel.marcadorActual.observeAsState()
+        val fusedLocationProviderClient =
+            remember { LocationServices.getFusedLocationProviderClient(context) }
+        val marcadorActual by myViewModel.marcadorActual.observeAsState()
         val cameraPositionState = rememberCameraPositionState {
-            position = latLng?.let { CameraPosition.fromLatLngZoom(it, 18f) }!!
+            position = marcadorActual?.let { CameraPosition.fromLatLngZoom(it, 18f) }!!
         }
         val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
         locationResult.addOnCompleteListener(context as MainActivity) { task ->
@@ -135,7 +134,6 @@ fun MapScreen(myViewModel: APIViewModel) {
                 Log.e("Error", "Exception: %s", task.exception)
             }
         }
-
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {
@@ -264,15 +262,21 @@ fun MyScaffold(
                     myViewModel.switchBottomSheet(false)
                 }, sheetState = sheetState
             ) {
-                IconButton(onClick = {
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            myViewModel.switchBottomSheet(false)
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    IconButton(onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                myViewModel.switchBottomSheet(false)
+                            }
                         }
+                    }) {
+                        Icon(Icons.Filled.Clear, contentDescription = "Close")
                     }
-                }) {
-                    Icon(Icons.Filled.Clear, contentDescription = "Close")
-                    BottomSheetContent(myViewModel)
+                    AddMarkerContent(myViewModel, false)
                 }
             }
         }
@@ -340,48 +344,49 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
 }
 
 @Composable
-fun BottomSheetContent(avm: APIViewModel) {
+fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false) {
+    val lat by avm.inputLat.observeAsState("")
+    val long by avm.inputLong.observeAsState("")
+    val name by avm.markerName.observeAsState("")
+    val selectedFile by avm.selectedFile.observeAsState("")
+    val expanded by avm.expandedFile.observeAsState(false)
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
     ) {
-        val lat by avm.inputLat.observeAsState("")
-        val long by avm.inputLong.observeAsState("")
-        val name by avm.markerName.observeAsState("")
-        val selectedFile by avm.selectedFile.observeAsState("")
-        val expanded by avm.expandedFile.observeAsState(false)
-        Column {
-            TextField(value = name,
-                onValueChange = { avm.modMarkerName(it) },
-                label = { Text("Nombre") })
-            TextField(value = lat,
-                onValueChange = { avm.modInputLat(it) },
-                label = { Text("Latitud") })
-            TextField(value = long,
-                onValueChange = { avm.modInputLong(it) },
-                label = { Text("Longitud") })
-            Box(modifier = Modifier.padding(16.dp)) {
-                Text("Seleccionar archivo: $selectedFile",
-                    modifier = Modifier.clickable { avm.switchExpandFile(true) })
-                DropdownMenu(expanded = expanded,
-                    onDismissRequest = { avm.switchExpandFile(false) }) {
-                    DropdownMenuItem(onClick = {
-                        avm.modSelectedFile("Archivo 1")
-                        avm.switchExpandFile(false)
-                    }) {
-                        Text("Archivo 1")
-                    }
-                    DropdownMenuItem(onClick = {
-                        avm.modSelectedFile("Archivo 2")
-                        avm.switchExpandFile(false)
-                    }) {
-                        Text("Archivo 2")
-                    }
+        TextField(value = name,
+            onValueChange = { avm.modMarkerName(it) },
+            label = { Text("Nombre") })
+        TextField(value = lat,
+            onValueChange = { avm.modInputLat(it) },
+            label = { Text("Latitud") })
+        TextField(value = long,
+            onValueChange = { avm.modInputLong(it) },
+            label = { Text("Longitud") })
+        Box(modifier = Modifier.padding(16.dp)) {
+            Text("Seleccionar archivo: $selectedFile",
+                modifier = Modifier.clickable { avm.switchExpandFile(true) })
+            DropdownMenu(expanded = expanded,
+                onDismissRequest = { avm.switchExpandFile(false) }) {
+                DropdownMenuItem(onClick = {
+                    avm.modSelectedFile("Archivo 1")
+                    avm.switchExpandFile(false)
+                }) {
+                    Text("Archivo 1")
+                }
+                DropdownMenuItem(onClick = {
+                    avm.modSelectedFile("Archivo 2")
+                    avm.switchExpandFile(false)
+                }) {
+                    Text("Archivo 2")
                 }
             }
-            Button(onClick = { avm.addMarker(lat, long, name) }) {
-                Text("Agregar marcador")
-            }
         }
+        Button(onClick = { avm.addMarker(lat, long, name) }) {
+            Text("Agregar marcador")
+        }
+
     }
 }

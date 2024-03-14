@@ -8,7 +8,7 @@ import com.google.maps.android.compose.MarkerState
 
 
 class APIViewModel: ViewModel() {
-    private val _marcadorActual = MutableLiveData(LatLng(41.4534265, 2.1837151))
+    private val _marcadorActual = MutableLiveData(LatLng(0.0,0.0))
     val marcadorActual = _marcadorActual
 
     fun modMarcadorActual(lat: Double, long: Double) {
