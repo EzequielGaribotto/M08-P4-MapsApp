@@ -136,6 +136,7 @@ fun MapScreen(myViewModel: APIViewModel) {
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {
+                myViewModel.switchPhotoTaken(false)
                 myViewModel.modInputLat(it.latitude.toString())
                 myViewModel.modInputLong(it.longitude.toString())
                 myViewModel.switchBottomSheet(true)
@@ -182,8 +183,10 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
                     scope.launch {
                         state.close()
                     }
+                    myViewModel.switchPhotoTaken(false)
                     navigationController.navigate(Routes.MarkerListScreen.route)
-                })
+                }
+            )
             Divider()
             NavigationDrawerItem(label = { Text(text = "Add Marker") },
                 selected = false,
@@ -192,8 +195,8 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
                         state.close()
                     }
                     navigationController.navigate(Routes.AddMarkerScreen.route)
-                })
-
+                }
+            )
         }
     }) {
         MyScaffold(myViewModel, state, bottomNavigationItems, scope, navigationController)
@@ -217,10 +220,6 @@ fun MyScaffold(
     Scaffold(topBar = {
         if (currentRoute != null) {
             MyTopAppBar(currentRoute, state, scope, navigationController)
-        }
-    }, bottomBar = {
-        if (currentRoute != null) {
-            MyBottomBar(navigationController, bottomNavigationItems, currentRoute)
         }
     }) { paddingValues ->
         Box(
@@ -285,27 +284,6 @@ fun MyScaffold(
             }
         }
     }
-}
-
-@Composable
-fun MyBottomBar(
-    navigationController: NavController,
-    bottomNavigationItems: List<BottomNavigationScreens>,
-    currentRoute: String
-) {
-    BottomNavigation(backgroundColor = LightGreen, contentColor = Color.White) {
-        bottomNavigationItems.forEach { item ->
-            BottomNavigationItem(icon = { Icon(item.icon, contentDescription = item.label) },
-                selected = currentRoute == item.route,
-                enabled = currentRoute != item.route,
-                label = { Text(item.label) },
-                selectedContentColor = DarkerGreen,
-                unselectedContentColor = IntermediateGreen,
-                alwaysShowLabel = false,
-                onClick = { navigationController.navigate(item.route) })
-        }
-    }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
