@@ -1,8 +1,10 @@
 package com.example.m08_p4_mapsapp.viewmodel
 
 
+import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.m08_p4_mapsapp.model.Marker
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerState
 
@@ -17,30 +19,21 @@ class APIViewModel: ViewModel() {
 
     private val _showBottomSheet =  MutableLiveData(false)
     val showBottomSheet = _showBottomSheet
-    val markers = MutableLiveData<Map<String,MarkerState>?>(mutableMapOf())
+    private val _markers = MutableLiveData<MutableList<Marker>>()
+    val markers = _markers
 
-    fun addMarker(lat: String, long: String, name: String) {
-        val newMarker = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
-        val updatedMarkers = markers.value?.toMutableMap()
-        updatedMarkers?.put(name,newMarker)
-        markers.value = updatedMarkers
+    fun addMarker(lat: String, long: String, name: String, icon: Bitmap) {
+        val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
+        val markersTemp = _markers.value ?: mutableListOf()
+        markersTemp.add(Marker(markerState, name, icon))
+        _markers.value = markersTemp
+    }
+
+    fun updateMarkerIcon(icon: Bitmap) {
+        _icon.value = icon
     }
     fun switchBottomSheet(boolean: Boolean) {
         _showBottomSheet.value = boolean
-    }
-
-    private val _selectedFile = MutableLiveData("")
-    val selectedFile = _selectedFile
-
-    fun modSelectedFile(file:String) {
-        _selectedFile.value = file
-    }
-
-    private val _expandedFile = MutableLiveData(false)
-    val expandedFile = _expandedFile
-
-    fun switchExpandFile(boolean: Boolean) {
-        _expandedFile.value = boolean
     }
 
     private val _inputLat = MutableLiveData("")
@@ -49,6 +42,8 @@ class APIViewModel: ViewModel() {
     val inputLong = _inputLong
     private val _markerName = MutableLiveData("")
     val markerName = _markerName
+    private val _icon = MutableLiveData<Bitmap>()
+    val icon = _icon
     fun modMarkerName(name: String) {
         _markerName.value = name
     }
