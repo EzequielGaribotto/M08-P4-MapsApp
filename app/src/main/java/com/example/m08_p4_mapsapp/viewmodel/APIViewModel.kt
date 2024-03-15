@@ -31,6 +31,13 @@ class APIViewModel: ViewModel() {
     private val _icon = MutableLiveData<Bitmap>()
     val icon = _icon
 
+    private val _photoTaken = MutableLiveData<Boolean>()
+    val photoTaken = _photoTaken
+
+    fun switchPhotoTaken(boolean: Boolean) {
+        _photoTaken.value = boolean
+    }
+
     fun switchBottomSheet(boolean: Boolean) {
         _showBottomSheet.value = boolean
     }

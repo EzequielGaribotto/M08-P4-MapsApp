@@ -1,26 +1,16 @@
 package com.example.m08_p4_mapsapp
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
-import androidx.camera.view.CameraController
-import androidx.camera.view.LifecycleCameraController
-import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -28,10 +18,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
@@ -60,10 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -77,6 +62,7 @@ import com.example.m08_p4_mapsapp.ui.theme.IntermediateGreen
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
+import com.example.m08_p4_mapsapp.view.CameraScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.MarkerListScreen
@@ -263,7 +249,12 @@ fun MyScaffold(
                 }
                 composable(Routes.AddMarkerScreen.route) {
                     AddMarkerScreen(
-                        myViewModel,
+                        myViewModel, navigationController
+                    )
+                }
+                composable(Routes.CameraScreen.route) {
+                    CameraScreen(
+                        myViewModel, navigationController
                     )
                 }
             }
@@ -289,7 +280,7 @@ fun MyScaffold(
                     }) {
                         Icon(Icons.Filled.Clear, contentDescription = "Close")
                     }
-                    AddMarkerContent(myViewModel, false)
+                    AddMarkerContent(myViewModel, false, navigationController)
                 }
             }
         }
@@ -356,66 +347,29 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false) {
+fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false, navigationController: NavController) {
     val lat by avm.inputLat.observeAsState("")
     val long by avm.inputLong.observeAsState("")
     val name by avm.markerName.observeAsState("")
     val defaultIcon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     val icon by avm.icon.observeAsState(defaultIcon)
-
-
-    // CAMERA
-    val permissionState = rememberPermissionState(permission = android.Manifest.permission.CAMERA)
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
-    }
-
-    val context = LocalContext.current
-    val controller = remember {
-        LifecycleCameraController(context).apply {
-            CameraController.IMAGE_CAPTURE
-        }
-    }
+    val photoTaken by avm.photoTaken.observeAsState(initial =false)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
-        IconButton(
-            onClick = {
-                controller.cameraSelector =
-                    if (controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
-                        CameraSelector.DEFAULT_FRONT_CAMERA
-                    } else {
-                        CameraSelector.DEFAULT_BACK_CAMERA
-                    }
-            },
-        ) {
-            Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "Switch camera")
-
-        }
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            IconButton(
-                onClick = {
-                    takePhoto(context, controller) { photo ->
-                        avm.updateMarkerIcon(photo)
-                    }
-                },
-            ) {
-                Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
-            }
-        }
         Column(
             modifier = Modifier
-                .padding(top = 80.dp)
-            .fillMaxSize(),
+                .fillMaxSize(),
 
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
+            Button(onClick = {
+                avm.switchBottomSheet(false)
+                navigationController.navigate(Routes.CameraScreen.route) }) {
+                Text("TAKE PICTURE")
+            }
+
             TextField(value = name,
                 onValueChange = { avm.modMarkerName(it) },
                 label = { Text("Nombre") })
@@ -426,55 +380,10 @@ fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false) {
                 onValueChange = { avm.modInputLong(it) },
                 label = { Text("Longitud") })
 
-            Button(onClick = { avm.addMarker(lat, long, name, icon) }, enabled = icon != defaultIcon) {
+            Button(onClick = { avm.addMarker(lat, long, name, icon) }, enabled = photoTaken) {
                 Text("Agregar marcador")
             }
 
         }
     }
-}
-
-@Composable
-fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    AndroidView(factory = {
-        PreviewView(it).apply {
-            this.controller = controller
-            controller.bindToLifecycle(lifecycleOwner)
-        }
-    }, modifier = modifier)
-}
-
-private fun takePhoto(
-    context: Context,
-    controller: LifecycleCameraController,
-    onPhotoTaken: (Bitmap) -> Unit
-) {
-    controller.takePicture(
-        ContextCompat.getMainExecutor(context),
-        object : ImageCapture.OnImageCapturedCallback() {
-            override fun onCaptureSuccess(image: ImageProxy) {
-                super.onCaptureSuccess(image)
-                val matrix = Matrix().apply{
-                    postRotate(image.imageInfo.rotationDegrees.toFloat())
-                }
-                val rotatedBitmap = Bitmap.createBitmap(
-                    image.toBitmap(),
-                    0,
-                    0,
-                    image.width,
-                    image.height,
-                    matrix,
-                    true
-                )
-
-                onPhotoTaken(rotatedBitmap)
-            }
-
-            override fun onError(exception: ImageCaptureException) {
-                super.onError(exception)
-                Log.e("Camera", "Error taking photo", exception)
-            }
-        }
-    )
 }
