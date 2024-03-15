@@ -1,16 +1,29 @@
 package com.example.m08_p4_mapsapp
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA
+import androidx.camera.core.CameraSelector.DEFAULT_FRONT_CAMERA
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -19,8 +32,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
@@ -50,7 +65,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -351,42 +369,110 @@ fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false) {
     val selectedFile by avm.selectedFile.observeAsState("")
     val expanded by avm.expandedFile.observeAsState(false)
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
-    ) {
-        TextField(value = name,
-            onValueChange = { avm.modMarkerName(it) },
-            label = { Text("Nombre") })
-        TextField(value = lat,
-            onValueChange = { avm.modInputLat(it) },
-            label = { Text("Latitud") })
-        TextField(value = long,
-            onValueChange = { avm.modInputLong(it) },
-            label = { Text("Longitud") })
-        Box(modifier = Modifier.padding(16.dp)) {
-            Text("Seleccionar archivo: $selectedFile",
-                modifier = Modifier.clickable { avm.switchExpandFile(true) })
-            DropdownMenu(expanded = expanded,
-                onDismissRequest = { avm.switchExpandFile(false) }) {
-                DropdownMenuItem(onClick = {
-                    avm.modSelectedFile("Archivo 1")
-                    avm.switchExpandFile(false)
-                }) {
-                    Text("Archivo 1")
-                }
-                DropdownMenuItem(onClick = {
-                    avm.modSelectedFile("Archivo 2")
-                    avm.switchExpandFile(false)
-                }) {
-                    Text("Archivo 2")
-                }
+
+    // CAMERA
+
+    val context = LocalContext.current
+    val controller = remember {
+        LifecycleCameraController(context).apply {
+            CameraController.IMAGE_CAPTURE
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
+        IconButton(
+            onClick = {
+                controller.cameraSelector =
+                    if (controller.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                        CameraSelector.DEFAULT_FRONT_CAMERA
+                    } else {
+                        CameraSelector.DEFAULT_BACK_CAMERA
+                    }
+            },
+            modifier = Modifier.offset(16.dp, 16.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "Switch camera")
+
+        }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            IconButton(
+                onClick = {
+                    takePhoto(context, controller) { photo ->
+
+                    }
+                },
+                modifier = Modifier.offset(0.dp, (-16).dp)
+            ) {
+                Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
             }
         }
-        Button(onClick = { avm.addMarker(lat, long, name) }) {
-            Text("Agregar marcador")
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
+        ) {
+            TextField(value = name,
+                onValueChange = { avm.modMarkerName(it) },
+                label = { Text("Nombre") })
+            TextField(value = lat,
+                onValueChange = { avm.modInputLat(it) },
+                label = { Text("Latitud") })
+            TextField(value = long,
+                onValueChange = { avm.modInputLong(it) },
+                label = { Text("Longitud") })
+            Box(modifier = Modifier.padding(16.dp)) {
+                Text("Seleccionar archivo: $selectedFile",
+                    modifier = Modifier.clickable { avm.switchExpandFile(true) })
+                DropdownMenu(expanded = expanded,
+                    onDismissRequest = { avm.switchExpandFile(false) }) {
+                    DropdownMenuItem(onClick = {
+                        avm.modSelectedFile("Archivo 1")
+                        avm.switchExpandFile(false)
+                    }) {
+                        Text("Archivo 1")
+                    }
+                    DropdownMenuItem(onClick = {
+                        avm.modSelectedFile("Archivo 2")
+                        avm.switchExpandFile(false)
+                    }) {
+                        Text("Archivo 2")
+                    }
+                }
+            }
+            Button(onClick = { avm.addMarker(lat, long, name) }) {
+                Text("Agregar marcador")
+            }
+
+        }
+    }
+}
+
+@Composable
+fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    AndroidView(factory = {
+        PreviewView(it).apply {
+            this.controller = controller
+            controller.bindToLifecycle(lifecycleOwner)
+        }
+    }, modifier = modifier)
+}
+
+private fun takePhoto(context: Context, controller: LifecycleCameraController, onPhotoTaken: (Bitmap) -> Unit)  {
+    ContextCompat.getMainExecutor(context)
+    object : ImageCapture.OnImageCapturedCallback() {
+        override fun onCaptureSuccess(image: ImageProxy) {
+            super.onCaptureSuccess(image)
+            onPhotoTaken(image.toBitmap())
         }
 
+        override fun onError(exception: ImageCaptureException) {
+            super.onError(exception)
+            Log.e("Camera", "Error taking photo", exception)
+        }
     }
 }
