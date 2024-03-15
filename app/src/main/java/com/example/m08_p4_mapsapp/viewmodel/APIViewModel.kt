@@ -13,37 +13,42 @@ class APIViewModel: ViewModel() {
     private val _marcadorActual = MutableLiveData(LatLng(0.0,0.0))
     val marcadorActual = _marcadorActual
 
+    private val _showBottomSheet =  MutableLiveData(false)
+    val showBottomSheet = _showBottomSheet
+
+    private val _markers = MutableLiveData<MutableList<Marker>>()
+    val markers = _markers
+
+    private val _inputLat = MutableLiveData("")
+    val inputLat = _inputLat
+
+    private val _inputLong = MutableLiveData("")
+    val inputLong = _inputLong
+
+    private val _markerName = MutableLiveData("")
+    val markerName = _markerName
+
+    private val _icon = MutableLiveData<Bitmap>()
+    val icon = _icon
+
+    fun switchBottomSheet(boolean: Boolean) {
+        _showBottomSheet.value = boolean
+    }
     fun modMarcadorActual(lat: Double, long: Double) {
         _marcadorActual.value = LatLng(lat, long)
     }
 
-    private val _showBottomSheet =  MutableLiveData(false)
-    val showBottomSheet = _showBottomSheet
-    private val _markers = MutableLiveData<MutableList<Marker>>()
-    val markers = _markers
-
     fun addMarker(lat: String, long: String, name: String, icon: Bitmap) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
-        val markersTemp = _markers.value ?: mutableListOf()
+        val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         markersTemp.add(Marker(markerState, name, icon))
-        _markers.value = markersTemp
+        _markers.value = markersTemp.toMutableList()
     }
 
     fun updateMarkerIcon(icon: Bitmap) {
         _icon.value = icon
     }
-    fun switchBottomSheet(boolean: Boolean) {
-        _showBottomSheet.value = boolean
-    }
 
-    private val _inputLat = MutableLiveData("")
-    val inputLat = _inputLat
-    private val _inputLong = MutableLiveData("")
-    val inputLong = _inputLong
-    private val _markerName = MutableLiveData("")
-    val markerName = _markerName
-    private val _icon = MutableLiveData<Bitmap>()
-    val icon = _icon
     fun modMarkerName(name: String) {
         _markerName.value = name
     }
