@@ -1,11 +1,16 @@
 package com.example.m08_p4_mapsapp
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.graphics.Bitmap
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,13 +45,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -67,6 +75,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -82,6 +91,25 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
+//                    val launcher = rememberLauncherForActivityResult(
+//                        contract = ActivityResultContracts.RequestPermission(),
+//                        onResult = { isGranted ->
+//                            if (isGranted) {
+//                                apiViewModel.setCameraPermissionGranted(true)
+//                            } else {
+//                                apiViewModel.setShouldShowPermissionRationale(
+//                                    shouldShowRequestPermissionRationale(
+//                                        context as Activity,
+//                                        Manifest.permission.CAMERA
+//                                    )
+//                                )
+//                            }
+//                            if (!shouldShowPermissionRationale) {
+//                                Log.i("CameraScreen", "NO podemos volver a pedir permisos")
+//                                apiViewModel.setShowPermissionDenied(true)
+//                            }
+//                        }
+//                    )
                     GeoPermission(apiViewModel)
                 }
             }
@@ -111,14 +139,17 @@ fun MapScreen(myViewModel: APIViewModel) {
         val context = LocalContext.current
         val fusedLocationProviderClient =
             remember { LocationServices.getFusedLocationProviderClient(context) }
-        val marcadorActual by myViewModel.marcadorActual.observeAsState()
+        var lastKnownLocation by remember { mutableStateOf<Location?>(null)}
+        var deviceLatLng by remember { mutableStateOf(LatLng(0.0, 0.0))}
         val cameraPositionState = rememberCameraPositionState {
-            position = marcadorActual?.let { CameraPosition.fromLatLngZoom(it, 18f) }!!
+            position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
         }
         val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
         locationResult.addOnCompleteListener(context as MainActivity) { task ->
             if (task.isSuccessful) {
-                myViewModel.modMarcadorActual(task.result.latitude, task.result.longitude)
+                lastKnownLocation = task.result
+                deviceLatLng = LatLng(lastKnownLocation!!.latitude,lastKnownLocation!!.longitude)
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
             } else {
                 Log.e("Error", "Exception: %s", task.exception)
             }
@@ -315,13 +346,17 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
 }
 
 @Composable
-fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false, navigationController: NavController) {
+fun AddMarkerContent(
+    avm: APIViewModel,
+    markerScreen: Boolean = false,
+    navigationController: NavController
+) {
     val lat by avm.inputLat.observeAsState("")
     val long by avm.inputLong.observeAsState("")
     val name by avm.markerName.observeAsState("")
     val defaultIcon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     val icon by avm.icon.observeAsState(defaultIcon)
-    val photoTaken by avm.photoTaken.observeAsState(initial =false)
+    val photoTaken by avm.photoTaken.observeAsState(initial = false)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -331,9 +366,12 @@ fun AddMarkerContent(avm: APIViewModel, markerScreen: Boolean = false, navigatio
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
+
+
             Button(onClick = {
                 avm.switchBottomSheet(false)
-                navigationController.navigate(Routes.CameraScreen.route) }) {
+                navigationController.navigate(Routes.CameraScreen.route)
+            }) {
                 Text("TAKE PICTURE")
             }
 

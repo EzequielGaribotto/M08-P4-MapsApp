@@ -23,7 +23,7 @@ class APIViewModel: ViewModel() {
 
     }
 
-    fun setShouldSHowPermissionRationale(should:Boolean) {
+    fun setShouldShowPermissionRationale(should:Boolean) {
         _shouldShowPermissionRationale.value = should
     }
 
