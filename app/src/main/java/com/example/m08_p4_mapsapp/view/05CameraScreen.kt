@@ -49,7 +49,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CameraScreen(avm: APIViewModel, navController: NavController) {
+fun CameraScreen(avm: APIViewModel, navController: NavController, currentRoute:String) {
 
     // CAMERA PERMISSIONS
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -98,7 +98,7 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
             IconButton(
                 onClick = {
                     avm.switchBottomSheet(true)
-                    navController.navigate(Routes.MapScreen.route)
+                    navController.navigate(currentRoute)
                 },
             ) {
                 Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Go Back")

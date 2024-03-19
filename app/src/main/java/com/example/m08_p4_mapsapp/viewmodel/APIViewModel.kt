@@ -11,6 +11,28 @@ import com.google.maps.android.compose.MarkerState
 
 class APIViewModel: ViewModel() {
 
+
+    private val _nameChosen = MutableLiveData(false)
+    val nameChosen = _nameChosen
+
+    fun modNameChosen(boolean: Boolean) {
+        _nameChosen.value = boolean
+    }
+
+    private val _latChosen = MutableLiveData(false)
+    val latChosen = _latChosen
+
+    fun modLatChosen(boolean: Boolean) {
+        _latChosen.value = boolean
+    }
+
+    private val _longChosen = MutableLiveData(false)
+    val longChosen = _longChosen
+
+    fun modLongChosen(boolean: Boolean) {
+        _longChosen.value = boolean
+    }
+
     private val _getUserLocation = MutableLiveData(true)
     val getUserLocation = _getUserLocation
 

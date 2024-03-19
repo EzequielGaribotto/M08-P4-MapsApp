@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -45,6 +46,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -53,6 +55,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
@@ -230,7 +234,7 @@ fun MyScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by myViewModel.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
-        if (currentRoute != null) {
+        if (currentRoute != null && currentRoute != Routes.LoginScreen.route && currentRoute != Routes.CameraScreen.route) {
             MyTopAppBar(currentRoute, state, scope, navigationController)
         }
     }) { paddingValues ->
@@ -264,9 +268,11 @@ fun MyScaffold(
                     )
                 }
                 composable(Routes.CameraScreen.route) {
-                    CameraScreen(
-                        myViewModel, navigationController
-                    )
+                    if (currentRoute != null) {
+                        CameraScreen(
+                            myViewModel, navigationController, currentRoute
+                        )
+                    }
                 }
             }
         }
@@ -291,7 +297,9 @@ fun MyScaffold(
                     }) {
                         Icon(Icons.Filled.Clear, contentDescription = "Close")
                     }
-                    AddMarkerContent(myViewModel, false, navigationController)
+                    if (currentRoute != null) {
+                        AddMarkerContent(myViewModel, false, navigationController)
+                    }
                 }
             }
         }
@@ -337,6 +345,7 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AddMarkerContent(
     avm: APIViewModel,
@@ -358,26 +367,45 @@ fun AddMarkerContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
-
-
-            Button(onClick = {
-                avm.switchBottomSheet(false)
-                navigationController.navigate(Routes.CameraScreen.route)
-            }) {
-                Text("TAKE PICTURE")
+            if (photoTaken) {
+                GlideImage(
+                    model = icon,
+                    contentDescription = "Marker Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(120.dp) .padding(bottom = 10.dp)
+                )
+            } else {
+                Button(onClick = {
+                    avm.switchBottomSheet(false)
+                    navigationController.navigate(Routes.CameraScreen.route)
+                }) {
+                    Text("TAKE PICTURE")
+                }
             }
 
             TextField(value = name,
                 onValueChange = { avm.modMarkerName(it) },
                 label = { Text("Nombre") })
-            TextField(value = lat,
-                onValueChange = { avm.modInputLat(it) },
-                label = { Text("Latitud") })
-            TextField(value = long,
-                onValueChange = { avm.modInputLong(it) },
-                label = { Text("Longitud") })
-
-            Button(onClick = { avm.addMarker(lat, long, name, icon) }, enabled = photoTaken) {
+            TextField(
+                value = lat,
+                onValueChange = {
+                    if (it.toDoubleOrNull() != null) {
+                        avm.modInputLat(it)
+                    }
+                },
+                label = { Text("Latitud") },
+            )
+            TextField(
+                value = long,
+                onValueChange = {
+                    if (it.toDoubleOrNull() != null) {
+                        avm.modInputLong(it)
+                    }
+                },
+                label = { Text("Longitud") },
+            )
+            val canAddMarker = photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
+            Button(onClick = { avm.addMarker(lat, long, name, icon) }, enabled = canAddMarker) {
                 Text("Agregar marcador")
             }
 
