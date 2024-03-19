@@ -1,16 +1,11 @@
 package com.example.m08_p4_mapsapp
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.graphics.Bitmap
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,16 +40,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -136,22 +128,21 @@ fun MapScreen(myViewModel: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        val context = LocalContext.current
-        val fusedLocationProviderClient =
-            remember { LocationServices.getFusedLocationProviderClient(context) }
-        var lastKnownLocation by remember { mutableStateOf<Location?>(null)}
-        var deviceLatLng by remember { mutableStateOf(LatLng(0.0, 0.0))}
-        val cameraPositionState = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
-        }
-        val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
-        locationResult.addOnCompleteListener(context as MainActivity) { task ->
-            if (task.isSuccessful) {
-                lastKnownLocation = task.result
-                deviceLatLng = LatLng(lastKnownLocation!!.latitude,lastKnownLocation!!.longitude)
-                cameraPositionState.position = CameraPosition.fromLatLngZoom(deviceLatLng, 18f)
-            } else {
-                Log.e("Error", "Exception: %s", task.exception)
+        val marcadorActual by myViewModel.marcadorActual.observeAsState(LatLng(0.0, 0.0))
+        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 18f) }
+        val getUserLocation by myViewModel.getUserLocation.observeAsState(true)
+        if (getUserLocation) {
+            val context = LocalContext.current
+            val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+            val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
+            locationResult.addOnCompleteListener(context as MainActivity) { task ->
+                if (task.isSuccessful) {
+                    myViewModel.modMarcadorActual(task.result.latitude, task.result.longitude)
+                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(marcadorActual, 18f)
+                    myViewModel.modGetUserLocation(false)
+                } else {
+                    Log.e("Error", "Exception: %s", task.exception)
+                }
             }
         }
         GoogleMap(modifier = Modifier.fillMaxSize(),
@@ -161,7 +152,8 @@ fun MapScreen(myViewModel: APIViewModel) {
                 myViewModel.modInputLat(it.latitude.toString())
                 myViewModel.modInputLong(it.longitude.toString())
                 myViewModel.switchBottomSheet(true)
-            }) {
+            }
+        ) {
             val markers by myViewModel.markers.observeAsState(mutableListOf())
             markers?.forEach {
                 Marker(

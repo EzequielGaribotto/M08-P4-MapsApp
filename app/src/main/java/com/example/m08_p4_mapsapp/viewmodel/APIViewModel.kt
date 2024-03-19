@@ -10,6 +10,14 @@ import com.google.maps.android.compose.MarkerState
 
 
 class APIViewModel: ViewModel() {
+
+    private val _getUserLocation = MutableLiveData(true)
+    val getUserLocation = _getUserLocation
+
+    fun modGetUserLocation(boolean: Boolean) {
+        _getUserLocation.value = boolean
+    }
+
     private val _showPermissionDenied = MutableLiveData(false)
     val showPermissionDenied = _showPermissionDenied
 
