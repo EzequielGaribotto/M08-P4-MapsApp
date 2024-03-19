@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -55,10 +53,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.m08_p4_mapsapp.navigation.BottomNavigationScreens
 import com.example.m08_p4_mapsapp.navigation.Routes
-import com.example.m08_p4_mapsapp.ui.theme.DarkerGreen
-import com.example.m08_p4_mapsapp.ui.theme.IntermediateGreen
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
@@ -82,17 +77,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val apiViewModel by viewModels<APIViewModel>()
-        val bottomNavigationItems = listOf(
-            BottomNavigationScreens.MapScreen,
-            BottomNavigationScreens.MarkerListScreen,
-            BottomNavigationScreens.AddMarkerScreen,
-        )
         setContent {
             M08P4MapsAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    GeoPermission(apiViewModel, bottomNavigationItems)
+                    GeoPermission(apiViewModel)
                 }
             }
         }
@@ -101,14 +91,14 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(avm: APIViewModel, bottomNavigationItems: List<BottomNavigationScreens>) {
+fun GeoPermission(avm: APIViewModel) {
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
     if (permissionState.status.isGranted) {
-        MyDrawer(myViewModel = avm, bottomNavigationItems = bottomNavigationItems)
+        MyDrawer(myViewModel = avm)
     }
 }
 
@@ -155,7 +145,7 @@ fun MapScreen(myViewModel: APIViewModel) {
 
 
 @Composable
-fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNavigationScreens>) {
+fun MyDrawer(myViewModel: APIViewModel) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -199,7 +189,7 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
             )
         }
     }) {
-        MyScaffold(myViewModel, state, bottomNavigationItems, scope, navigationController)
+        MyScaffold(myViewModel, state, scope, navigationController)
     }
 }
 
@@ -209,7 +199,6 @@ fun MyDrawer(myViewModel: APIViewModel, bottomNavigationItems: List<BottomNaviga
 fun MyScaffold(
     myViewModel: APIViewModel,
     state: DrawerState,
-    bottomNavigationItems: List<BottomNavigationScreens>,
     scope: CoroutineScope,
     navigationController: NavHostController
 ) {

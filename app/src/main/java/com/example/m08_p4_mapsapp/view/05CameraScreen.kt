@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import androidx.compose.runtime.livedata.observeAsState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 
@@ -51,6 +53,9 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
     }
 
     val context = LocalContext.current
+    val isCameraPermissionGranted by avm.cameraPermissionGranted.observeAsState(false)
+    val shouldShowPermissionRationale by avm.shouldShowPermissionRationale.observeAsState(false)
+    val showPermissionDenied by avm.showPermissionDenied.observeAsState(false)
     val controller = remember {
         LifecycleCameraController(context).apply {
             CameraController.IMAGE_CAPTURE

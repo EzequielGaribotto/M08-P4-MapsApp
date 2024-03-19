@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "990029406212",
+    "project_id": "m08-pr4-mapsapp",
+    "storage_bucket": "m08-pr4-mapsapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:990029406212:android:2999cee8d3c78bdeb09551",
+        "android_client_info": {
+          "package_name": "com.example.m08_p4_mapsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTDGCRi684vrRUTrnKfT685aJBoyblC4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

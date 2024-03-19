@@ -10,6 +10,27 @@ import com.google.maps.android.compose.MarkerState
 
 
 class APIViewModel: ViewModel() {
+    private val _showPermissionDenied = MutableLiveData(false)
+    val showPermissionDenied = _showPermissionDenied
+
+    private val _shouldShowPermissionRationale = MutableLiveData(false)
+    val shouldShowPermissionRationale = _shouldShowPermissionRationale
+    private val _cameraPermissionGranted = MutableLiveData(false)
+    val cameraPermissionGranted = _cameraPermissionGranted
+
+    fun setCameraPermissionGranted(granted:Boolean) {
+        _cameraPermissionGranted.value = granted
+
+    }
+
+    fun setShouldSHowPermissionRationale(should:Boolean) {
+        _shouldShowPermissionRationale.value = should
+    }
+
+
+    fun setShowPermissionDenied(denied:Boolean) {
+        _showPermissionDenied.value = denied
+    }
     private val _marcadorActual = MutableLiveData(LatLng(0.0,0.0))
     val marcadorActual = _marcadorActual
 
