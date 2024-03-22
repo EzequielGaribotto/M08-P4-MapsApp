@@ -2,13 +2,10 @@ package com.example.m08_p4_mapsapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -40,8 +37,6 @@ import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 
@@ -49,8 +44,8 @@ import com.google.accompanist.permissions.rememberPermissionState
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CameraScreen(avm: APIViewModel, navController: NavController, currentRoute:String) {
-
+fun CameraScreen(avm: APIViewModel, navController: NavController) {
+    val prevScreen = avm.prevScreen.value
     // CAMERA PERMISSIONS
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
@@ -98,7 +93,9 @@ fun CameraScreen(avm: APIViewModel, navController: NavController, currentRoute:S
             IconButton(
                 onClick = {
                     avm.switchBottomSheet(true)
-                    navController.navigate(currentRoute)
+                    if (prevScreen != null) {
+                        navController.navigate(prevScreen)
+                    }
                 },
             ) {
                 Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Go Back")

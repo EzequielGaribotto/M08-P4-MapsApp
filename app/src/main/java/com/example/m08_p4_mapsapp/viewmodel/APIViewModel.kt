@@ -12,6 +12,20 @@ import com.google.maps.android.compose.MarkerState
 class APIViewModel: ViewModel() {
 
 
+    private val _prevScreen = MutableLiveData("MapScreen")
+    val prevScreen = _prevScreen
+    fun resetMarkerValues() {
+        _inputLat.value = ""
+        _inputLong.value = ""
+        _markerName.value = ""
+        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        _photoTaken.value = false
+    }
+    fun modPrevScreen(screen: String) {
+        _prevScreen.value = screen
+    }
+
+
     private val _nameChosen = MutableLiveData(false)
     val nameChosen = _nameChosen
 
