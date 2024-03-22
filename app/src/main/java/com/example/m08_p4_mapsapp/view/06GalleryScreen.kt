@@ -49,8 +49,9 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
             bitmap = if (Build.VERSION.SDK_INT >= 28) {
                 MediaStore.Images.Media.getBitmap(context.contentResolver, it)
             } else {
-                val source =
-                    it?.let { it1 -> ImageDecoder.createSource(context.contentResolver, it1) }
+                val source = it?.let { it1 ->
+                    ImageDecoder.createSource(context.contentResolver, it1)
+                }
                 source?.let { it1 ->
                     ImageDecoder.decodeBitmap(it1)
                 }!!
@@ -63,7 +64,9 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = { launchImage.launch("image/*") }) {
+        Button(onClick = {
+            launchImage.launch("image/*")
+        }) {
             Text(text = "Open Gallery")
         }
         Image(
@@ -79,13 +82,13 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
                 .border(width = 1.dp, color = Color.White, shape = CircleShape)
         )
         Button(onClick = {
+
+            avm.switchPhotoTaken(true)
+            avm.updateMarkerIcon(bitmap)
             avm.switchBottomSheet(true)
             if (prevScreen != null) {
                 navController.navigate(prevScreen)
             }
-            avm.switchPhotoTaken(true)
-            avm.updateMarkerIcon(bitmap)
-            navController.navigate(Routes.MapScreen.route)
         }) {
             Text(text = "Set as marker icon")
         }
