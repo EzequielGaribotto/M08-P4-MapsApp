@@ -53,6 +53,7 @@ import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.example.m08_p4_mapsapp.view.AddMarkerContent
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
 import com.example.m08_p4_mapsapp.view.CameraScreen
+import com.example.m08_p4_mapsapp.view.GalleryScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.MarkerListScreen
@@ -232,6 +233,9 @@ fun MyScaffold(
                 }
                 composable(Routes.CameraScreen.route) {
                     CameraScreen(avm, navigationController)
+                }
+                composable(Routes.GalleryScreen.route) {
+                    GalleryScreen(avm, navigationController)
                 }
             }
         }

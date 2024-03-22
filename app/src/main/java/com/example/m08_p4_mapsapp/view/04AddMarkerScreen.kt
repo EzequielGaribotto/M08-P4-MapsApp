@@ -54,30 +54,27 @@ fun AddMarkerContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
-            if (photoTaken) {
-                GlideImage(
-                    model = icon,
-                    contentDescription = "Marker Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .padding(bottom = 10.dp)
-                )
-                Button(onClick = {
-                    avm.switchBottomSheet(false)
-                    avm.modMarcadorActual(lat.toDouble(), long.toDouble())
-                    navigationController.navigate(Routes.CameraScreen.route)
-                }) {
-                    Text("RETAKE PICTURE")
-                }
-            } else {
-                Button(onClick = {
-                    avm.switchBottomSheet(false)
-                    avm.modMarcadorActual(lat.toDouble(), long.toDouble())
-                    navigationController.navigate(Routes.CameraScreen.route)
-                }) {
-                    Text("TAKE PICTURE")
-                }
+            GlideImage(
+                model = icon,
+                contentDescription = "Marker Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(bottom = 10.dp)
+            )
+            Button(onClick = {
+                avm.switchBottomSheet(false)
+                avm.modMarcadorActual(lat.toDouble(), long.toDouble())
+                navigationController.navigate(Routes.CameraScreen.route)
+            }) {
+                Text((if (photoTaken) "RE" else "") +"TAKE PICTURE")
+            }
+            Button(onClick = {
+                avm.switchBottomSheet(false)
+                avm.modMarcadorActual(lat.toDouble(), long.toDouble())
+                navigationController.navigate(Routes.GalleryScreen.route)
+            }) {
+                Text("SELECT PICTURE FROM GALLERY")
             }
 
             TextField(value = name,
