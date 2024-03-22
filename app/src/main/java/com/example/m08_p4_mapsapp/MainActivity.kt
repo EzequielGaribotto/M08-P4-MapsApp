@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -120,10 +121,17 @@ fun MyDrawer(myViewModel: APIViewModel) {
     val currentRoute = navBackStackEntry?.destination?.route
     val prevRoute = myViewModel.prevScreen.value
 
-    ModalNavigationDrawer(drawerState = state, gesturesEnabled = false, drawerContent = {
+    ModalNavigationDrawer(drawerState = state, gesturesEnabled = state.isOpen, drawerContent = {
         ModalDrawerSheet {
 
-            Icon(imageVector = Icons.Filled.Menu, contentDescription = "MenuIcon")
+            Icon(
+                imageVector = Icons.Filled.Menu,
+                contentDescription = "MenuIcon",
+                modifier = Modifier.clickable {
+                    scope.launch {
+                        state.close()
+                    }
+                })
             Text(
                 "Menu",
                 modifier = Modifier.padding(16.dp),

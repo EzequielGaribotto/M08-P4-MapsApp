@@ -14,67 +14,10 @@ class APIViewModel: ViewModel() {
 
     private val _prevScreen = MutableLiveData("MapScreen")
     val prevScreen = _prevScreen
-    fun resetMarkerValues() {
-        _inputLat.value = ""
-        _inputLong.value = ""
-        _markerName.value = ""
-        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        _photoTaken.value = false
-    }
-    fun modPrevScreen(screen: String) {
-        _prevScreen.value = screen
-    }
-
-
-    private val _nameChosen = MutableLiveData(false)
-    val nameChosen = _nameChosen
-
-    fun modNameChosen(boolean: Boolean) {
-        _nameChosen.value = boolean
-    }
-
-    private val _latChosen = MutableLiveData(false)
-    val latChosen = _latChosen
-
-    fun modLatChosen(boolean: Boolean) {
-        _latChosen.value = boolean
-    }
-
-    private val _longChosen = MutableLiveData(false)
-    val longChosen = _longChosen
-
-    fun modLongChosen(boolean: Boolean) {
-        _longChosen.value = boolean
-    }
 
     private val _getUserLocation = MutableLiveData(true)
     val getUserLocation = _getUserLocation
 
-    fun modGetUserLocation(boolean: Boolean) {
-        _getUserLocation.value = boolean
-    }
-
-    private val _showPermissionDenied = MutableLiveData(false)
-    val showPermissionDenied = _showPermissionDenied
-
-    private val _shouldShowPermissionRationale = MutableLiveData(false)
-    val shouldShowPermissionRationale = _shouldShowPermissionRationale
-    private val _cameraPermissionGranted = MutableLiveData(false)
-    val cameraPermissionGranted = _cameraPermissionGranted
-
-    fun setCameraPermissionGranted(granted:Boolean) {
-        _cameraPermissionGranted.value = granted
-
-    }
-
-    fun setShouldShowPermissionRationale(should:Boolean) {
-        _shouldShowPermissionRationale.value = should
-    }
-
-
-    fun setShowPermissionDenied(denied:Boolean) {
-        _showPermissionDenied.value = denied
-    }
     private val _marcadorActual = MutableLiveData(LatLng(0.0,0.0))
     val marcadorActual = _marcadorActual
 
@@ -131,5 +74,19 @@ class APIViewModel: ViewModel() {
 
     fun modInputLong(long: String) {
         _inputLong.value = long
+    }
+
+    fun modGetUserLocation(boolean: Boolean) {
+        _getUserLocation.value = boolean
+    }
+    fun resetMarkerValues() {
+        _inputLat.value = ""
+        _inputLong.value = ""
+        _markerName.value = ""
+        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        _photoTaken.value = false
+    }
+    fun modPrevScreen(screen: String) {
+        _prevScreen.value = screen
     }
 }
