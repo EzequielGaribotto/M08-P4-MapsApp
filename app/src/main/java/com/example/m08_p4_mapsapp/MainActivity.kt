@@ -1,10 +1,12 @@
 package com.example.m08_p4_mapsapp
 
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,6 +67,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val apiViewModel by viewModels<APIViewModel>()
@@ -99,6 +102,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun GeoPermission(avm: APIViewModel) {
@@ -113,6 +117,7 @@ fun GeoPermission(avm: APIViewModel) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun MyDrawer(myViewModel: APIViewModel) {
     val navigationController = rememberNavController()
@@ -185,6 +190,7 @@ fun MyDrawer(myViewModel: APIViewModel) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyScaffold(
