@@ -52,6 +52,8 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation("androidx.camera:camera-core:1.3.2")
@@ -60,6 +62,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.2")
     implementation("androidx.camera:camera-extensions:1.3.2")
 //Icons
+
     implementation("androidx.compose.material:material-icons-extended:1.6.3")
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.2")

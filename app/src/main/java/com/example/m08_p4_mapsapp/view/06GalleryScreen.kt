@@ -31,7 +31,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
+import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
@@ -41,21 +44,19 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 fun GalleryScreen(avm: APIViewModel, navController: NavController) {
     val prevScreen = avm.prevScreen.value
     val context = LocalContext.current
-    val img: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     var bitmap by remember { mutableStateOf(img) }
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = {
-            bitmap = if (Build.VERSION.SDK_INT >= 28) {
-                MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-            } else {
-                val source =
-                    it?.let { it1 -> ImageDecoder.createSource(context.contentResolver, it1) }
-                source?.let { it1 ->
-                    ImageDecoder.decodeBitmap(it1)
-                }!!
+        onResult = { uri ->
+            if (uri != null) {
+                bitmap = if (Build.VERSION.SDK_INT > 28) {
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                }
             }
-
         }
     )
     Column(
@@ -80,12 +81,12 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         )
         Button(onClick = {
             avm.switchBottomSheet(true)
+
             if (prevScreen != null) {
                 navController.navigate(prevScreen)
             }
             avm.switchPhotoTaken(true)
             avm.updateMarkerIcon(bitmap)
-            navController.navigate(Routes.MapScreen.route)
         }) {
             Text(text = "Set as marker icon")
         }
