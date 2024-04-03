@@ -20,6 +20,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,6 +47,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     var bitmap by remember { mutableStateOf(img) }
+    val markerIcon by avm.icon.observeAsState()
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
@@ -64,7 +66,10 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = { launchImage.launch("image/*") }) {
+        Button(onClick = {
+            launchImage.launch("image/*")
+
+        }) {
             Text(text = "Open Gallery")
         }
         Image(
@@ -76,18 +81,21 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
                     CircleShape
                 )
                 .size(250.dp)
-                .background(Color.Blue)
+                .background(Color.Transparent)
                 .border(width = 1.dp, color = Color.White, shape = CircleShape)
         )
-        Button(onClick = {
-            avm.switchBottomSheet(true)
+        Button(
+            onClick = {
+                avm.switchBottomSheet(true)
 
-            if (prevScreen != null) {
-                navController.navigate(prevScreen)
-            }
-            avm.switchPhotoTaken(true)
-            avm.updateMarkerIcon(bitmap)
-        }) {
+                if (prevScreen != null) {
+                    navController.navigate(prevScreen)
+                }
+                avm.switchPhotoTaken(true)
+                avm.updateMarkerIcon(bitmap)
+            },
+            enabled = markerIcon != img
+        ) {
             Text(text = "Set as marker icon")
         }
     }
