@@ -50,7 +50,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                bitmap = if (Build.VERSION.SDK_INT > 28) {
+                bitmap = if (Build.VERSION.SDK_INT >= 28) {
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 } else {
                     val source = ImageDecoder.createSource(context.contentResolver, uri)

@@ -296,6 +296,9 @@ fun MyTopAppBar(
             EnableDrawerButton(state, scope)
         }, actions = {
             IconButton(onClick = {
+                scope.launch {
+                    state.close()
+                }
                 navigationController.navigate(Routes.LoginScreen.route)
             }) {
                 Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "User")

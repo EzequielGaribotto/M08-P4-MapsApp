@@ -11,63 +11,38 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.DocumentReference
 
 class APIViewModel : ViewModel() {
+    private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
-
     private val repo = repository()
+
+
     private val _usersList = MutableLiveData<List<User>>()
     val usersList = _usersList
-    fun getUsers() {
-        repo.getUsers().addSnapshotListener { value, error ->
-            if (error != null) {
-                Log.e("Firestore error", error.message.toString())
-                return@addSnapshotListener
-            }
-            val tempList = mutableListOf<User>()
-            for (dc:DocumentChange in value?.documentChanges!!) {
-                if (dc.type == DocumentChange.Type.ADDED) {
-                    val newUser = dc.document.toObject(User::class.java)
-                    newUser.userId = dc.document.id
-                    tempList.add(newUser)
-                }
-            }
-            _usersList.value = tempList
-        }
-    }
 
-    val _actualUser = MutableLiveData<User?>()
+    private val _goToNext = MutableLiveData(false)
+    val goToNext = _goToNext
+
+    private val _showProgressBar = MutableLiveData(false)
+    val showProgressBar = _showProgressBar
+
+    private val _userId = MutableLiveData<String>()
+    val userId = _userId
+
+    private val _loggedUser = MutableLiveData<String>()
+    val loggedUser = _loggedUser
+
+    private val _actualUser = MutableLiveData<User?>()
     val actualUser = _actualUser
-    val _userName = MutableLiveData("")
+
+    private val _userName = MutableLiveData("")
     val userName = _userName
-    val _age = MutableLiveData("")
 
-    fun getUser(userId: String) {
-        repo.getUser(userId).addSnapshotListener { value, error ->
-            if (error != null) {
-                Log.w("UserRepository", "Listen failed.", error)
-                return@addSnapshotListener
-            }
-            if (value != null && value.exists()) {
-                val user = value.toObject(User::class.java)
-                if (user != null) {
-                    user.userId = userId
-                }
-
-                _actualUser.value = user
-                _userName.value = _actualUser.value!!.userName
-                _age.value = _actualUser.value!!.age.toString()
-
-            } else {
-                Log.d("UserRepository", "Current data: null")
-            }
-        }
-    }
-
-
-
+    private val _age = MutableLiveData("")
+    val age = _age
 
     private val _prevScreen = MutableLiveData("MapScreen")
     val prevScreen = _prevScreen
@@ -98,6 +73,77 @@ class APIViewModel : ViewModel() {
 
     private val _photoTaken = MutableLiveData<Boolean>()
     val photoTaken = _photoTaken
+
+    fun getUsers() {
+        repo.getUsers().addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.e("Firestore error", error.message.toString())
+                return@addSnapshotListener
+            }
+            val tempList = mutableListOf<User>()
+            for (dc: DocumentChange in value?.documentChanges!!) {
+                if (dc.type == DocumentChange.Type.ADDED) {
+                    val newUser = dc.document.toObject(User::class.java)
+                    newUser.userId = dc.document.id
+                    tempList.add(newUser)
+                }
+            }
+            _usersList.value = tempList
+        }
+    }
+
+    fun register(username: String, password: String) {
+        auth.createUserWithEmailAndPassword(username, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _goToNext.value = true
+                    Log.d("ERROR", "User registered")
+                } else {
+                    _goToNext.value = false
+                    Log.d("ERROR", "Error creating user : ${task.result}")
+                }
+                modifyProcessing()
+            }
+    }
+    fun login(username: String?, password: String?) {
+        auth.signInWithEmailAndPassword(username!!, password!!)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
+                    _goToNext.value = true
+                } else {
+                    _goToNext.value = false
+                    Log.d("Error", "Error signing in: ${task.result}")
+                }
+                modifyProcessing()
+            }
+    }
+
+    fun modifyProcessing() {
+        _showProgressBar.value = (showProgressBar.value == true)
+    }
+    fun getUser(userId: String) {
+        repo.getUser(userId).addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.w("UserRepository", "Listen failed.", error)
+                return@addSnapshotListener
+            }
+            if (value != null && value.exists()) {
+                val user = value.toObject(User::class.java)
+                if (user != null) {
+                    user.userId = userId
+                }
+
+                _actualUser.value = user
+                _userName.value = _actualUser.value!!.userName
+                _age.value = _actualUser.value!!.age.toString()
+
+            } else {
+                Log.d("UserRepository", "Current data: null")
+            }
+        }
+    }
 
     fun switchPhotoTaken(boolean: Boolean) {
         _photoTaken.value = boolean
