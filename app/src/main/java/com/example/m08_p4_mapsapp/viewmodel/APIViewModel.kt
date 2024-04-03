@@ -13,8 +13,12 @@ import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
+import java.nio.ByteBuffer
 
 class APIViewModel : ViewModel() {
+
+    // Funcion que determina si dos bitmaps son iguales o no
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = repository()
@@ -73,6 +77,7 @@ class APIViewModel : ViewModel() {
 
     private val _photoTaken = MutableLiveData<Boolean>()
     val photoTaken = _photoTaken
+
 
     fun getUsers() {
         repo.getUsers().addSnapshotListener { value, error ->

@@ -64,14 +64,20 @@ fun AddMarkerContent(
             )
             Button(onClick = {
                 avm.switchBottomSheet(false)
-                avm.modMarcadorActual(lat.toDouble(), long.toDouble())
+                avm.modMarcadorActual(
+                    if (lat.isNotEmpty()) lat.toDouble() else (0.0),
+                    if (long.isNotEmpty()) long.toDouble() else (0.0)
+                )
                 navigationController.navigate(Routes.CameraScreen.route)
             }) {
-                Text((if (photoTaken) "RE" else "") +"TAKE PICTURE")
+                Text((if (photoTaken) "RE" else "") + "TAKE PICTURE")
             }
             Button(onClick = {
                 avm.switchBottomSheet(false)
-                avm.modMarcadorActual(lat.toDouble(), long.toDouble())
+                avm.modMarcadorActual(
+                    if (lat.isNotEmpty()) lat.toDouble() else (0.0),
+                    if (long.isNotEmpty()) long.toDouble() else (0.0)
+                )
                 navigationController.navigate(Routes.GalleryScreen.route)
             }) {
                 Text("SELECT PICTURE FROM GALLERY")

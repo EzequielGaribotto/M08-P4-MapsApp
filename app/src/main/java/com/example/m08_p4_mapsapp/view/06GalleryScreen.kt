@@ -21,9 +21,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +33,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
-import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
 @RequiresApi(Build.VERSION_CODES.P)
@@ -46,18 +42,17 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
     val prevScreen = avm.prevScreen.value
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    var bitmap by remember { mutableStateOf(img) }
-    val markerIcon by avm.icon.observeAsState()
+    val markerIcon by avm.icon.observeAsState(img)
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                bitmap = if (Build.VERSION.SDK_INT >= 28) {
+                avm.updateMarkerIcon(if (Build.VERSION.SDK_INT >= 28) {
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 } else {
                     val source = ImageDecoder.createSource(context.contentResolver, uri)
                     ImageDecoder.decodeBitmap(source)
-                }
+                })
             }
         }
     )
@@ -68,12 +63,11 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
     ) {
         Button(onClick = {
             launchImage.launch("image/*")
-
         }) {
             Text(text = "Open Gallery")
         }
         Image(
-            bitmap = bitmap.asImageBitmap(),
+            bitmap = markerIcon.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -87,14 +81,12 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         Button(
             onClick = {
                 avm.switchBottomSheet(true)
-
+                avm.switchPhotoTaken(true)
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }
-                avm.switchPhotoTaken(true)
-                avm.updateMarkerIcon(bitmap)
             },
-            enabled = markerIcon != img
+            enabled = !markerIcon.sameAs(img)
         ) {
             Text(text = "Set as marker icon")
         }

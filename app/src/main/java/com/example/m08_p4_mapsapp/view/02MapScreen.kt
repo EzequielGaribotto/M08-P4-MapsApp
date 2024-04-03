@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -70,11 +71,12 @@ fun MapScreen(avm: APIViewModel) {
             }
         ) {
             val markers by avm.markers.observeAsState(mutableListOf())
-            markers?.forEach {
+            markers?.forEach { marker ->
+                val markerState = rememberMarkerState(position = marker.markerState.position)
                 Marker(
-                    state = it.markerState,
-                    title = it.name,
-                    snippet = "Marker at ${it.markerState.position.latitude}, ${it.markerState.position.longitude}",
+                    state = markerState,
+                    title = marker.name,
+                    snippet = "Marker at ${markerState.position.latitude}, ${markerState.position.longitude}",
                 )
             }
         }
