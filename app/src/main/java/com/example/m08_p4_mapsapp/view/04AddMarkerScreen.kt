@@ -54,6 +54,7 @@ fun AddMarkerContent(
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val icon by avm.icon.observeAsState(img)
+    val url by avm.url.observeAsState("")
     val photoTaken = !icon.sameAs(img)
 
     Box(modifier = Modifier.fillMaxSize()) {

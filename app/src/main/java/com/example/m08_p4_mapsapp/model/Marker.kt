@@ -7,7 +7,7 @@ class Marker {
     val markerState: MarkerState
     val name: String
     val icon: Bitmap
-    val url:String
+    var url:String
 
     constructor(markerState: MarkerState, name: String, icon: Bitmap, url: String) {
         this.markerState = markerState

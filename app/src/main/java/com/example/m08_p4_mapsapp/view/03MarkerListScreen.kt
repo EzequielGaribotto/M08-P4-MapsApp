@@ -62,6 +62,7 @@ fun MarkerItem(marker: Marker, onClickGo: (Double, Double) -> Unit) {
     val long = marker.markerState.position.longitude
     val photo = marker.icon
     val name = marker.name
+    val url = marker.url
 
     Card(
         border = BorderStroke(2.dp, DarkBrown),
@@ -77,7 +78,7 @@ fun MarkerItem(marker: Marker, onClickGo: (Double, Double) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlideImage(
-                    model = photo,
+                    model = url,
                     contentDescription = "Marker Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(80.dp)

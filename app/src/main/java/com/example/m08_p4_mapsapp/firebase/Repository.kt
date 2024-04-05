@@ -2,6 +2,7 @@ package com.example.m08_p4_mapsapp.firebase
 
 import android.net.Uri
 import android.util.Log
+import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.model.User
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -50,7 +51,7 @@ class Repository {
         return database.collection("users").document(userId)
     }
 
-    fun uploadImage(imageUri: Uri) {
+    fun uploadImage(imageUri: Uri, marker: Marker) {
         val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
         val now = Date()
         val fileName = formatter.format(now)
@@ -60,6 +61,7 @@ class Repository {
                 Log.i("IMAGE UPLOADED", "Image uploaded successfully")
                 storage.downloadUrl.addOnSuccessListener {
                     Log.i("IMAGEN",it.toString())
+                    marker.url = it.toString()
                 }
             }
             .addOnCanceledListener {

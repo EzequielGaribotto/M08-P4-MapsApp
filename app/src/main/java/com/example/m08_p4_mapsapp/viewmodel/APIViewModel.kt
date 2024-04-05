@@ -23,6 +23,9 @@ class APIViewModel : ViewModel() {
 
     // Funcion que determina si dos bitmaps son iguales o no
 
+    private val _url = MutableLiveData("")
+    val url = _url
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -82,6 +85,10 @@ class APIViewModel : ViewModel() {
     private val _photoTaken = MutableLiveData<Boolean>()
     val photoTaken = _photoTaken
 
+
+    fun modUrl(url: String) {
+        _url.value = url
+    }
 
     fun getUsers() {
         repo.getUsers().addSnapshotListener { value, error ->
@@ -155,7 +162,7 @@ class APIViewModel : ViewModel() {
     }
 
     fun uploadImage(imageUri: Uri) {
-        repo.uploadImage(imageUri)
+        repo.uploadImage(imageUri, _markers.value?.last()!!)
     }
 
     fun switchPhotoTaken(boolean: Boolean) {
@@ -204,6 +211,7 @@ class APIViewModel : ViewModel() {
         val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
         _icon.value = img
         _photoTaken.value = false
+        _url.value = ""
     }
 
     fun modPrevScreen(screen: String) {

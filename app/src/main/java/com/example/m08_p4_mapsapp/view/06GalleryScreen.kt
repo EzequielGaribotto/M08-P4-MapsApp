@@ -48,6 +48,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         onResult = { uri ->
             if (uri != null) {
                 avm.uploadImage(uri)
+                avm.modUrl(uri.toString())
                 avm.updateMarkerIcon(
                     if (Build.VERSION.SDK_INT >= 28) {
                         MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
