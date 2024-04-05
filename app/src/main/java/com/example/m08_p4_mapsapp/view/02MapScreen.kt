@@ -43,7 +43,7 @@ fun MapScreen(avm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        avm.modPrevScreen("MapScreen")
+        val prevScreen = avm.prevScreen.value
         val marcadorActual by avm.marcadorActual.observeAsState(LatLng(0.0, 0.0))
         val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 18f) }
         val getUserLocation by avm.getUserLocation.observeAsState(true)
@@ -61,6 +61,12 @@ fun MapScreen(avm: APIViewModel) {
                 }
             }
         }
+        val context = LocalContext.current
+        if (prevScreen == "AddMarkerScreen") {
+            avm.resetMarkerValues(context)
+        }
+        avm.modPrevScreen("MapScreen")
+
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {

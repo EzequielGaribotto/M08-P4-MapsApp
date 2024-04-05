@@ -1,10 +1,14 @@
 package com.example.m08_p4_mapsapp.viewmodel
 
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.firebase.repository
 import com.example.m08_p4_mapsapp.model.Marker
 import com.google.android.gms.maps.model.LatLng
@@ -13,7 +17,6 @@ import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
-import java.nio.ByteBuffer
 
 class APIViewModel : ViewModel() {
 
@@ -189,11 +192,12 @@ class APIViewModel : ViewModel() {
         _getUserLocation.value = boolean
     }
 
-    fun resetMarkerValues() {
+    fun resetMarkerValues(context: Context) {
         _inputLat.value = ""
         _inputLong.value = ""
         _markerName.value = ""
-        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+        _icon.value = img
         _photoTaken.value = false
     }
 

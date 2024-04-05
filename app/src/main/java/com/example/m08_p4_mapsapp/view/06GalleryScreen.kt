@@ -42,7 +42,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
     val prevScreen = avm.prevScreen.value
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    val markerIcon by avm.icon.observeAsState(img)
+    val icon by avm.icon.observeAsState(img)
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
@@ -67,7 +67,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
             Text(text = "Open Gallery")
         }
         Image(
-            bitmap = markerIcon.asImageBitmap(),
+            bitmap = icon.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -86,7 +86,7 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
                     navController.navigate(prevScreen)
                 }
             },
-            enabled = !markerIcon.sameAs(img)
+            enabled = !icon.sameAs(img)
         ) {
             Text(text = "Set as marker icon")
         }

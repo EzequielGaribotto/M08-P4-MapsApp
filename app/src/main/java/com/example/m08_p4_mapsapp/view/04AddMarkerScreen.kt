@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -17,10 +18,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
@@ -28,6 +34,7 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddMarkerScreen(avm: APIViewModel, navController: NavController) {
+    avm.modPrevScreen("AddMarkerScreen")
     AddMarkerContent(avm, true, navController)
 }
 
@@ -38,13 +45,13 @@ fun AddMarkerContent(
     markerScreen: Boolean = false,
     navigationController: NavController
 ) {
-    avm.modPrevScreen("AddMarkerScreen")
     val lat by avm.inputLat.observeAsState("")
     val long by avm.inputLong.observeAsState("")
     val name by avm.markerName.observeAsState("")
-    val defaultIcon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-    val icon by avm.icon.observeAsState(defaultIcon)
-    val photoTaken by avm.photoTaken.observeAsState(initial = false)
+    val context = LocalContext.current
+    val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val icon by avm.icon.observeAsState(img)
+    val photoTaken = !icon.sameAs(img)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -89,20 +96,18 @@ fun AddMarkerContent(
             TextField(
                 value = lat,
                 onValueChange = {
-                    if (it.toDoubleOrNull() != null) {
-                        avm.modInputLat(it)
-                    }
+                    avm.modInputLat(it)
                 },
                 label = { Text("Latitud") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
             TextField(
                 value = long,
                 onValueChange = {
-                    if (it.toDoubleOrNull() != null) {
-                        avm.modInputLong(it)
-                    }
+                    avm.modInputLat(it)
                 },
                 label = { Text("Longitud") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
             val canAddMarker =
                 photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
@@ -115,7 +120,6 @@ fun AddMarkerContent(
             }, enabled = canAddMarker) {
                 Text("Agregar marcador")
             }
-
         }
     }
 }

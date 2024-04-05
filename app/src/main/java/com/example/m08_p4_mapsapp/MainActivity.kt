@@ -1,6 +1,7 @@
 package com.example.m08_p4_mapsapp
 
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -43,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -69,6 +71,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val context = this
         super.onCreate(savedInstanceState)
         val apiViewModel by viewModels<APIViewModel>()
         setContent {
@@ -76,26 +79,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-//                    val launcher = rememberLauncherForActivityResult(
-//                        contract = ActivityResultContracts.RequestPermission(),
-//                        onResult = { isGranted ->
-//                            if (isGranted) {
-//                                apiViewModel.setCameraPermissionGranted(true)
-//                            } else {
-//                                apiViewModel.setShouldShowPermissionRationale(
-//                                    shouldShowRequestPermissionRationale(
-//                                        context as Activity,
-//                                        Manifest.permission.CAMERA
-//                                    )
-//                                )
-//                            }
-//                            if (!shouldShowPermissionRationale) {
-//                                Log.i("CameraScreen", "NO podemos volver a pedir permisos")
-//                                apiViewModel.setShowPermissionDenied(true)
-//                            }
-//                        }
-//                    )
-                    GeoPermission(apiViewModel)
+                    GeoPermission(apiViewModel, context)
                 }
             }
         }
@@ -105,27 +89,28 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(avm: APIViewModel) {
+fun GeoPermission(avm: APIViewModel, context:Context) {
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
     if (permissionState.status.isGranted) {
-        MyDrawer(myViewModel = avm)
+        MyDrawer(myViewModel = avm, context)
     }
 }
 
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun MyDrawer(myViewModel: APIViewModel) {
+fun MyDrawer(myViewModel: APIViewModel, context: Context) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val prevRoute = myViewModel.prevScreen.value
+
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = state.isOpen, drawerContent = {
         ModalDrawerSheet {
@@ -145,29 +130,26 @@ fun MyDrawer(myViewModel: APIViewModel) {
             )
             Divider()
             NavigationDrawerItem(label = { Text(text = "Map") }, selected = false, onClick = {
-                if (currentRoute != Routes.MapScreen.route) {
+                if (currentRoute != "MapScreen") {
                     scope.launch {
                         state.close()
                     }
                     navigationController.navigate(Routes.MapScreen.route)
                 }
-                if (prevRoute == Routes.AddMarkerScreen.route) {
-                    myViewModel.resetMarkerValues()
+                if (prevRoute == "AddMarkerScreen") {
+                    myViewModel.resetMarkerValues(context)
                 }
             })
             Divider()
             NavigationDrawerItem(label = { Text(text = "Marker List") },
                 selected = false,
                 onClick = {
-                    if (currentRoute != Routes.MarkerListScreen.route) {
+                    if (currentRoute != "MarkerListScreen") {
                         scope.launch {
                             state.close()
                         }
                         myViewModel.switchPhotoTaken(false)
-                        navigationController.navigate(Routes.MarkerListScreen.route)
-                    }
-                    if (prevRoute == Routes.AddMarkerScreen.route) {
-                        myViewModel.resetMarkerValues()
+                        navigationController.navigate("MarkerListScreen")
                     }
                 }
             )
@@ -185,7 +167,7 @@ fun MyDrawer(myViewModel: APIViewModel) {
             )
         }
     }) {
-        MyScaffold(myViewModel, state, scope, navigationController)
+        MyScaffold(myViewModel, state, scope, navigationController, context)
     }
 }
 
@@ -197,7 +179,7 @@ fun MyScaffold(
     avm: APIViewModel,
     state: DrawerState,
     scope: CoroutineScope,
-    navigationController: NavHostController
+    navigationController: NavHostController, context: Context
 ) {
     val sheetState = rememberModalBottomSheetState()
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
@@ -250,7 +232,7 @@ fun MyScaffold(
             ModalBottomSheet(
                 onDismissRequest = {
                     avm.switchBottomSheet(false)
-                    avm.resetMarkerValues()
+                    avm.resetMarkerValues(context)
                 }, sheetState = sheetState
             ) {
                 Column(
