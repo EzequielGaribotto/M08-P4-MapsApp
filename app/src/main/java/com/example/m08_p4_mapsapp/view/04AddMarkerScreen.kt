@@ -27,8 +27,11 @@ import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.R
+import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.MarkerState
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -104,7 +107,7 @@ fun AddMarkerContent(
             TextField(
                 value = long,
                 onValueChange = {
-                    avm.modInputLat(it)
+                    avm.modInputLong(it)
                 },
                 label = { Text("Longitud") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -112,7 +115,7 @@ fun AddMarkerContent(
             val canAddMarker =
                 photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
             Button(onClick = {
-                avm.addMarker(lat, long, name, icon)
+                avm.addMarker(lat, long, name, icon, url)
                 if (avm.prevScreen.value == "AddMarkerScreen") {
                     avm.switchBottomSheet(false)
                     navigationController.navigate(Routes.MapScreen.route)

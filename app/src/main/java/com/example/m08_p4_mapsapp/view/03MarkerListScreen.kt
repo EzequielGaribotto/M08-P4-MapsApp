@@ -42,7 +42,7 @@ fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val markers by avm.markers.observeAsState(listOf())
+        val markers by avm.markers.observeAsState(mutableListOf())
         LazyColumn {
             items(markers) { marker ->
                 MarkerItem(marker) { lat, long ->

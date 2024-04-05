@@ -3,13 +3,14 @@ package com.example.m08_p4_mapsapp.viewmodel
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.m08_p4_mapsapp.R
-import com.example.m08_p4_mapsapp.firebase.repository
+import com.example.m08_p4_mapsapp.firebase.Repository
 import com.example.m08_p4_mapsapp.model.Marker
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,7 +25,7 @@ class APIViewModel : ViewModel() {
 
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
-    private val repo = repository()
+    private val repo = Repository()
 
 
     private val _usersList = MutableLiveData<List<User>>()
@@ -153,6 +154,10 @@ class APIViewModel : ViewModel() {
         }
     }
 
+    fun uploadImage(imageUri: Uri) {
+        repo.uploadImage(imageUri)
+    }
+
     fun switchPhotoTaken(boolean: Boolean) {
         _photoTaken.value = boolean
     }
@@ -165,10 +170,10 @@ class APIViewModel : ViewModel() {
         _marcadorActual.value = LatLng(lat, long)
     }
 
-    fun addMarker(lat: String, long: String, name: String, icon: Bitmap) {
+    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url:String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
-        markersTemp.add(Marker(markerState, name, icon))
+        markersTemp.add(Marker(markerState, name, icon, url))
         _markers.value = markersTemp.toMutableList()
     }
 
