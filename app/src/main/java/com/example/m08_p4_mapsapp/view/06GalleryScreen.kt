@@ -47,7 +47,6 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                avm.uploadImage(uri)
                 avm.modUrl(uri.toString())
                 avm.updateMarkerIcon(
                     if (Build.VERSION.SDK_INT >= 28) {
