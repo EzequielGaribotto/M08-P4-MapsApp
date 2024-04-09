@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -66,7 +67,7 @@ fun AddMarkerContent(
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
             GlideImage(
-                model = icon,
+                model = if (url == "") icon else url,
                 contentDescription = "Marker Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -117,6 +118,7 @@ fun AddMarkerContent(
                 photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
             Button(onClick = {
                 avm.addMarker(lat, long, name, icon, url)
+                avm.uploadImage(url.toUri())
                 if (avm.prevScreen.value == "AddMarkerScreen") {
                     avm.switchBottomSheet(false)
                     navigationController.navigate(Routes.MapScreen.route)

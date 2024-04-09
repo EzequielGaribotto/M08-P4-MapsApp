@@ -2,10 +2,15 @@ package com.example.m08_p4_mapsapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -36,8 +41,10 @@ import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import java.io.OutputStream
 
 
+@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -45,16 +52,18 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
     val prevScreen = avm.prevScreen.value
     // CAMERA PERMISSIONS
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
-    }
-
     val context = LocalContext.current
     val controller = remember {
         LifecycleCameraController(context).apply {
             CameraController.IMAGE_CAPTURE
         }
     }
+
+    LaunchedEffect(Unit) {
+        permissionState.launchPermissionRequest()
+    }
+
+
 
     CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
     IconButton(
@@ -77,8 +86,19 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
         Row {
             IconButton(
                 onClick = {
-                    takePhoto(context, controller) { photo -> avm.updateMarkerIcon(photo) }
-                    avm.switchPhotoTaken(true)
+
+                    takePhoto(context, controller) { photo ->
+                        val uri = saveBitmapToExternalStorage(context, photo)
+                        if (uri != null) {
+                            avm.modUrl(uri.toString())
+                            avm.switchPhotoTaken(true)
+                            println("FOTO SACADA")
+                        } else {
+                            println("FOTO NO SACADA")
+
+                        }
+
+                    }
                 },
             ) {
                 Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
@@ -108,6 +128,27 @@ fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier) {
             controller.bindToLifecycle(lifecycleOwner)
         }
     }, modifier = modifier)
+}
+
+fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
+    val filename = "${System.currentTimeMillis()}.jpg"
+    val values = ContentValues().apply {
+        put(MediaStore.Images.Media.TITLE, filename)
+        put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+        put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+    }
+
+    val uri: Uri? =
+        context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    uri?.let {
+        val outstream: OutputStream? = context.contentResolver.openOutputStream(it)
+        outstream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+        outstream?.close()
+    }
+
+    return uri
 }
 
 private fun takePhoto(
