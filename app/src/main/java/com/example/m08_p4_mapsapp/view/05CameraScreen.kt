@@ -65,6 +65,7 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
 
 
 
+
     CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
     IconButton(
         onClick = {

@@ -53,7 +53,7 @@ fun AddMarkerContent(
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val icon by avm.icon.observeAsState(img)
     val url by avm.url.observeAsState("")
-    val photoTaken = !icon.sameAs(img)
+    val photoTaken = if (url =="") !icon.sameAs(img) else true
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
