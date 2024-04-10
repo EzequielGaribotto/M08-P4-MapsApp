@@ -22,6 +22,32 @@ import com.google.firebase.firestore.DocumentChange
 class APIViewModel : ViewModel() {
 
     // Funcion que determina si dos bitmaps son iguales o no
+    val _userRegister = MutableLiveData(false)
+    val userRegister = _userRegister
+
+    val _userLogin = MutableLiveData(false)
+    val userLogin = _userLogin
+
+    fun modUserRegister(boolean: Boolean) {
+        _userRegister.value = boolean
+    }
+
+    fun modUserLogin(boolean: Boolean) {
+        _userLogin.value = boolean
+    }
+
+    val _email = MutableLiveData("")
+    val email = _email
+    fun modEmail(email: String) {
+        _email.value = email
+    }
+
+    val _password = MutableLiveData("")
+    val password = _password
+
+    fun modPassword(password: String) {
+        _password.value = password
+    }
 
     private val _url = MutableLiveData("")
     val url = _url
