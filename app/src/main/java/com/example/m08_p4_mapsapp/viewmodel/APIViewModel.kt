@@ -4,11 +4,13 @@ package com.example.m08_p4_mapsapp.viewmodel
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.text.TextUtils
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.firebase.Repository
 import com.example.m08_p4_mapsapp.model.Marker
@@ -20,6 +22,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 
 class APIViewModel : ViewModel() {
+
+    val _showErrorMessage = MutableLiveData(false)
+    val showErrorMessage = _showErrorMessage
+
+    fun modShowErrorMessage(boolean: Boolean) {
+        _showErrorMessage.value = boolean
+    }
 
     // Funcion que determina si dos bitmaps son iguales o no
     val _userRegister = MutableLiveData(false)
@@ -135,31 +144,54 @@ class APIViewModel : ViewModel() {
     }
 
     fun register(username: String, password: String) {
-        auth.createUserWithEmailAndPassword(username, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _goToNext.value = true
-                    Log.d("ERROR", "User registered")
-                } else {
-                    _goToNext.value = false
-                    Log.d("ERROR", "Error creating user : ${task.result}")
+        if (isValidEmail(username)) {
+            auth.createUserWithEmailAndPassword(username, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _goToNext.value = true
+                        Log.d("ERROR", "User registered")
+                    } else {
+                        _goToNext.value = false
+                        Log.d("ERROR", "Error creating user : ${task.result}")
+                    }
+                    modifyProcessing()
                 }
-                modifyProcessing()
-            }
+        } else {
+            _goToNext.value = false
+            Log.d("ERROR", "Invalid email")
+        }
     }
+
+    fun isValidEmail(target: CharSequence?): Boolean {
+        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target)
+            .matches()
+    }
+
+    fun isValidPassword(password: CharSequence?): Boolean {
+        val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
+        val passwordMatcher = Regex(passwordPattern)
+
+        return password != null && passwordMatcher.matches(password)
+    }
+
     fun login(username: String?, password: String?) {
-        auth.signInWithEmailAndPassword(username!!, password!!)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _userId.value = task.result.user?.uid
-                    _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
-                    _goToNext.value = true
-                } else {
-                    _goToNext.value = false
-                    Log.d("Error", "Error signing in: ${task.result}")
+        if (isValidEmail(username)) {
+            auth.signInWithEmailAndPassword(username!!, password!!)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _userId.value = task.result.user?.uid
+                        _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
+                        _goToNext.value = true
+                    } else {
+                        _goToNext.value = false
+                        Log.d("Error", "Error signing in: ${task.result}")
+                    }
+                    modifyProcessing()
                 }
-                modifyProcessing()
-            }
+        } else {
+            _goToNext.value = false
+            Log.d("Error", "Invalid email")
+        }
     }
 
     fun modifyProcessing() {
@@ -242,5 +274,15 @@ class APIViewModel : ViewModel() {
 
     fun modPrevScreen(screen: String) {
         _prevScreen.value = screen
+    }
+
+    fun goBack(userLogin:Boolean, userRegister:Boolean, navController: NavController, prevScreen:String) {
+        if (userLogin || userRegister) {
+            modUserLogin(false)
+            modUserRegister(false)
+            modShowErrorMessage(false)
+        } else {
+            navController.navigate(prevScreen)
+        }
     }
 }

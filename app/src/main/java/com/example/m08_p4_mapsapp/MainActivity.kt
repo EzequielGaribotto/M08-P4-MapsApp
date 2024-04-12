@@ -187,7 +187,7 @@ fun MyScaffold(
     val showBottomSheet by avm.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
         if (currentRoute != null && currentRoute != Routes.LoginScreen.route && currentRoute != Routes.CameraScreen.route) {
-            MyTopAppBar(currentRoute, state, scope, navigationController)
+            MyTopAppBar(currentRoute, state, scope, navigationController, avm)
         }
     }) { paddingValues ->
         Box(
@@ -264,7 +264,8 @@ fun MyTopAppBar(
     currentRoute: String,
     state: DrawerState,
     scope: CoroutineScope,
-    navigationController: NavHostController
+    navigationController: NavHostController,
+    avm: APIViewModel
 ) {
     if (currentRoute != Routes.LoginScreen.route) {
 
@@ -281,6 +282,7 @@ fun MyTopAppBar(
                 scope.launch {
                     state.close()
                 }
+                avm.modPrevScreen(currentRoute)
                 navigationController.navigate(Routes.LoginScreen.route)
             }) {
                 Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "User")
