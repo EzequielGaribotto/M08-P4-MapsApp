@@ -4,11 +4,22 @@ import android.graphics.Bitmap
 import com.google.maps.android.compose.MarkerState
 
 class Marker {
+    var id: String = nextId++.toString()
     val markerState: MarkerState
     val name: String
     val icon: Bitmap
     var url:String
 
+    companion object {
+        private var nextId = 1
+    }
+    constructor(id:String, markerState: MarkerState, name: String, icon: Bitmap, url: String) {
+        this.id = id
+        this.markerState = markerState
+        this.name = name
+        this.icon = icon
+        this.url = url
+    }
     constructor(markerState: MarkerState, name: String, icon: Bitmap, url: String) {
         this.markerState = markerState
         this.name = name
@@ -18,9 +29,11 @@ class Marker {
 
     override fun equals(other: Any?): Boolean {
         return if (other is Marker) {
-            this.markerState == other.markerState
+            this.id == other.id
         } else {
             false
         }
     }
+
+
 }

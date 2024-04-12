@@ -43,6 +43,22 @@ class Repository {
         database.collection("users").document(userId).delete()
     }
 
+    fun addMarker(marker: Marker) {
+        database.collection("markers").add(
+            hashMapOf(
+                "id" to marker.id,
+                "name" to marker.name,
+                "latitude" to marker.markerState.position.latitude,
+                "longitude" to marker.markerState.position.longitude,
+                "url" to marker.url
+            )
+        )
+    }
+
+    fun removeMarker(marker:Marker) {
+        database.collection("markers").document(marker.id).delete()
+    }
+
     // SELECT
     fun getUsers(): CollectionReference {
         return database.collection("users")
@@ -50,6 +66,10 @@ class Repository {
 
     fun getUser(userId: String): DocumentReference {
         return database.collection("users").document(userId)
+    }
+
+    fun getMarkersFromDatabase(): CollectionReference {
+        return database.collection("markers")
     }
 
     fun uploadImage(imageUri: Uri, marker: Marker) {

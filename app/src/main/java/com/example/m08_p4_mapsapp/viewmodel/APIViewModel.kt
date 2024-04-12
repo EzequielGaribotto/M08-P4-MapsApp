@@ -20,6 +20,9 @@ import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.EventListener
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.QuerySnapshot
 
 class APIViewModel : ViewModel() {
 
@@ -57,6 +60,79 @@ class APIViewModel : ViewModel() {
     fun modPassword(password: String) {
         _password.value = password
     }
+
+    fun getMarkers() {
+        repo.getMarkersFromDatabase().addSnapshotListener(object : EventListener<QuerySnapshot> {
+            override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
+                if (error != null) {
+                    Log.e("Firestore error", error.message.toString())
+                    return
+                }
+                val tempList = mutableListOf<Marker>()
+                for (dc: DocumentChange in value?.documentChanges!!) {
+                    if (dc.type == DocumentChange.Type.ADDED) {
+                        val document = dc.document
+                        val id = document.getString("id") ?: ""
+                        val latitude = document.get("latitude") ?: ""
+                        val longitude = document.get("longitude") ?: ""
+                        val name = document.getString("name") ?: ""
+                        val url = document.getString("url") ?: ""
+
+                        val newMark = Marker(
+                            id,
+                            MarkerState(
+                                LatLng(
+                                    latitude.toString().toDouble(), longitude.toString().toDouble()
+                                )
+                            ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
+                        )
+                        tempList.add(newMark)
+                    }
+                }
+                _markers.value = tempList
+            }
+        })
+    }
+//    fun getMarkers() {
+//        repo.getMarkersFromDatabase().addSnapshotListener { value, error ->
+//            if (error != null) {
+//                Log.e("Firestore error", error.message.toString())
+//                return@addSnapshotListener
+//            }
+//            val tempList = mutableListOf<Marker>()
+//            for (dc: DocumentChange in value?.documentChanges!!) {
+//                if (dc.type == DocumentChange.Type.ADDED) {
+//                    val newMarker = dc.document.toObject(Marker::class.java)
+//                    newMarker.id = dc.document.id
+//                    tempList.add(newMarker)
+//                }
+//            }
+//            _markers.value = tempList
+//        }
+//    }
+
+//    fun getMarkers() {
+//        repo.getMarkersFromDatabase().addSnapshotListener { value, error ->
+//            if (error != null) {
+//                Log.e("Firestore error", error.message.toString())
+//                return@addSnapshotListener
+//            }
+//            val tempList = mutableListOf<Marker>()
+//            for (dc: DocumentChange in value?.documentChanges!!) {
+//                if (dc.type == DocumentChange.Type.ADDED) {
+//                    val newMarker = dc.document.toObject(Marker::class.java)
+//                    newMarker.id = dc.document.id
+//                    tempList.add(newMarker)
+//                }
+//            }
+//            _markers.value = tempList
+//        }
+//    }
+
+    fun removeMarker(marker: Marker) {
+        repo.removeMarker(marker)
+    }
+
 
     private val _url = MutableLiveData("")
     val url = _url
@@ -145,17 +221,16 @@ class APIViewModel : ViewModel() {
 
     fun register(username: String, password: String) {
         if (isValidEmail(username)) {
-            auth.createUserWithEmailAndPassword(username, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        _goToNext.value = true
-                        Log.d("ERROR", "User registered")
-                    } else {
-                        _goToNext.value = false
-                        Log.d("ERROR", "Error creating user : ${task.result}")
-                    }
-                    modifyProcessing()
+            auth.createUserWithEmailAndPassword(username, password).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _goToNext.value = true
+                    Log.d("ERROR", "User registered")
+                } else {
+                    _goToNext.value = false
+                    Log.d("ERROR", "Error creating user : ${task.result}")
                 }
+                modifyProcessing()
+            }
         } else {
             _goToNext.value = false
             Log.d("ERROR", "Invalid email")
@@ -176,18 +251,17 @@ class APIViewModel : ViewModel() {
 
     fun login(username: String?, password: String?) {
         if (isValidEmail(username)) {
-            auth.signInWithEmailAndPassword(username!!, password!!)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        _userId.value = task.result.user?.uid
-                        _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
-                        _goToNext.value = true
-                    } else {
-                        _goToNext.value = false
-                        Log.d("Error", "Error signing in: ${task.result}")
-                    }
-                    modifyProcessing()
+            auth.signInWithEmailAndPassword(username!!, password!!).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
+                    _goToNext.value = true
+                } else {
+                    _goToNext.value = false
+                    Log.d("Error", "Error signing in: ${task.result}")
                 }
+                modifyProcessing()
+            }
         } else {
             _goToNext.value = false
             Log.d("Error", "Invalid email")
@@ -197,6 +271,7 @@ class APIViewModel : ViewModel() {
     fun modifyProcessing() {
         _showProgressBar.value = (showProgressBar.value == true)
     }
+
     fun getUser(userId: String) {
         repo.getUser(userId).addSnapshotListener { value, error ->
             if (error != null) {
@@ -235,12 +310,14 @@ class APIViewModel : ViewModel() {
         _marcadorActual.value = LatLng(lat, long)
     }
 
-    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url:String) {
+    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         markersTemp.add(Marker(markerState, name, icon, url))
         _markers.value = markersTemp.toMutableList()
+        repo.addMarker(_markers.value?.last()!!)
     }
+
 
     fun updateMarkerIcon(icon: Bitmap) {
         _icon.value = icon
@@ -266,7 +343,8 @@ class APIViewModel : ViewModel() {
         _inputLat.value = ""
         _inputLong.value = ""
         _markerName.value = ""
-        val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+        val img: Bitmap =
+            ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
         _icon.value = img
         _photoTaken.value = false
         _url.value = ""
@@ -276,7 +354,9 @@ class APIViewModel : ViewModel() {
         _prevScreen.value = screen
     }
 
-    fun goBack(userLogin:Boolean, userRegister:Boolean, navController: NavController, prevScreen:String) {
+    fun goBack(
+        userLogin: Boolean, userRegister: Boolean, navController: NavController, prevScreen: String
+    ) {
         if (userLogin || userRegister) {
             modUserLogin(false)
             modUserRegister(false)

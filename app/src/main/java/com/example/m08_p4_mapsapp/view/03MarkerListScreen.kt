@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,10 +45,13 @@ fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val markers by avm.markers.observeAsState(mutableListOf())
+
+        avm.getMarkers()
+        val markers:MutableList<Marker> by avm.markers.observeAsState(mutableListOf())
+
         LazyColumn {
             items(markers) { marker ->
-                MarkerItem(marker) { lat, long ->
+                MarkerItem(marker, avm) { lat, long ->
                     avm.modMarcadorActual(lat, long)
                     navController.navigate(Routes.MapScreen.route)
                 }
@@ -57,7 +63,7 @@ fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun MarkerItem(marker: Marker, onClickGo: (Double, Double) -> Unit) {
+fun MarkerItem(marker: Marker, avm: APIViewModel, onClickGo: (Double, Double) -> Unit) {
     val lat = marker.markerState.position.latitude
     val long = marker.markerState.position.longitude
     val photo = marker.icon
@@ -72,7 +78,7 @@ fun MarkerItem(marker: Marker, onClickGo: (Double, Double) -> Unit) {
         Box(modifier = Modifier
             .background(LightBrown)
             .clickable {
-                onClickGo(lat,long)
+                onClickGo(lat, long)
             }) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -96,6 +102,17 @@ fun MarkerItem(marker: Marker, onClickGo: (Double, Double) -> Unit) {
                     Text("Long. $long")
                 }
             }
+            // Crea un icono que sea una cruz, que elimine el marcador con removeMarker()
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = "Eliminar",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        avm.removeMarker(marker)
+                    }
+            )
         }
     }
 }
