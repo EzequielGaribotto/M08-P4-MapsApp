@@ -23,6 +23,7 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
+import java.util.UUID
 
 class APIViewModel : ViewModel() {
 
@@ -313,7 +314,8 @@ class APIViewModel : ViewModel() {
     fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
-        markersTemp.add(Marker(markerState, name, icon, url))
+        val id = UUID.randomUUID().toString()
+        markersTemp.add(Marker(id,markerState, name, icon, url))
         _markers.value = markersTemp.toMutableList()
         repo.addMarker(_markers.value?.last()!!)
     }
