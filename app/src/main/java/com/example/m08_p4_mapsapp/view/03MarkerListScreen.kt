@@ -39,20 +39,20 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
+fun MarkerListScreen(navController: NavController,  vm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        val markers:MutableList<Marker> by avm.markers.observeAsState(mutableListOf())
-        avm.getMarkers()
+        val markers:MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
+        vm.getMarkers()
         if (markers.isNotEmpty()) {
             LazyColumn {
                 items(markers) { marker ->
-                    MarkerItem(marker, avm) { lat, long ->
-                        avm.modMarcadorActual(lat, long)
+                    MarkerItem(marker, vm) { lat, long ->
+                        vm.modMarcadorActual(lat, long)
                         navController.navigate(Routes.MapScreen.route)
                     }
                 }
@@ -65,7 +65,7 @@ fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun MarkerItem(marker: Marker, avm: APIViewModel, onClickGo: (Double, Double) -> Unit) {
+fun MarkerItem(marker: Marker, vm: APIViewModel, onClickGo: (Double, Double) -> Unit) {
     val lat = marker.markerState.position.latitude
     val long = marker.markerState.position.longitude
     val photo = marker.icon
@@ -112,7 +112,7 @@ fun MarkerItem(marker: Marker, avm: APIViewModel, onClickGo: (Double, Double) ->
                     .padding(8.dp)
                     .align(Alignment.TopEnd)
                     .clickable {
-                        avm.removeMarker(marker)
+                        vm.removeMarker(marker)
                     }
             )
         }

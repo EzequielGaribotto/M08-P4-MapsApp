@@ -44,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -89,27 +88,27 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(avm: APIViewModel, context:Context) {
+fun GeoPermission(vm: APIViewModel, context:Context) {
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
     if (permissionState.status.isGranted) {
-        MyDrawer(myViewModel = avm, context)
+        MyDrawer(vm = vm, context)
     }
 }
 
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun MyDrawer(myViewModel: APIViewModel, context: Context) {
+fun MyDrawer(vm: APIViewModel, context: Context) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val prevRoute = myViewModel.prevScreen.value
+    val prevRoute = vm.prevScreen.value
 
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = state.isOpen, drawerContent = {
@@ -136,9 +135,6 @@ fun MyDrawer(myViewModel: APIViewModel, context: Context) {
                     }
                     navigationController.navigate(Routes.MapScreen.route)
                 }
-                if (prevRoute == "AddMarkerScreen") {
-                    myViewModel.resetMarkerValues(context)
-                }
             })
             Divider()
             NavigationDrawerItem(label = { Text(text = "Marker List") },
@@ -148,7 +144,7 @@ fun MyDrawer(myViewModel: APIViewModel, context: Context) {
                         scope.launch {
                             state.close()
                         }
-                        myViewModel.switchPhotoTaken(false)
+                        vm.modPhotoTaken(false)
                         navigationController.navigate("MarkerListScreen")
                     }
                 }
@@ -167,7 +163,7 @@ fun MyDrawer(myViewModel: APIViewModel, context: Context) {
             )
         }
     }) {
-        MyScaffold(myViewModel, state, scope, navigationController, context)
+        MyScaffold(vm, state, scope, navigationController, context)
     }
 }
 
@@ -176,7 +172,7 @@ fun MyDrawer(myViewModel: APIViewModel, context: Context) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyScaffold(
-    avm: APIViewModel,
+    vm: APIViewModel,
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController, context: Context
@@ -184,10 +180,10 @@ fun MyScaffold(
     val sheetState = rememberModalBottomSheetState()
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomSheet by avm.showBottomSheet.observeAsState(false)
+    val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
         if (currentRoute != null && currentRoute != Routes.LoginScreen.route && currentRoute != Routes.CameraScreen.route) {
-            MyTopAppBar(currentRoute, state, scope, navigationController, avm)
+            MyTopAppBar(currentRoute, state, scope, navigationController, vm)
         }
     }) { paddingValues ->
         Box(
@@ -201,38 +197,37 @@ fun MyScaffold(
 
                 composable(Routes.LoginScreen.route) {
                     LoginScreen(
-                        navigationController, avm
+                        navigationController, vm
                     )
                 }
                 composable(Routes.MapScreen.route) {
                     MapScreen(
-                        navigationController, avm
+                        navigationController, vm
                     )
                 }
                 composable(Routes.MarkerListScreen.route) {
                     MarkerListScreen(
-                        navigationController, avm,
+                        navigationController, vm,
                     )
                 }
                 composable(Routes.AddMarkerScreen.route) {
                     AddMarkerScreen(
-                        avm, navigationController
+                        vm, navigationController
                     )
                 }
                 composable(Routes.CameraScreen.route) {
-                    CameraScreen(avm, navigationController)
+                    CameraScreen(vm, navigationController)
                 }
                 composable(Routes.GalleryScreen.route) {
-                    GalleryScreen(avm, navigationController)
+                    GalleryScreen(vm, navigationController)
                 }
             }
         }
 
-        if (showBottomSheet && avm.prevScreen.value != Routes.AddMarkerScreen.route) {
+        if (showBottomSheet && vm.prevScreen.value != Routes.AddMarkerScreen.route) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    avm.switchBottomSheet(false)
-                    avm.resetMarkerValues(context)
+                    vm.modBottomSheet(false)
                 }, sheetState = sheetState
             ) {
                 Column(
@@ -243,14 +238,14 @@ fun MyScaffold(
                     IconButton(onClick = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
-                                avm.switchBottomSheet(false)
+                                vm.modBottomSheet(false)
                             }
                         }
                     }) {
                         Icon(Icons.Filled.Clear, contentDescription = "Close")
                     }
                     if (currentRoute != null) {
-                        AddMarkerContent(avm, false, navigationController)
+                        AddMarkerContent(vm, false, navigationController)
                     }
                 }
             }
@@ -265,7 +260,7 @@ fun MyTopAppBar(
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController,
-    avm: APIViewModel
+    vm: APIViewModel
 ) {
     if (currentRoute != Routes.LoginScreen.route) {
 
@@ -282,7 +277,7 @@ fun MyTopAppBar(
                 scope.launch {
                     state.close()
                 }
-                avm.modPrevScreen(currentRoute)
+                vm.modPrevScreen(currentRoute)
                 navigationController.navigate(Routes.LoginScreen.route)
             }) {
                 Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "User")

@@ -38,17 +38,17 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 @RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun GalleryScreen(avm: APIViewModel, navController: NavController) {
-    val prevScreen = avm.prevScreen.value
+fun GalleryScreen(vm: APIViewModel, navController: NavController) {
+    val prevScreen = vm.prevScreen.value
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    val icon by avm.icon.observeAsState(img)
+    val icon by vm.icon.observeAsState(img)
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                avm.modUrl(uri.toString())
-                avm.updateMarkerIcon(
+                vm.modUrl(uri.toString())
+                vm.updateMarkerIcon(
                     if (Build.VERSION.SDK_INT >= 28) {
                         MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                     } else {
@@ -83,8 +83,8 @@ fun GalleryScreen(avm: APIViewModel, navController: NavController) {
         )
         Button(
             onClick = {
-                avm.switchBottomSheet(true)
-                avm.switchPhotoTaken(true)
+                vm.modBottomSheet(true)
+                vm.modPhotoTaken(true)
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }

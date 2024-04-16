@@ -26,36 +26,36 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MapScreen(navController: NavController, avm: APIViewModel) {
+fun MapScreen(navController: NavController, vm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        MapScreen(avm)
+        MapScreen(vm)
     }
 }
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapScreen(avm: APIViewModel) {
+fun MapScreen(vm: APIViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        val prevScreen = avm.prevScreen.value
-        val marcadorActual by avm.marcadorActual.observeAsState(LatLng(0.0, 0.0))
+        val prevScreen = vm.prevScreen.value
+        val marcadorActual by vm.marcadorActual.observeAsState(LatLng(0.0, 0.0))
         val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 18f) }
-        val getUserLocation by avm.getUserLocation.observeAsState(true)
+        val getUserLocation by vm.getUserLocation.observeAsState(true)
         if (getUserLocation) {
             val context = LocalContext.current
             val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
             val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
             locationResult.addOnCompleteListener(context as MainActivity) { task ->
                 if (task.isSuccessful) {
-                    avm.modMarcadorActual(task.result.latitude, task.result.longitude)
+                    vm.modMarcadorActual(task.result.latitude, task.result.longitude)
                     cameraPositionState.position =  CameraPosition.fromLatLngZoom(marcadorActual, 18f)
-                    avm.modGetUserLocation(false)
+                    vm.modGetUserLocation(false)
                 } else {
                     Log.e("Error", "Exception: %s", task.exception)
                 }
@@ -63,21 +63,23 @@ fun MapScreen(avm: APIViewModel) {
         }
         val context = LocalContext.current
         if (prevScreen == "AddMarkerScreen") {
-            avm.resetMarkerValues(context)
+            vm.resetMarkerValues(context)
         }
-        avm.modPrevScreen("MapScreen")
+
+
+        vm.modPrevScreen("MapScreen")
 
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {
-                avm.switchPhotoTaken(false)
-                avm.modInputLat(it.latitude.toString())
-                avm.modInputLong(it.longitude.toString())
-                avm.switchBottomSheet(true)
+                vm.modPhotoTaken(false)
+                vm.modInputLat(it.latitude.toString())
+                vm.modInputLong(it.longitude.toString())
+                vm.modBottomSheet(true)
             }
         ) {
-            val markers by avm.markers.observeAsState(mutableListOf())
-            avm.getMarkers()
+            val markers by vm.markers.observeAsState(mutableListOf())
+            vm.getMarkers()
             markers?.forEach { marker ->
                 val markerState = rememberMarkerState(position = marker.markerState.position)
                 Marker(

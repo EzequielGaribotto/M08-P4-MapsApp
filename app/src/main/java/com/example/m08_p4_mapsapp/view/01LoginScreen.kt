@@ -27,21 +27,21 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginScreen(navController: NavController, avm: APIViewModel) {
+fun LoginScreen(navController: NavController, vm: APIViewModel) {
 
-    val username by avm.email.observeAsState("")
-    val password by avm.password.observeAsState("")
-    val showErrorMessage by avm.showErrorMessage.observeAsState(false)
-    val userLogin by avm.userLogin.observeAsState(false)
-    val userRegister by avm.userRegister.observeAsState(false)
-    val goToNext by avm.goToNext.observeAsState(false)
-    val prevScreen by avm.prevScreen.observeAsState("")
+    val username by vm.email.observeAsState("")
+    val password by vm.password.observeAsState("")
+    val showErrorMessage by vm.showErrorMessage.observeAsState(false)
+    val userLogin by vm.userLogin.observeAsState(false)
+    val userRegister by vm.userRegister.observeAsState(false)
+    val goToNext by vm.goToNext.observeAsState(false)
+    val prevScreen by vm.prevScreen.observeAsState("")
 
     Icon(imageVector = Icons.Filled.ArrowBackIosNew,
         contentDescription = "Enrere",
         modifier = Modifier
             .clickable {
-                avm.goBack(userLogin, userRegister, navController, prevScreen)
+                vm.goBack(userLogin, userRegister, navController, prevScreen)
             }
             .padding(16.dp)
     )
@@ -51,44 +51,44 @@ fun LoginScreen(navController: NavController, avm: APIViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (!userLogin && !userRegister) {
-            Button(onClick = { avm.modUserRegister(true) }) {
+            Button(onClick = { vm.modUserRegister(true) }) {
                 Text("Registrar")
             }
-            Button(onClick = { avm.modUserLogin(true) }) {
+            Button(onClick = { vm.modUserLogin(true) }) {
                 Text("Log-In")
             }
         }
         if (userLogin || userRegister) {
             TextField(
                 value = username,
-                onValueChange = { avm.modEmail(it) },
+                onValueChange = { vm.modEmail(it) },
                 label = { Text("Email") },
-                isError = !avm.isValidEmail(username) && username.isNotEmpty()
+                isError = !vm.isValidEmail(username) && username.isNotEmpty()
             )
             TextField(
                 value = password,
-                onValueChange = { avm.modPassword(it) },
+                onValueChange = { vm.modPassword(it) },
                 label = { Text("Contraseña") },
-                isError = !avm.isValidPassword(password) && password.isNotEmpty()
+                isError = !vm.isValidPassword(password) && password.isNotEmpty()
             )
         }
 
         if (userLogin) {
             Button(onClick = {
-                avm.login(password, username)
+                vm.login(password, username)
                 if (goToNext) navController.navigate(prevScreen)
-                else avm.modShowErrorMessage(true)
-            }, enabled = avm.isValidEmail(username) && avm.isValidPassword(password)) {
+                else vm.modShowErrorMessage(true)
+            }, enabled = vm.isValidEmail(username) && vm.isValidPassword(password)) {
                 Text("Log-In")
             }
         }
 
         if (userRegister) {
             Button(onClick = {
-                avm.register(password, username)
+                vm.register(password, username)
                 if (goToNext) navController.navigate(prevScreen)
-                else avm.modShowErrorMessage(true)
-            }, enabled = avm.isValidEmail(username) && avm.isValidPassword(password)) {
+                else vm.modShowErrorMessage(true)
+            }, enabled = vm.isValidEmail(username) && vm.isValidPassword(password)) {
                 Text("Registrar")
             }
         }

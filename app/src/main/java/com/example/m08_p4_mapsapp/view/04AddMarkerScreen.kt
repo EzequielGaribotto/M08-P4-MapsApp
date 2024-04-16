@@ -34,25 +34,25 @@ import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddMarkerScreen(avm: APIViewModel, navController: NavController) {
-    avm.modPrevScreen("AddMarkerScreen")
-    AddMarkerContent(avm, true, navController)
+fun AddMarkerScreen(vm: APIViewModel, navController: NavController) {
+    vm.modPrevScreen("AddMarkerScreen")
+    AddMarkerContent(vm, true, navController)
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AddMarkerContent(
-    avm: APIViewModel,
+    vm: APIViewModel,
     markerScreen: Boolean = false,
     navigationController: NavController
 ) {
-    val lat by avm.inputLat.observeAsState("")
-    val long by avm.inputLong.observeAsState("")
-    val name by avm.markerName.observeAsState("")
+    val lat by vm.inputLat.observeAsState("")
+    val long by vm.inputLong.observeAsState("")
+    val name by vm.markerName.observeAsState("")
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    val icon by avm.icon.observeAsState(img)
-    val url by avm.url.observeAsState("")
+    val icon by vm.icon.observeAsState(img)
+    val url by vm.url.observeAsState("")
     val photoTaken = if (url =="") !icon.sameAs(img) else true
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -72,8 +72,8 @@ fun AddMarkerContent(
                     .padding(bottom = 10.dp)
             )
             Button(onClick = {
-                avm.switchBottomSheet(false)
-                avm.modMarcadorActual(
+                vm.modBottomSheet(false)
+                vm.modMarcadorActual(
                     if (lat.isNotEmpty()) lat.toDouble() else (0.0),
                     if (long.isNotEmpty()) long.toDouble() else (0.0)
                 )
@@ -82,8 +82,8 @@ fun AddMarkerContent(
                 Text((if (photoTaken) "RE" else "") + "TAKE PICTURE")
             }
             Button(onClick = {
-                avm.switchBottomSheet(false)
-                avm.modMarcadorActual(
+                vm.modBottomSheet(false)
+                vm.modMarcadorActual(
                     if (lat.isNotEmpty()) lat.toDouble() else (0.0),
                     if (long.isNotEmpty()) long.toDouble() else (0.0)
                 )
@@ -93,12 +93,12 @@ fun AddMarkerContent(
             }
 
             TextField(value = name,
-                onValueChange = { avm.modMarkerName(it) },
+                onValueChange = { vm.modMarkerName(it) },
                 label = { Text("Nombre") })
             TextField(
                 value = lat,
                 onValueChange = {
-                    avm.modInputLat(it)
+                    vm.modInputLat(it)
                 },
                 label = { Text("Latitud") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -106,7 +106,7 @@ fun AddMarkerContent(
             TextField(
                 value = long,
                 onValueChange = {
-                    avm.modInputLong(it)
+                    vm.modInputLong(it)
                 },
                 label = { Text("Longitud") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -114,11 +114,14 @@ fun AddMarkerContent(
             val canAddMarker =
                 photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
             Button(onClick = {
-                avm.addMarker(lat, long, name, icon, url)
-                avm.uploadImage(url.toUri())
-                if (avm.prevScreen.value == "AddMarkerScreen") {
-                    avm.switchBottomSheet(false)
+                vm.addMarker(lat, long, name, icon, url)
+                vm.uploadImage(url.toUri())
+                vm.modBottomSheet(false)
+
+                if (vm.prevScreen.value == "AddMarkerScreen") {
                     navigationController.navigate(Routes.MapScreen.route)
+                } else {
+                    vm.resetMarkerValues(context)
                 }
             }, enabled = canAddMarker) {
                 Text("Agregar marcador")

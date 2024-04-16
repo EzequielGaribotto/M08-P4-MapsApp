@@ -48,8 +48,8 @@ import java.io.OutputStream
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CameraScreen(avm: APIViewModel, navController: NavController) {
-    val prevScreen = avm.prevScreen.value
+fun CameraScreen(vm: APIViewModel, navController: NavController) {
+    val prevScreen = vm.prevScreen.value
     // CAMERA PERMISSIONS
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val context = LocalContext.current
@@ -91,8 +91,8 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
                     takePhoto(context, controller) { photo ->
                         val uri = saveBitmapToExternalStorage(context, photo)
                         if (uri != null) {
-                            avm.modUrl(uri.toString())
-                            avm.switchPhotoTaken(true)
+                            vm.modUrl(uri.toString())
+                            vm.modPhotoTaken(true)
                             println("FOTO SACADA")
                         } else {
                             println("FOTO NO SACADA")
@@ -107,7 +107,7 @@ fun CameraScreen(avm: APIViewModel, navController: NavController) {
 
             IconButton(
                 onClick = {
-                    avm.switchBottomSheet(true)
+                    vm.modBottomSheet(true)
                     if (prevScreen != null) {
                         navController.navigate(prevScreen)
                     }

@@ -47,22 +47,7 @@ class APIViewModel : ViewModel() {
     val _password = MutableLiveData("")
     val password = _password
 
-    fun modPassword(password: String) {
-        _password.value = password
-    }
-    fun modEmail(email: String) {
-        _email.value = email
-    }
-    fun modUserRegister(boolean: Boolean) {
-        _userRegister.value = boolean
-    }
 
-    fun modShowErrorMessage(boolean: Boolean) {
-        _showErrorMessage.value = boolean
-    }
-    fun modUserLogin(boolean: Boolean) {
-        _userLogin.value = boolean
-    }
 
     private val _url = MutableLiveData("")
     val url = _url
@@ -125,6 +110,24 @@ class APIViewModel : ViewModel() {
 
     private val _photoTaken = MutableLiveData<Boolean>()
     val photoTaken = _photoTaken
+
+
+    fun modPassword(password: String) {
+        _password.value = password
+    }
+    fun modEmail(email: String) {
+        _email.value = email
+    }
+    fun modUserRegister(boolean: Boolean) {
+        _userRegister.value = boolean
+    }
+
+    fun modShowErrorMessage(boolean: Boolean) {
+        _showErrorMessage.value = boolean
+    }
+    fun modUserLogin(boolean: Boolean) {
+        _userLogin.value = boolean
+    }
 
     fun getMarkers() {
         repo.getMarkersFromDatabase().addSnapshotListener(object : EventListener<QuerySnapshot> {
@@ -239,8 +242,10 @@ class APIViewModel : ViewModel() {
     }
 
     fun isValidEmail(target: CharSequence?): Boolean {
-        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target)
-            .matches()
+        return !TextUtils.isEmpty(target) && target?.let {
+            android.util.Patterns.EMAIL_ADDRESS.matcher(it)
+                .matches()
+        } == true
     }
 
     fun isValidPassword(password: CharSequence?): Boolean {
@@ -299,11 +304,11 @@ class APIViewModel : ViewModel() {
         repo.uploadImage(imageUri, _markers.value?.last()!!)
     }
 
-    fun switchPhotoTaken(boolean: Boolean) {
+    fun modPhotoTaken(boolean: Boolean) {
         _photoTaken.value = boolean
     }
 
-    fun switchBottomSheet(boolean: Boolean) {
+    fun modBottomSheet(boolean: Boolean) {
         _showBottomSheet.value = boolean
     }
 
@@ -367,4 +372,19 @@ class APIViewModel : ViewModel() {
             navController.navigate(prevScreen)
         }
     }
+
+//    fun markerExists(lat: String?, long: String?): Boolean {
+//        val latDouble = lat?.toDouble()
+//        val longDouble = long?.toDouble()
+//        val markers = _markers.value
+//        var repeated = false
+//        if (markers != null) {
+//            for (marker in markers) {
+//                if (marker.markerState.position.latitude.toString().toDouble() == latDouble && marker.markerState.position.longitude.toString().toDouble() == longDouble) {
+//                    repeated =  true
+//                }
+//            }
+//        }
+//        return repeated
+//    }
 }

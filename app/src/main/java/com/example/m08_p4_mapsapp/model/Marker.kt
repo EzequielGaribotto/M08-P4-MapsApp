@@ -18,22 +18,4 @@ class Marker {
         this.url = url
     }
 
-    override fun equals(other: Any?): Boolean {
-        return if (other is Marker) {
-            this.id == other.id
-        } else {
-            false
-        }
-    }
-
-    override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + markerState.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + icon.hashCode()
-        result = 31 * result + url.hashCode()
-        return result
-    }
-
-
 }
