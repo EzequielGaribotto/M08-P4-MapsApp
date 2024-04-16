@@ -8,4 +8,5 @@ sealed class Routes(val route: String) {
     object AddMarkerScreen : Routes("AddMarkerScreen")
     object CameraScreen : Routes("CameraScreen")
     object GalleryScreen : Routes("GalleryScreen")
+    object EditMarkerScreen : Routes("EditMarkerScreen")
 }

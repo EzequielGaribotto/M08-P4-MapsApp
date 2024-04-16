@@ -22,12 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginScreen(navController: NavController, vm: APIViewModel) {
+fun LoginScreen(navController: NavController, vm: ViewModel) {
 
     val username by vm.email.observeAsState("")
     val password by vm.password.observeAsState("")

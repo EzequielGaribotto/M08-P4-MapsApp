@@ -1,6 +1,7 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,12 +30,12 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.navigation.Routes
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddMarkerScreen(vm: APIViewModel, navController: NavController) {
+fun AddMarkerScreen(vm: ViewModel, navController: NavController) {
     vm.modPrevScreen("AddMarkerScreen")
     AddMarkerContent(vm, true, navController)
 }
@@ -42,7 +43,7 @@ fun AddMarkerScreen(vm: APIViewModel, navController: NavController) {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AddMarkerContent(
-    vm: APIViewModel,
+    vm: ViewModel,
     markerScreen: Boolean = false,
     navigationController: NavController
 ) {
@@ -53,79 +54,117 @@ fun AddMarkerContent(
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val icon by vm.icon.observeAsState(img)
     val url by vm.url.observeAsState("")
-    val photoTaken = if (url =="") !icon.sameAs(img) else true
+    val photoTaken = if (url == "") !icon.sameAs(img) else true
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
-
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
-            GlideImage(
-                model = if (url == "") icon else url,
-                contentDescription = "Marker Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(120.dp)
-                    .padding(bottom = 10.dp)
-            )
-            Button(onClick = {
-                vm.modBottomSheet(false)
-                vm.modMarcadorActual(
-                    if (lat.isNotEmpty()) lat.toDouble() else (0.0),
-                    if (long.isNotEmpty()) long.toDouble() else (0.0)
-                )
-                navigationController.navigate(Routes.CameraScreen.route)
-            }) {
-                Text((if (photoTaken) "RE" else "") + "TAKE PICTURE")
-            }
-            Button(onClick = {
-                vm.modBottomSheet(false)
-                vm.modMarcadorActual(
-                    if (lat.isNotEmpty()) lat.toDouble() else (0.0),
-                    if (long.isNotEmpty()) long.toDouble() else (0.0)
-                )
-                navigationController.navigate(Routes.GalleryScreen.route)
-            }) {
-                Text("SELECT PICTURE FROM GALLERY")
-            }
-
-            TextField(value = name,
-                onValueChange = { vm.modMarkerName(it) },
-                label = { Text("Nombre") })
-            TextField(
-                value = lat,
-                onValueChange = {
-                    vm.modInputLat(it)
-                },
-                label = { Text("Latitud") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            )
-            TextField(
-                value = long,
-                onValueChange = {
-                    vm.modInputLong(it)
-                },
-                label = { Text("Longitud") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            )
-            val canAddMarker =
-                photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
-            Button(onClick = {
-                vm.addMarker(lat, long, name, icon, url)
-                vm.uploadImage(url.toUri())
-                vm.modBottomSheet(false)
-
-                if (vm.prevScreen.value == "AddMarkerScreen") {
-                    navigationController.navigate(Routes.MapScreen.route)
-                } else {
-                    vm.resetMarkerValues(context)
-                }
-            }, enabled = canAddMarker) {
-                Text("Agregar marcador")
-            }
+            SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
+            SetData(name, vm, lat, long)
+            AddMarker(photoTaken, name, lat, long, vm, icon, url, navigationController, context)
         }
+    }
+}
+
+@Composable
+fun AddMarker(
+    photoTaken: Boolean,
+    name: String,
+    lat: String,
+    long: String,
+    vm: ViewModel,
+    icon: Bitmap,
+    url: String,
+    navigationController: NavController,
+    context: Context
+) {
+    val canAddMarker =
+        photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
+    Button(onClick = {
+        vm.addMarker(lat, long, name, icon, url)
+        vm.uploadImage(url.toUri())
+        vm.modBottomSheet(false)
+
+        if (vm.prevScreen.value == "AddMarkerScreen") {
+            navigationController.navigate(Routes.MapScreen.route)
+        } else {
+            vm.resetMarkerValues(context)
+        }
+    }, enabled = canAddMarker) {
+        Text("Agregar marcador")
+    }
+}
+
+@Composable
+fun SetData(
+    name: String,
+    vm: ViewModel,
+    lat: String,
+    long: String
+) {
+    SetName(name, vm)
+    TextField(
+        value = lat,
+        onValueChange = { vm.modInputLat(it) },
+        label = { Text("Latitud") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    )
+    TextField(
+        value = long,
+        onValueChange = { vm.modInputLong(it) },
+        label = { Text("Longitud") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    )
+}
+
+@Composable
+fun SetName(name: String, vm: ViewModel) {
+    TextField(value = name,
+        onValueChange = { vm.modMarkerName(it) },
+        label = { Text("Nombre") })
+}
+
+@Composable
+@OptIn(ExperimentalGlideComposeApi::class)
+fun SetPhoto(
+    url: String?,
+    icon: Bitmap?,
+    vm: ViewModel,
+    lat: String,
+    long: String,
+    navigationController: NavController,
+    photoTaken: Boolean
+) {
+    GlideImage(
+        model = if (url == "") icon else url,
+        contentDescription = "Marker Image",
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .size(120.dp)
+            .padding(bottom = 10.dp)
+    )
+    Button(onClick = {
+        vm.modBottomSheet(false)
+        vm.modMarcadorActual(
+            if (lat.isNotEmpty()) lat.toDouble() else (0.0),
+            if (long.isNotEmpty()) long.toDouble() else (0.0)
+        )
+        navigationController.navigate(Routes.CameraScreen.route)
+    }) {
+        Text((if (photoTaken) "RE" else "") + "TOMAR FOTO")
+    }
+
+    Button(onClick = {
+        vm.modBottomSheet(false)
+        vm.modMarcadorActual(
+            if (lat.isNotEmpty()) lat.toDouble() else (0.0),
+            if (long.isNotEmpty()) long.toDouble() else (0.0)
+        )
+        navigationController.navigate(Routes.GalleryScreen.route)
+    }) {
+        Text("BUSCAR FOTO EN GALERÍA")
     }
 }

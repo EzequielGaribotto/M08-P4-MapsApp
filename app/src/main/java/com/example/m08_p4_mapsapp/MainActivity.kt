@@ -56,11 +56,12 @@ import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
 import com.example.m08_p4_mapsapp.view.AddMarkerContent
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
 import com.example.m08_p4_mapsapp.view.CameraScreen
+import com.example.m08_p4_mapsapp.view.EditMarkerScreen
 import com.example.m08_p4_mapsapp.view.GalleryScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.MarkerListScreen
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -72,13 +73,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val context = this
         super.onCreate(savedInstanceState)
-        val apiViewModel by viewModels<APIViewModel>()
+        val viewModel by viewModels<ViewModel>()
         setContent {
             M08P4MapsAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    GeoPermission(apiViewModel, context)
+                    GeoPermission(viewModel, context)
                 }
             }
         }
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(vm: APIViewModel, context:Context) {
+fun GeoPermission(vm: ViewModel, context:Context) {
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
@@ -102,7 +103,7 @@ fun GeoPermission(vm: APIViewModel, context:Context) {
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun MyDrawer(vm: APIViewModel, context: Context) {
+fun MyDrawer(vm: ViewModel, context: Context) {
     val navigationController = rememberNavController()
     val scope = rememberCoroutineScope()
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -172,7 +173,7 @@ fun MyDrawer(vm: APIViewModel, context: Context) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyScaffold(
-    vm: APIViewModel,
+    vm: ViewModel,
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController, context: Context
@@ -221,6 +222,9 @@ fun MyScaffold(
                 composable(Routes.GalleryScreen.route) {
                     GalleryScreen(vm, navigationController)
                 }
+                composable(Routes.EditMarkerScreen.route) {
+                    EditMarkerScreen(vm, navigationController)
+                }
             }
         }
 
@@ -260,7 +264,7 @@ fun MyTopAppBar(
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController,
-    vm: APIViewModel
+    vm: ViewModel
 ) {
     if (currentRoute != Routes.LoginScreen.route) {
 

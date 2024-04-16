@@ -33,12 +33,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 @RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun GalleryScreen(vm: APIViewModel, navController: NavController) {
+fun GalleryScreen(vm: ViewModel, navController: NavController) {
     val prevScreen = vm.prevScreen.value
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
@@ -48,7 +48,7 @@ fun GalleryScreen(vm: APIViewModel, navController: NavController) {
         onResult = { uri ->
             if (uri != null) {
                 vm.modUrl(uri.toString())
-                vm.updateMarkerIcon(
+                vm.modMarkerIcon(
                     if (Build.VERSION.SDK_INT >= 28) {
                         MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                     } else {

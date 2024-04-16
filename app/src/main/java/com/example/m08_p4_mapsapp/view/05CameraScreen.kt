@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.OutputStream
@@ -48,7 +48,7 @@ import java.io.OutputStream
 @OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CameraScreen(vm: APIViewModel, navController: NavController) {
+fun CameraScreen(vm: ViewModel, navController: NavController) {
     val prevScreen = vm.prevScreen.value
     // CAMERA PERMISSIONS
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.MainActivity
-import com.example.m08_p4_mapsapp.viewmodel.APIViewModel
+import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -26,7 +26,7 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MapScreen(navController: NavController, vm: APIViewModel) {
+fun MapScreen(navController: NavController, vm: ViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -39,7 +39,7 @@ fun MapScreen(navController: NavController, vm: APIViewModel) {
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapScreen(vm: APIViewModel) {
+fun MapScreen(vm: ViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {

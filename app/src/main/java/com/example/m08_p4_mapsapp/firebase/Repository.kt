@@ -55,6 +55,28 @@ class Repository {
         )
     }
 
+    fun editMarker(marker: Marker) {
+        database.collection("markers")
+            .whereEqualTo("id", marker.id)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("markers").document(document.id).set(
+                        hashMapOf(
+                            "id" to marker.id,
+                            "name" to marker.name,
+                            "latitude" to marker.markerState.position.latitude,
+                            "longitude" to marker.markerState.position.longitude,
+                            "url" to marker.url
+                        )
+                    )
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("ERROR", "Error getting documents: ", exception)
+            }
+    }
+
     fun removeMarker(marker:Marker) {
         database.collection("markers")
             .whereEqualTo("id", marker.id)
@@ -67,6 +89,11 @@ class Repository {
                     Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
+
+
+//    fun removeMarker(marker:Marker) {
+//        database.collection("markers").document(marker.id).delete()
+//    }
 
     // SELECT
     fun getUsers(): CollectionReference {

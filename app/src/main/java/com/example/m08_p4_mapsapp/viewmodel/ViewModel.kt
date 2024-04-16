@@ -25,7 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
 import java.util.UUID
 
-class APIViewModel : ViewModel() {
+class ViewModel : ViewModel() {
 
     val _showErrorMessage = MutableLiveData(false)
     val showErrorMessage = _showErrorMessage
@@ -326,7 +326,7 @@ class APIViewModel : ViewModel() {
     }
 
 
-    fun updateMarkerIcon(icon: Bitmap) {
+    fun modMarkerIcon(icon: Bitmap) {
         _icon.value = icon
     }
 
@@ -371,6 +371,16 @@ class APIViewModel : ViewModel() {
         } else {
             navController.navigate(prevScreen)
         }
+    }
+
+    fun editMarker(marker: Marker) {
+        repo.editMarker(marker)
+    }
+
+    private val _markerId = MutableLiveData("")
+    val markerId = _markerId
+    fun modMarkerId(id: String) {
+        _markerId.value = id
     }
 
 //    fun markerExists(lat: String?, long: String?): Boolean {
