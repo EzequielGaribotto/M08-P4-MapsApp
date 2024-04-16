@@ -77,6 +77,7 @@ fun MapScreen(avm: APIViewModel) {
             }
         ) {
             val markers by avm.markers.observeAsState(mutableListOf())
+            avm.getMarkers()
             markers?.forEach { marker ->
                 val markerState = rememberMarkerState(position = marker.markerState.position)
                 Marker(

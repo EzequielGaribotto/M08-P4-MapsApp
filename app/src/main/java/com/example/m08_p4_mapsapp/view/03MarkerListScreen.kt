@@ -46,17 +46,19 @@ fun MarkerListScreen(navController: NavController,  avm: APIViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        avm.getMarkers()
         val markers:MutableList<Marker> by avm.markers.observeAsState(mutableListOf())
-
-        LazyColumn {
-            items(markers) { marker ->
-                MarkerItem(marker, avm) { lat, long ->
-                    avm.modMarcadorActual(lat, long)
-                    navController.navigate(Routes.MapScreen.route)
+        avm.getMarkers()
+        if (markers.isNotEmpty()) {
+            LazyColumn {
+                items(markers) { marker ->
+                    MarkerItem(marker, avm) { lat, long ->
+                        avm.modMarcadorActual(lat, long)
+                        navController.navigate(Routes.MapScreen.route)
+                    }
                 }
-
             }
+        } else {
+            Text("Has d'afegir primer marcadors")
         }
     }
 }

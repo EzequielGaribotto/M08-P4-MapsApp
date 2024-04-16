@@ -56,7 +56,16 @@ class Repository {
     }
 
     fun removeMarker(marker:Marker) {
-        database.collection("markers").document(marker.id).delete()
+        database.collection("markers")
+            .whereEqualTo("id", marker.id)
+                .get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        database.collection("markers").document(document.id).delete()
+                    }
+                }.addOnFailureListener { exception ->
+                    Log.w("ERROR", "Error getting documents: ", exception)
+            }
     }
 
     // SELECT

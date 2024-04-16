@@ -35,5 +35,14 @@ class Marker {
         }
     }
 
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + markerState.hashCode()
+        result = 31 * result + name.hashCode()
+        result = 31 * result + icon.hashCode()
+        result = 31 * result + url.hashCode()
+        return result
+    }
+
 
 }
