@@ -19,10 +19,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -63,32 +67,34 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
                 value = username,
                 onValueChange = { vm.modEmail(it) },
                 label = { Text("Email") },
-                isError = !vm.isValidEmail(username) && username.isNotEmpty()
+                isError = username.isNotEmpty()
             )
             TextField(
                 value = password,
                 onValueChange = { vm.modPassword(it) },
                 label = { Text("Contraseña") },
-                isError = !vm.isValidPassword(password) && password.isNotEmpty()
+                isError = password.isNotEmpty()
             )
         }
 
         if (userLogin) {
             Button(onClick = {
                 vm.login(password, username)
-                if (goToNext) navController.navigate(prevScreen)
-                else vm.modShowErrorMessage(true)
-            }, enabled = vm.isValidEmail(username) && vm.isValidPassword(password)) {
+                navController.navigate(prevScreen)
+            }) {
                 Text("Log-In")
             }
         }
-
+        val context = LocalContext.current
+        val userprefs = com.example.m08_p4_mapsapp.model.UserPrefs(context)
         if (userRegister) {
             Button(onClick = {
                 vm.register(password, username)
-                if (goToNext) navController.navigate(prevScreen)
-                else vm.modShowErrorMessage(true)
-            }, enabled = vm.isValidEmail(username) && vm.isValidPassword(password)) {
+                navController.navigate(prevScreen)
+                CoroutineScope(Dispatchers.IO).launch {
+                    userprefs.saveUserData(username, password)
+                }
+            }) {
                 Text("Registrar")
             }
         }

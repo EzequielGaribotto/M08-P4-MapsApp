@@ -162,41 +162,6 @@ class ViewModel : ViewModel() {
             }
         })
     }
-//    fun getMarkers() {
-//        repo.getMarkersFromDatabase().addSnapshotListener { value, error ->
-//            if (error != null) {
-//                Log.e("Firestore error", error.message.toString())
-//                return@addSnapshotListener
-//            }
-//            val tempList = mutableListOf<Marker>()
-//            for (dc: DocumentChange in value?.documentChanges!!) {
-//                if (dc.type == DocumentChange.Type.ADDED) {
-//                    val newMarker = dc.document.toObject(Marker::class.java)
-//                    newMarker.id = dc.document.id
-//                    tempList.add(newMarker)
-//                }
-//            }
-//            _markers.value = tempList
-//        }
-//    }
-
-//    fun getMarkers() {
-//        repo.getMarkersFromDatabase().addSnapshotListener { value, error ->
-//            if (error != null) {
-//                Log.e("Firestore error", error.message.toString())
-//                return@addSnapshotListener
-//            }
-//            val tempList = mutableListOf<Marker>()
-//            for (dc: DocumentChange in value?.documentChanges!!) {
-//                if (dc.type == DocumentChange.Type.ADDED) {
-//                    val newMarker = dc.document.toObject(Marker::class.java)
-//                    newMarker.id = dc.document.id
-//                    tempList.add(newMarker)
-//                }
-//            }
-//            _markers.value = tempList
-//        }
-//    }
 
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
@@ -229,10 +194,11 @@ class ViewModel : ViewModel() {
             auth.createUserWithEmailAndPassword(username, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _goToNext.value = true
-                    Log.d("ERROR", "User registered")
+                    Log.d("SUCCESS", "User registered")
                 } else {
                     _goToNext.value = false
-                    Log.d("ERROR", "Error creating user : ${task.result}")
+                    // Log the error message
+                    Log.d("Error", "Error creating user: ${task.exception?.message}")
                 }
                 modifyProcessing()
             }
@@ -260,18 +226,16 @@ class ViewModel : ViewModel() {
         if (isValidEmail(username)) {
             auth.signInWithEmailAndPassword(username!!, password!!).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    _userId.value = task.result.user?.uid
-                    _loggedUser.value = task.result.user?.email?.split("@")?.get(0)
+                    _userId.value = task.result?.user?.uid
+                    _loggedUser.value = task.result?.user?.email?.split("@")?.get(0)
                     _goToNext.value = true
                 } else {
                     _goToNext.value = false
-                    Log.d("Error", "Error signing in: ${task.result}")
+                    // Log the error message
+                    Log.d("Error", "Error signing in: ${task.exception?.message}")
                 }
                 modifyProcessing()
             }
-        } else {
-            _goToNext.value = false
-            Log.d("Error", "Invalid email")
         }
     }
 
@@ -331,17 +295,6 @@ class ViewModel : ViewModel() {
         _icon.value = icon
     }
 
-    fun getCurrentMarker():Marker {
-        val marker = Marker(
-            _markerId.value!!,
-            MarkerState(LatLng(_inputLat.value!!.toDouble(), _inputLong.value!!.toDouble())),
-            _markerName.value!!,
-            _icon.value!!,
-            _url.value!!
-        )
-        return marker
-    }
-
     fun modMarkerName(name: String) {
         _markerName.value = name
     }
@@ -381,7 +334,7 @@ class ViewModel : ViewModel() {
             modUserRegister(false)
             modShowErrorMessage(false)
         } else {
-            navController.navigate(prevScreen)
+            goBack(navController, prevScreen)
         }
     }
 
