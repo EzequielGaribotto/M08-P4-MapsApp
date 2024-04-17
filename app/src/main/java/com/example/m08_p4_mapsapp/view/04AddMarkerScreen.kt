@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.R
@@ -138,6 +139,8 @@ fun SetPhoto(
     navigationController: NavController,
     photoTaken: Boolean
 ) {
+    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     GlideImage(
         model = if (url == "") icon else url,
         contentDescription = "Marker Image",
@@ -147,6 +150,9 @@ fun SetPhoto(
             .padding(bottom = 10.dp)
     )
     Button(onClick = {
+        if (currentRoute != null) {
+            vm.modPrevScreen(currentRoute)
+        }
         vm.modBottomSheet(false)
         vm.modMarcadorActual(
             if (lat.isNotEmpty()) lat.toDouble() else (0.0),
@@ -157,7 +163,11 @@ fun SetPhoto(
         Text((if (photoTaken) "RE" else "") + "TOMAR FOTO")
     }
 
+
     Button(onClick = {
+        if (currentRoute != null) {
+            vm.modPrevScreen(currentRoute)
+        }
         vm.modBottomSheet(false)
         vm.modMarcadorActual(
             if (lat.isNotEmpty()) lat.toDouble() else (0.0),

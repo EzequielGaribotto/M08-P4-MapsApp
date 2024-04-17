@@ -183,7 +183,7 @@ fun MyScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
-        if (currentRoute != null && currentRoute != Routes.LoginScreen.route && currentRoute != Routes.CameraScreen.route) {
+        if (currentRoute != null && currentRoute != Routes.LoginScreen.route && currentRoute != Routes.CameraScreen.route && currentRoute != Routes.GalleryScreen.route && currentRoute != Routes.EditMarkerScreen.route) {
             MyTopAppBar(currentRoute, state, scope, navigationController, vm)
         }
     }) { paddingValues ->

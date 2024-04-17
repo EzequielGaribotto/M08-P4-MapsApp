@@ -41,7 +41,7 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
         contentDescription = "Enrere",
         modifier = Modifier
             .clickable {
-                vm.goBack(userLogin, userRegister, navController, prevScreen)
+                vm.goBackLogin(userLogin, userRegister, navController, prevScreen)
             }
             .padding(16.dp)
     )

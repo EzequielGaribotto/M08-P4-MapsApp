@@ -31,7 +31,6 @@ class ViewModel : ViewModel() {
     val showErrorMessage = _showErrorMessage
 
 
-
     // Funcion que determina si dos bitmaps son iguales o no
     val _userRegister = MutableLiveData(false)
     val userRegister = _userRegister
@@ -40,13 +39,11 @@ class ViewModel : ViewModel() {
     val userLogin = _userLogin
 
 
-
     val _email = MutableLiveData("")
     val email = _email
 
     val _password = MutableLiveData("")
     val password = _password
-
 
 
     private val _url = MutableLiveData("")
@@ -111,13 +108,16 @@ class ViewModel : ViewModel() {
     private val _photoTaken = MutableLiveData<Boolean>()
     val photoTaken = _photoTaken
 
-
+    private val _selectedImage = MutableLiveData<Bitmap>()
+    val selectedImage = _selectedImage
     fun modPassword(password: String) {
         _password.value = password
     }
+
     fun modEmail(email: String) {
         _email.value = email
     }
+
     fun modUserRegister(boolean: Boolean) {
         _userRegister.value = boolean
     }
@@ -125,6 +125,7 @@ class ViewModel : ViewModel() {
     fun modShowErrorMessage(boolean: Boolean) {
         _showErrorMessage.value = boolean
     }
+
     fun modUserLogin(boolean: Boolean) {
         _userLogin.value = boolean
     }
@@ -320,7 +321,7 @@ class ViewModel : ViewModel() {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         val id = UUID.randomUUID().toString()
-        markersTemp.add(Marker(id,markerState, name, icon, url))
+        markersTemp.add(Marker(id, markerState, name, icon, url))
         _markers.value = markersTemp.toMutableList()
         repo.addMarker(_markers.value?.last()!!)
     }
@@ -361,7 +362,7 @@ class ViewModel : ViewModel() {
         _prevScreen.value = screen
     }
 
-    fun goBack(
+    fun goBackLogin(
         userLogin: Boolean, userRegister: Boolean, navController: NavController, prevScreen: String
     ) {
         if (userLogin || userRegister) {
@@ -373,6 +374,10 @@ class ViewModel : ViewModel() {
         }
     }
 
+    fun goBack(navController: NavController, prevScreen: String) {
+        navController.navigate(prevScreen)
+    }
+
     fun editMarker(marker: Marker) {
         repo.editMarker(marker)
     }
@@ -381,6 +386,17 @@ class ViewModel : ViewModel() {
     val markerId = _markerId
     fun modMarkerId(id: String) {
         _markerId.value = id
+    }
+
+    fun modSelectedImage(selectedBitmap: Bitmap) {
+        _selectedImage.value = selectedBitmap
+    }
+
+
+    private val _selectedUri = MutableLiveData<Uri>()
+    val selectedUri = _selectedUri
+    fun modSelectedUri(uri: Uri) {
+        _selectedUri.value = uri
     }
 
 //    fun markerExists(lat: String?, long: String?): Boolean {

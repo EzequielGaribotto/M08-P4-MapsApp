@@ -11,13 +11,18 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -39,26 +44,41 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun GalleryScreen(vm: ViewModel, navController: NavController) {
-    val prevScreen = vm.prevScreen.value
+    val prevScreen by vm.prevScreen.observeAsState("")
     val context = LocalContext.current
-    val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    val icon by vm.icon.observeAsState(img)
+    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val selectedImage by vm.selectedImage.observeAsState(emptyImg)
+    val selectedImageUri by vm.selectedUri.observeAsState("")
     val launchImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             if (uri != null) {
-                vm.modUrl(uri.toString())
-                vm.modMarkerIcon(
-                    if (Build.VERSION.SDK_INT >= 28) {
-                        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                    } else {
-                        val source = ImageDecoder.createSource(context.contentResolver, uri)
-                        ImageDecoder.decodeBitmap(source)
-                    }
-                )
+                vm.modSelectedUri(uri)
+                val selectedBitmap = if (Build.VERSION.SDK_INT >= 28) {
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                }
+                vm.modSelectedImage(selectedBitmap)
             }
         }
     )
+
+    Icon(imageVector = Icons.Filled.ArrowBackIosNew,
+        contentDescription = "Enrere",
+        modifier = Modifier
+            .clickable {
+                if (prevScreen == "MapScreen") {
+                    vm.modBottomSheet(true)
+                    vm.modPhotoTaken(false)
+                    vm.modSelectedImage(emptyImg)
+                }
+                vm.goBack(navController, prevScreen)
+            }
+            .padding(16.dp)
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -67,10 +87,10 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         Button(onClick = {
             launchImage.launch("image/*")
         }) {
-            Text(text = "Open Gallery")
+            Text(text = "Abrir Galería")
         }
         Image(
-            bitmap = icon.asImageBitmap(),
+            bitmap = selectedImage.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -85,14 +105,15 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
             onClick = {
                 vm.modBottomSheet(true)
                 vm.modPhotoTaken(true)
+                vm.modMarkerIcon(selectedImage)
+                vm.modUrl(selectedImageUri.toString())
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }
             },
-            enabled = !icon.sameAs(img)
+            enabled = !selectedImage.sameAs(emptyImg)
         ) {
-            Text(text = "Set as marker icon")
+            Text(text = "Establecer como icono")
         }
     }
-
 }

@@ -1,27 +1,30 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.model.Marker
-import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerState
@@ -30,14 +33,20 @@ import com.google.maps.android.compose.MarkerState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
-    vm.modPrevScreen("EditMarkerScreen")
     val lat by vm.inputLat.observeAsState("")
     val long by vm.inputLong.observeAsState("")
     val name by vm.markerName.observeAsState("")
     val icon by vm.icon.observeAsState()
     val url by vm.url.observeAsState("")
     val id by vm.markerId.observeAsState("")
+
     vm.modBottomSheet(false)
+    Icon(imageVector = Icons.Filled.ArrowBackIosNew,
+        contentDescription = "Enrere",
+        modifier = Modifier
+            .clickable { vm.goBack(navController, "MarkerListScreen") }
+            .padding(16.dp)
+    )
 
     Box {
         Column(
@@ -47,9 +56,10 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         ) {
             SetPhoto(url, icon, vm, lat, long, navController, true)
             SetName(name, vm)
+            val context = LocalContext.current
             icon?.let {
-                EditMarker(true, name, lat, long, vm,
-                    it, url, id, navController)
+                EditMarker(context, name, lat, long, vm,
+                    it, url, id, navController, )
             }
         }
     }
@@ -57,7 +67,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
 
 @Composable
 private fun EditMarker(
-    photoTaken: Boolean,
+    context: Context,
     name: String,
     lat: String,
     long: String,
@@ -67,14 +77,9 @@ private fun EditMarker(
     id: String,
     navController: NavController
 ) {
-    val canAddMarker = photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
+    val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
     Button(onClick = {
-        vm.modMarcadorActual(lat.toDouble(), long.toDouble())
-        vm.modMarkerName(name)
-        vm.modMarkerIcon(icon)
-        vm.modUrl(url)
-        vm.modInputLat(lat)
-        vm.modInputLong(long)
+
         vm.editMarker(
             marker = Marker(
                 id = id,
@@ -82,10 +87,10 @@ private fun EditMarker(
                 name = name,
                 icon = icon,
                 url = url
-
-            ))
-
-        navController.navigate(Routes.MarkerListScreen.route)
+            )
+        )
+        vm.resetMarkerValues(context)
+        navController.navigate("MarkerListScreen")
     }, enabled = canAddMarker) {
         Text("Editar marcador")
     }
