@@ -155,8 +155,8 @@ fun SetPhoto(
         }
         vm.modBottomSheet(false)
         vm.modMarcadorActual(
-            if (lat.isNotEmpty()) lat.toDouble() else (0.0),
-            if (long.isNotEmpty()) long.toDouble() else (0.0)
+            lat.toDoubleOrNull() ?: 0.0,
+            long.toDoubleOrNull() ?: 0.0
         )
         navigationController.navigate(Routes.CameraScreen.route)
     }) {
@@ -170,8 +170,8 @@ fun SetPhoto(
         }
         vm.modBottomSheet(false)
         vm.modMarcadorActual(
-            if (lat.isNotEmpty()) lat.toDouble() else (0.0),
-            if (long.isNotEmpty()) long.toDouble() else (0.0)
+            lat.toDoubleOrNull() ?: 0.0,
+            long.toDoubleOrNull() ?: 0.0
         )
         navigationController.navigate(Routes.GalleryScreen.route)
     }) {

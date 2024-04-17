@@ -331,6 +331,17 @@ class ViewModel : ViewModel() {
         _icon.value = icon
     }
 
+    fun getCurrentMarker():Marker {
+        val marker = Marker(
+            _markerId.value!!,
+            MarkerState(LatLng(_inputLat.value!!.toDouble(), _inputLong.value!!.toDouble())),
+            _markerName.value!!,
+            _icon.value!!,
+            _url.value!!
+        )
+        return marker
+    }
+
     fun modMarkerName(name: String) {
         _markerName.value = name
     }

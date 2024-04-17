@@ -23,7 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
+import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -36,7 +39,9 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val lat by vm.inputLat.observeAsState("")
     val long by vm.inputLong.observeAsState("")
     val name by vm.markerName.observeAsState("")
-    val icon by vm.icon.observeAsState()
+    val context = LocalContext.current
+    val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val icon by vm.icon.observeAsState(img)
     val url by vm.url.observeAsState("")
     val id by vm.markerId.observeAsState("")
 
@@ -44,9 +49,11 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     Icon(imageVector = Icons.Filled.ArrowBackIosNew,
         contentDescription = "Enrere",
         modifier = Modifier
-            .clickable { vm.goBack(navController, "MarkerListScreen") }
-            .padding(16.dp)
-    )
+            .clickable {
+                vm.goBack(navController, "MarkerListScreen")
+                vm.resetMarkerValues(context)
+            }
+            .padding(16.dp))
 
     Box {
         Column(
@@ -56,11 +63,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         ) {
             SetPhoto(url, icon, vm, lat, long, navController, true)
             SetName(name, vm)
-            val context = LocalContext.current
-            icon?.let {
-                EditMarker(context, name, lat, long, vm,
-                    it, url, id, navController, )
-            }
+            EditMarker(context, name, lat, long, vm, icon, url, id, navController)
         }
     }
 }
@@ -92,6 +95,6 @@ private fun EditMarker(
         vm.resetMarkerValues(context)
         navController.navigate("MarkerListScreen")
     }, enabled = canAddMarker) {
-        Text("Editar marcador")
+        Text("Guardar cambios")
     }
 }
