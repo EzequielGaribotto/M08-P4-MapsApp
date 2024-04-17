@@ -65,6 +65,7 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val context = this
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         val viewModel by viewModels<ViewModel>()
         setContent {
             M08P4MapsAppTheme {
