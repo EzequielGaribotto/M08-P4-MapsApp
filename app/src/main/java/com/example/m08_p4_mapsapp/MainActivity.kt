@@ -192,7 +192,7 @@ fun MyScaffold(
                 .padding(paddingValues)
         ) {
             NavHost(
-                navController = navigationController, startDestination = Routes.MapScreen.route
+                navController = navigationController, startDestination = Routes.LoginScreen.route
             ) {
 
                 composable(Routes.LoginScreen.route) {

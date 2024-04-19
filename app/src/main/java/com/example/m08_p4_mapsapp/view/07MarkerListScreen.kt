@@ -67,12 +67,12 @@ fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onClickGo: (Double, Double) -> Unit) {
-    val lat = marker.markerState.position.latitude
-    val long = marker.markerState.position.longitude
-    val photo = marker.icon
-    val name = marker.name
-    val url = marker.url
-    val id = marker.id
+    val lat = marker.getMarkerState().position.latitude
+    val long = marker.getMarkerState().position.longitude
+    val photo = marker.getIcon()
+    val name = marker.getName()
+    val url = marker.getUrl()
+    val id = marker.getId()
 
     Card(
         border = BorderStroke(2.dp, DarkBrown),

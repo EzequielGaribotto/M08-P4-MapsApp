@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -46,9 +48,6 @@ import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.lang.StringBuilder
 
 @SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
@@ -57,7 +56,6 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val isLoading: Boolean by vm.isLoading.observeAsState(true)
-    val goToNext: Boolean by vm.goToNext.observeAsState(false)
     val email: String by vm.email.observeAsState("")
     val password: String by vm.password.observeAsState("")
     val errorEmail by vm.errorEmail.observeAsState(false)
@@ -66,35 +64,29 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val verContrasena: Boolean by vm.verContrasena.observeAsState(false)
     val keepLogged: Boolean by vm.keepLogged.observeAsState(false)
     val showRegisterRequestDialog by vm.showRegisterRequestDialog.observeAsState(false)
+    val goToNext by vm.goToNext.observeAsState(false)
 
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
+    val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
+    println("Stored user data: ${storedUserData.value}")
+    UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
 
-    if (!isLoading) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+    Column(Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
             )
-        }
-        if (goToNext) {
-            navController.navigate(Routes.MapScreen.route)
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
+        } else {
             EmailTextfield(email, vm, keyboardController)
             PasswordTextfield(password, vm, verContrasena)
             KeepMeLoggedInCheckbox(keepLogged, vm)
-            LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs, goToNext)
+            LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs, navController, goToNext)
             CustomClickableText(
                 "¿No tienes cuenta? ",
                 "Regístrate",
@@ -102,9 +94,29 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
                 navController,
                 vm
             )
+            InvalidLoginDialog(showLoginDialog, vm)
+            SolicitarRegistrarDialog(showRegisterRequestDialog, vm, navController)
         }
-        InvalidLoginDialog(showLoginDialog, vm)
-        SolicitarRegistrarDialog(showRegisterRequestDialog, vm, navController)
+    }
+}
+
+@Composable
+private fun UseStoredData(
+    storedUserData: State<List<String>>,
+    vm: ViewModel,
+    keepLogged: Boolean,
+    userPrefs: UserPrefs,
+    navController: NavController
+) {
+    if (storedUserData.value.isNotEmpty() &&
+        storedUserData.value[0] != "" && storedUserData.value[1] != ""
+    ) {
+        vm.modShowLoading(true)
+        vm.login(storedUserData.value[0], storedUserData.value[1], keepLogged, userPrefs)
+        navController.navigate(Routes.MapScreen.route)
+        vm.modShowLoading(false)
+    } else {
+        vm.modShowLoading(false)
     }
 }
 
@@ -193,21 +205,18 @@ private fun LogInButton(
     errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
-    goToNext: Boolean,
+    navController: NavController,
+    goNext: Boolean
 ) {
     Button(
         onClick = {
-            vm.modInvalidEmail(!vm.isValidEmail(email))
-            vm.modInvalidPass(!vm.isValidPass(pass))
+            vm.modErrorEmail(!vm.isValidEmail(email))
+            vm.modErrorPass(!vm.isValidPass(pass))
             if (errorEmail || errorPass) {
                 vm.showLoginDialog(true)
             } else {
-                if (keepLogged) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        userPrefs.saveUserData(vm.getLoggedUser(), "")
-                    }
-                }
-                vm.login(email, pass)
+                vm.login(email, pass, keepLogged, userPrefs)
+                if (goNext) navController.navigate(Routes.MapScreen.route)
             }
         },
         modifier = Modifier.fillMaxWidth(),

@@ -58,7 +58,7 @@ class ViewModel : ViewModel() {
     private val _showBottomSheet = MutableLiveData(false)
     val showBottomSheet = _showBottomSheet
 
-    private val _markers = MutableLiveData<MutableList<Marker>>()
+    private val _markers = MutableLiveData(mutableListOf<Marker>())
     val markers = _markers
 
     private val _inputLat = MutableLiveData("")
@@ -76,40 +76,40 @@ class ViewModel : ViewModel() {
     private val _selectedImage = MutableLiveData<Bitmap>()
     val selectedImage = _selectedImage
 
-    private val _email = MutableLiveData<String>("")
+    private val _email = MutableLiveData("")
     val email: LiveData<String> = _email
 
-    private val _nombre = MutableLiveData<String>("")
+    private val _nombre = MutableLiveData("")
     val nombre: LiveData<String> = _nombre
 
-    private val _apellido = MutableLiveData<String>("")
+    private val _apellido = MutableLiveData("")
     val apellido: LiveData<String> = _apellido
 
-    private val _ciudad = MutableLiveData<String>("")
+    private val _ciudad = MutableLiveData("")
     val ciudad: LiveData<String> = _ciudad
 
-    private val _password = MutableLiveData<String>("")
+    private val _password = MutableLiveData("")
     val password: LiveData<String> = _password
 
-    private val _errorPass = MutableLiveData<Boolean>()
+    private val _errorPass = MutableLiveData(false)
     val errorPass: LiveData<Boolean> = _errorPass
 
-    private val _showLoginDialog = MutableLiveData<Boolean>()
+    private val _showLoginDialog = MutableLiveData(false)
     val showLoginDialog: LiveData<Boolean> = _showLoginDialog
 
     private val _isLoading = MutableLiveData(true)
     val isLoading = _isLoading
 
-    private val _validLogin = MutableLiveData<Boolean>()
+    private val _validLogin = MutableLiveData(false)
     val validLogin: LiveData<Boolean> = _validLogin
 
-    private val _userId = MutableLiveData<String>()
+    private val _userId = MutableLiveData("")
 
-    private val _verContrasena = MutableLiveData<Boolean>()
+    private val _verContrasena = MutableLiveData(false)
     val verContrasena = _verContrasena
 
-    private val _permanecerLogged = MutableLiveData<Boolean>()
-    val keepLogged = _permanecerLogged
+    private val _keepLogged = MutableLiveData(false)
+    val keepLogged = _keepLogged
 
     private val _markerId = MutableLiveData("")
     val markerId = _markerId
@@ -117,22 +117,20 @@ class ViewModel : ViewModel() {
     private val _selectedUri = MutableLiveData<Uri>()
     val selectedUri = _selectedUri
 
-    private val _showRegisterDialog = MutableLiveData<Boolean>()
+    private val _showRegisterDialog = MutableLiveData(false)
     val showRegisterDialog: LiveData<Boolean> = _showRegisterDialog
 
-    private val _errorEmail = MutableLiveData<Boolean>()
+    private val _errorEmail = MutableLiveData(false)
     val errorEmail: LiveData<Boolean> = _errorEmail
 
-    private val _loggedUser = MutableLiveData<String>()
+    private val _loggedUser = MutableLiveData("")
     val loggedUser = _loggedUser
-
-    // live data para solicitarregistrar
 
     private val _showRegisterRequestDialog = MutableLiveData(false)
     val showRegisterRequestDialog = _showRegisterRequestDialog
 
-    fun showRegisterRequestDialog(value: Boolean) {
-        _showRegisterRequestDialog.value = value
+    fun showRegisterRequestDialog(boolean: Boolean) {
+        _showRegisterRequestDialog.value = boolean
     }
 
     fun removeMarker(marker: Marker) {
@@ -163,24 +161,24 @@ class ViewModel : ViewModel() {
         _ciudad.value = value
     }
 
-    fun showLoginDialog(value: Boolean) {
-        _showLoginDialog.value = value
+    fun showLoginDialog(boolean: Boolean) {
+        _showLoginDialog.value = boolean
     }
 
-    fun modInvalidPass(value: Boolean) {
-        _errorPass.value = value
+    fun modErrorPass(boolean: Boolean) {
+        _errorPass.value = boolean
     }
 
-    fun modInvalidEmail(value: Boolean) {
-        _errorEmail.value = value
+    fun modErrorEmail(boolean: Boolean) {
+        _errorEmail.value = boolean
     }
 
-    fun modifyProcessing(newValue: Boolean) {
-        _isLoading.value = newValue
+    fun modShowLoading(boolean: Boolean) {
+        _isLoading.value = boolean
     }
 
-    fun showRegisterDialog(value: Boolean) {
-        _showRegisterDialog.value = value
+    fun showRegisterDialog(boolean: Boolean) {
+        _showRegisterDialog.value = boolean
     }
 
     fun getLoggedUser(): String {
@@ -215,12 +213,12 @@ class ViewModel : ViewModel() {
         _loggedUser.value = nuevo
     }
 
-    fun modVerContrasena(nuevoBoolean: Boolean) {
-        _verContrasena.value = nuevoBoolean
+    fun modVerContrasena(boolean: Boolean) {
+        _verContrasena.value = boolean
     }
 
-    fun modKeepLogged(nuevoBoolean: Boolean) {
-        _permanecerLogged.value = nuevoBoolean
+    fun modKeepLogged(boolean: Boolean) {
+        _keepLogged.value = boolean
     }
 
     fun showBottomSheet(boolean: Boolean) {
@@ -289,40 +287,6 @@ class ViewModel : ViewModel() {
             })
     }
 
-    fun register(context: Context, username: String, password: String) {
-        val userPrefs = UserPrefs(context)
-        auth.createUserWithEmailAndPassword(username, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _userId.value = task.result.user?.uid
-                    _loggedUser.value = task.result.user?.email
-                    _goToNext.value = true
-                    modifyProcessing(false)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        userPrefs.saveUserData(_email.value!!, _password.value!!)
-                    }
-                    val userRef =
-                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
-                    userRef.get()
-                        .addOnSuccessListener { documents ->
-                            if (documents.isEmpty) {
-                                repo.addUser(
-                                    User(_nombre.value!!,
-                                        _apellido.value!!,
-                                        _ciudad.value!!,
-                                        _email.value!!)
-                                )
-                            }
-                        }
-                } else {
-                    _goToNext.value = false
-                    Log.d("Error", "Error creating user : ${task.exception}")
-                    modifyProcessing(true)
-                }
-            }
-    }
-
-
     fun isValidEmail(target: CharSequence?): Boolean {
         return !TextUtils.isEmpty(target) && target?.let {
             android.util.Patterns.EMAIL_ADDRESS.matcher(it)
@@ -337,29 +301,77 @@ class ViewModel : ViewModel() {
         return password != null && passwordMatcher.matches(password)
     }
 
-    fun login(username: String?, password: String?) {
-        auth.signInWithEmailAndPassword(username!!, password!!)
+    fun register(
+        username: String,
+        password: String,
+        keepLogged: Boolean = false,
+        userPrefs: UserPrefs
+    ) {
+        auth.createUserWithEmailAndPassword(username, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
                     _goToNext.value = true
-                    modifyProcessing(false)
-                    val userRef =
-                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                    modShowLoading(false)
+                    if (keepLogged) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            userPrefs.saveUserData(_email.value!!, _password.value!!)
+                        }
+                    }
+                    val userRef = database.collection("user").whereEqualTo("owner", _loggedUser.value)
                     userRef.get()
                         .addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
                                 repo.addUser(
-                                    User(_nombre.value!!, _apellido.value!!,
-                                        _ciudad.value!!, _email.value!!)
+                                    User(
+                                        _nombre.value!!, _apellido.value!!,
+                                        _ciudad.value!!, _email.value!!
+                                    )
                                 )
                             }
                         }
                 } else {
                     _goToNext.value = false
+                    Log.d("Error", "Error creating user : ${task.exception}")
+                    modShowLoading(true)
+                }
+            }
+    }
+
+    fun login(
+        username: String,
+        password: String,
+        keepLogged: Boolean = false,
+        userPrefs: UserPrefs = null!!
+    ) {
+        auth.signInWithEmailAndPassword(username, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email
+                    _goToNext.value = true
+                    if (keepLogged) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            userPrefs.saveUserData(_email.value!!, _password.value!!)
+                        }
+                    }
+                    val userRef =
+                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                    userRef.get().addOnSuccessListener { documents ->
+                        if (documents.isEmpty) {
+                            repo.addUser(
+                                User(
+                                    _nombre.value!!, _apellido.value!!,
+                                    _ciudad.value!!, _email.value!!
+                                )
+                            )
+                        }
+                    }
+                } else {
+                    _goToNext.value = false
                     Log.d("Error", "Error logging in: ${task.exception}")
-                    modifyProcessing(true)
+                    modShowLoading(false)
                     _showRegisterRequestDialog.value = true
                 }
             }
@@ -381,7 +393,7 @@ class ViewModel : ViewModel() {
         _goToNext.value = false
         _password.value = ""
 
-        modifyProcessing(true)
+        modShowLoading(true)
 
         resetUserValues()
         resetMarkerValues(context)
@@ -400,7 +412,7 @@ class ViewModel : ViewModel() {
         _showLoginDialog.value = false
         _validLogin.value = false
         _verContrasena.value = false
-        _permanecerLogged.value = false
+        _keepLogged.value = false
         _markers.value = mutableListOf()
         _inputLat.value = ""
         _inputLong.value = ""
@@ -420,7 +432,7 @@ class ViewModel : ViewModel() {
 
     fun signInWithGoogleCredential(credential: AuthCredential, home: () -> Unit) =
         viewModelScope.launch {
-            modifyProcessing(false)
+            modShowLoading(false)
             try {
                 auth.signInWithCredential(credential)
                     .addOnCompleteListener { task ->

@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -67,7 +66,6 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
 
     val isLoading: Boolean by vm.isLoading.observeAsState(true)
     val goToNext: Boolean by vm.goToNext.observeAsState(false)
-    val validLogin: Boolean by vm.validLogin.observeAsState(true)
     val email: String by vm.email.observeAsState("")
     val password: String by vm.password.observeAsState("")
     val nombre: String by vm.nombre.observeAsState("")
@@ -83,20 +81,8 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
 
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
-    val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
 
-
-    if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != ""
-        && storedUserData.value[1] != "" && validLogin
-    ) {
-        vm.modifyProcessing(false)
-        vm.login(storedUserData.value[0], storedUserData.value[1])
-        if (goToNext) {
-            navController.navigate(Routes.MapScreen.route)
-        }
-    }
-
-    if (!isLoading) {
+    if (isLoading) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,13 +111,13 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
             PasswordTextfield(password, vm, verContrasena)
             KeepMeLoggedInCheckbox(keepLogged, vm)
             RegisterButton(vm, email, password, errorEmail,
-                errorPass, keepLogged, userPrefs, context, goToNext)
+                errorPass, keepLogged, userPrefs, goToNext)
             CustomClickableText("¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm)
             //GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext))
         }
 
         InvalidRegisterDialog(showRegisterDialog,vm)
-        SuccessfulRegisterDialog(successfulRegister, vm,)
+        SuccessfulRegisterDialog(successfulRegister, vm)
     }
 }
 
@@ -209,7 +195,7 @@ private fun clientLauncher(
                 val account = task.getResult(ApiException::class.java)
                 val credential = GoogleAuthProvider.getCredential(account.idToken, null)
                 vm.signInWithGoogleCredential(credential) {
-                    vm.modifyProcessing(true)
+                    vm.modShowLoading(true)
                     navController.navigate(Routes.MapScreen.route)
                 }
                 if (account.email != null) vm.modificarLoggedUser(account.email!!)
@@ -235,13 +221,13 @@ private fun clientLauncher(
     if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != ""
         && storedUserData.value[1] != "" && validLogin
     ) {
-        vm.modifyProcessing(false)
-        vm.login(storedUserData.value[0], storedUserData.value[1])
+        vm.modShowLoading(false)
+        vm.login(storedUserData.value[0], storedUserData.value[1], keepLogged, userPrefs)
         if (goToNext) {
             navController.navigate(Routes.MapScreen.route)
         }
     } else if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != "") {
-        vm.modifyProcessing(false)
+        vm.modShowLoading(false)
         launcher.launch(googleSignInCliente.signInIntent)
 
     }
@@ -257,20 +243,14 @@ private fun RegisterButton(
     errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
-    context: Context,
     goToNext: Boolean
 ) {
     Button(
         onClick = {
-            vm.modInvalidEmail(!vm.isValidEmail(email))
-            vm.modInvalidPass(!vm.isValidPass(pass))
+            vm.modErrorEmail(!vm.isValidEmail(email))
+            vm.modErrorPass(!vm.isValidPass(pass))
             if (!(errorEmail || errorPass)) {
-                if (keepLogged) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        userPrefs.saveUserData(vm.getLoggedUser(), "")
-                    }
-                }
-                vm.register(context, email, pass)
+                vm.register(email, pass, keepLogged, userPrefs)
                 if (goToNext) {
                     vm.showSuccessfulRegisterDialog(true)
                 }
@@ -292,7 +272,7 @@ private fun RegisterButton(
 
 @Composable
 fun KeepMeLoggedInCheckbox(
-    keepLooged: Boolean,
+    keepLogged: Boolean,
     vm: ViewModel
 ) {
     Row {
@@ -302,7 +282,7 @@ fun KeepMeLoggedInCheckbox(
             color = Color.Black,
             fontSize = 16.sp
         )
-        Checkbox(checked = keepLooged, onCheckedChange = { keep -> vm.modKeepLogged(keep) })
+        Checkbox(checked = keepLogged, onCheckedChange = { keep -> vm.modKeepLogged(keep) })
     }
 }
 
