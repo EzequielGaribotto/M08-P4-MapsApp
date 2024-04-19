@@ -86,6 +86,7 @@ class Repository {
                 for (document in documents) {
                     database.collection("markers").document(document.id).set(
                         hashMapOf(
+                            "owner" to marker.owner,
                             "id" to marker.id,
                             "name" to marker.name,
                             "latitude" to marker.markerState.position.latitude,
@@ -138,9 +139,9 @@ class Repository {
         storage.putFile(imageUri)
             .addOnSuccessListener {
                 Log.i("IMAGE UPLOADED", "Image uploaded successfully")
-                storage.downloadUrl.addOnSuccessListener {
-                    Log.i("IMAGEN", it.toString())
-                    marker.url = it.toString()
+                storage.downloadUrl.addOnSuccessListener { uri ->
+                    Log.i("IMAGEN", uri.toString())
+                    marker.url = uri.toString()
                 }
             }
             .addOnCanceledListener {
