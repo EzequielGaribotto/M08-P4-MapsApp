@@ -113,7 +113,6 @@ fun MyDrawer(vm: ViewModel, context: Context) {
     val state: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val prevRoute = vm.prevScreen.value
 
 
     ModalNavigationDrawer(drawerState = state, gesturesEnabled = state.isOpen, drawerContent = {
@@ -136,7 +135,7 @@ fun MyDrawer(vm: ViewModel, context: Context) {
 
             arrayOf("MapScreen", "MarkerListScreen", "AddMarkerScreen").forEach { screen ->
                 if (currentRoute != null) {
-                    createNavigationDrawerItem(
+                    CreateNavigationDrawerItem(
                         currentRoute = currentRoute,
                         targetRoute = screen,
                         state = state,
@@ -147,21 +146,24 @@ fun MyDrawer(vm: ViewModel, context: Context) {
             }
 
             // Crea un drawer item para hacer logOut
-            NavigationDrawerItem(
-                label = { Text("Log Out") },
-                selected = currentRoute == "LoginScreen",
-                onClick = {
-                    scope.launch {
-                        state.close()
-                    }
-                    vm.signOut(context,navigationController)
-                    navigationController.navigate(Routes.LoginScreen.route)
-                }
-            )
+            val loggedUser by vm.loggedUser.observeAsState("")
 
+            if (loggedUser.isNotEmpty() && loggedUser.isNotBlank()) {
+                NavigationDrawerItem(
+                    label = { Text("Log Out") },
+                    selected = currentRoute == "LoginScreen",
+                    onClick = {
+                        scope.launch {
+                            state.close()
+                        }
+                        vm.signOut(context,navigationController)
+                        navigationController.navigate(Routes.LoginScreen.route)
+                    }
+                )
+            }
         }
     }) {
-        MyScaffold(vm, state, scope, navigationController, context)
+        MyScaffold(vm, state, scope, navigationController)
     }
 }
 
@@ -173,7 +175,7 @@ fun MyScaffold(
     vm: ViewModel,
     state: DrawerState,
     scope: CoroutineScope,
-    navigationController: NavHostController, context: Context
+    navigationController: NavHostController
 ) {
     val sheetState = rememberModalBottomSheetState()
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
@@ -271,7 +273,7 @@ fun MyTopAppBar(
 ) {
     if (currentRoute != Routes.LoginScreen.route && currentRoute != Routes.RegisterScreen.route) {
         val loggedUser by vm.loggedUser.observeAsState("")
-        TopAppBar(title = { Text(text = "Los Mapas: ${vm.getLoggedUser()}") }, colors = TopAppBarDefaults.topAppBarColors(
+        TopAppBar(title = { Text(text = "Los Mapas: $loggedUser") }, colors = TopAppBarDefaults.topAppBarColors(
             containerColor = LightGreen,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
@@ -281,7 +283,7 @@ fun MyTopAppBar(
             EnableDrawerButton(state, scope)
         }, actions = {
             IconButton(onClick = {
-                if (loggedUser != "") {
+                if (loggedUser.isNotEmpty() && loggedUser.isNotBlank()) {
                     vm.signOut(context = navigationController.context, navigationController)
                 }
                 scope.launch {
@@ -308,7 +310,7 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
 }
 
 @Composable
-fun createNavigationDrawerItem(
+fun CreateNavigationDrawerItem(
     currentRoute: String,
     targetRoute: String,
     state: DrawerState,

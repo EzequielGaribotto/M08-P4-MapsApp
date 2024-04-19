@@ -294,6 +294,8 @@ class ViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(username, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email
                     _goToNext.value = true
                     modifyProcessing(false)
                     CoroutineScope(Dispatchers.IO).launch {
@@ -308,7 +310,7 @@ class ViewModel : ViewModel() {
                                     User(_nombre.value!!,
                                         _apellido.value!!,
                                         _ciudad.value!!,
-                                        _loggedUser.value!!)
+                                        _email.value!!)
                                 )
                             }
                         }
@@ -350,7 +352,7 @@ class ViewModel : ViewModel() {
                             if (documents.isEmpty) {
                                 repo.addUser(
                                     User(_nombre.value!!, _apellido.value!!,
-                                        _ciudad.value!!, _loggedUser.value!!)
+                                        _ciudad.value!!, _email.value!!)
                                 )
                             }
                         }
@@ -432,7 +434,7 @@ class ViewModel : ViewModel() {
                                         database.collection("user")
                                             .add(
                                                 hashMapOf(
-                                                    "owner" to _loggedUser.value,
+                                                    "owner" to _email.value,
                                                     "name" to _nombre.value,
                                                     "apellido" to _apellido.value,
                                                     "ciudad" to _ciudad.value,

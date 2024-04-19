@@ -127,7 +127,7 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
             RegisterButton(vm, email, password, errorEmail,
                 errorPass, keepLogged, userPrefs, context, goToNext)
             CustomClickableText("¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm)
-            GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext))
+            //GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext))
         }
 
         InvalidRegisterDialog(showRegisterDialog,vm)
