@@ -18,6 +18,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +31,8 @@ import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,8 +52,7 @@ import java.io.OutputStream
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CameraScreen(vm: ViewModel, navController: NavController) {
-    val prevScreen = vm.prevScreen.value
-    // CAMERA PERMISSIONS
+    val prevScreen by vm.prevScreen.observeAsState("")
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val context = LocalContext.current
     val controller = remember {
@@ -58,15 +60,48 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
             CameraController.IMAGE_CAPTURE
         }
     }
-
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
-    }
-
-
-
+    LaunchedEffect(Unit) { permissionState.launchPermissionRequest() }
 
     CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            CustomGoBackButton(prevScreen, vm, navController) {
+                vm.showBottomSheet(true)
+            }
+            TakePhotoButton(context, controller, vm)
+            SwitchCameraButton(controller)
+        }
+    }
+}
+
+@Composable
+private fun TakePhotoButton(
+    context: Context,
+    controller: LifecycleCameraController,
+    vm: ViewModel
+) {
+    IconButton(
+        onClick = {
+
+            takePhoto(context, controller) { photo ->
+                val uri = saveBitmapToExternalStorage(context, photo)
+                if (uri != null) {
+                    vm.modUrl(uri.toString())
+                }
+            }
+        },
+    ) {
+        Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
+    }
+}
+
+@Composable
+private fun SwitchCameraButton(controller: LifecycleCameraController) {
     IconButton(
         onClick = {
             controller.cameraSelector =
@@ -76,46 +111,7 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
                     CameraSelector.DEFAULT_BACK_CAMERA
                 }
         },
-    ) {
-        Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "Switch camera")
-
-    }
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row {
-            IconButton(
-                onClick = {
-
-                    takePhoto(context, controller) { photo ->
-                        val uri = saveBitmapToExternalStorage(context, photo)
-                        if (uri != null) {
-                            vm.modUrl(uri.toString())
-                            println("FOTO SACADA")
-                        } else {
-                            println("FOTO NO SACADA")
-
-                        }
-
-                    }
-                },
-            ) {
-                Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "Take photo")
-            }
-
-            IconButton(
-                onClick = {
-                    vm.showBottomSheet(true)
-                    if (prevScreen != null) {
-                        navController.navigate(prevScreen)
-                    }
-                },
-            ) {
-                Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Go Back")
-            }
-        }
-    }
+    ) { Icon(imageVector = Icons.Default.Cameraswitch, contentDescription = "Switch camera") }
 }
 
 

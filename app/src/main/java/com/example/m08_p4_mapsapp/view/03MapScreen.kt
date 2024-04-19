@@ -18,13 +18,13 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(navController: NavController, vm: ViewModel) {
     Column(
@@ -32,20 +32,9 @@ fun MapScreen(navController: NavController, vm: ViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
-        MapScreen(vm)
-    }
-}
-
-@SuppressLint("MissingPermission")
-@Composable
-fun MapScreen(vm: ViewModel) {
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
         val prevScreen = vm.prevScreen.value
         val marcadorActual by vm.marcadorActual.observeAsState(LatLng(0.0, 0.0))
-        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 18f) }
+        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 12f) }
         val getUserLocation by vm.getUserLocation.observeAsState(true)
         if (getUserLocation) {
             val context = LocalContext.current
@@ -54,7 +43,7 @@ fun MapScreen(vm: ViewModel) {
             locationResult.addOnCompleteListener(context as MainActivity) { task ->
                 if (task.isSuccessful) {
                     vm.modMarcadorActual(task.result.latitude, task.result.longitude)
-                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(marcadorActual, 18f)
+                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(marcadorActual, 12f)
                     vm.modGetUserLocation(false)
                 } else {
                     Log.e("Error", "Exception: %s", task.exception)
@@ -65,10 +54,19 @@ fun MapScreen(vm: ViewModel) {
         if (prevScreen == "AddMarkerScreen") {
             vm.resetMarkerValues(context)
         }
-
-
         vm.modPrevScreen("MapScreen")
+        Map(cameraPositionState, vm)
+    }
+}
 
+@Composable
+private fun Map(
+    cameraPositionState: CameraPositionState,
+    vm: ViewModel
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {

@@ -5,16 +5,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +17,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
@@ -46,14 +40,9 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val id by vm.markerId.observeAsState("")
 
     vm.showBottomSheet(false)
-    Icon(imageVector = Icons.Filled.ArrowBackIosNew,
-        contentDescription = "Enrere",
-        modifier = Modifier
-            .clickable {
-                vm.goBack(navController, "MarkerListScreen")
-                vm.resetMarkerValues(context)
-            }
-            .padding(16.dp))
+
+    CustomGoBackButton("MarkerListScreen", vm, navController,
+        posteriorActions = { vm.resetMarkerValues(context) })
 
     Box {
         Column(

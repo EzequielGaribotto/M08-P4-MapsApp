@@ -46,7 +46,8 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 fun GalleryScreen(vm: ViewModel, navController: NavController) {
     val prevScreen by vm.prevScreen.observeAsState("")
     val context = LocalContext.current
-    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val emptyImg: Bitmap =
+        ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val selectedImage by vm.selectedImage.observeAsState(emptyImg)
     val selectedImageUri by vm.selectedUri.observeAsState("")
     val launchImage = rememberLauncherForActivityResult(
@@ -65,17 +66,13 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         }
     )
 
-    Icon(imageVector = Icons.Filled.ArrowBackIosNew,
-        contentDescription = "Enrere",
-        modifier = Modifier
-            .clickable {
-                if (prevScreen == "MapScreen") {
-                    vm.showBottomSheet(true)
-                    vm.modSelectedImage(emptyImg)
-                }
-                vm.goBack(navController, prevScreen)
+    CustomGoBackButton(prevScreen, vm, navController,
+        previousActions = {
+            if (prevScreen == "MapScreen") {
+                vm.showBottomSheet(true)
+                vm.modSelectedImage(emptyImg)
             }
-            .padding(16.dp)
+        }
     )
 
     Column(
@@ -114,4 +111,24 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
             Text(text = "Establecer como icono")
         }
     }
+}
+
+@Composable
+fun CustomGoBackButton(
+    prevScreen: String,
+    vm: ViewModel,
+    navController: NavController,
+    previousActions: () -> Unit = {},
+    posteriorActions: () -> Unit = {}
+) {
+    Icon(imageVector = Icons.Filled.ArrowBackIosNew,
+        contentDescription = "Enrere",
+        modifier = Modifier
+            .clickable {
+                previousActions()
+                vm.goBack(navController, prevScreen)
+                posteriorActions()
+            }
+            .padding(16.dp)
+    )
 }
