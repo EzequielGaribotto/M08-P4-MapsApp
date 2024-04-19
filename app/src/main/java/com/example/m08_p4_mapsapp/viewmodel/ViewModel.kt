@@ -8,8 +8,10 @@ import android.text.TextUtils
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.firebase.Repository
@@ -17,66 +19,29 @@ import com.example.m08_p4_mapsapp.model.Marker
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.MarkerState
-import com.example.m08_p4_mapsapp.model.User
+import com.example.m08_p4_mapsapp.model.UserPrefs
+import com.example.m08_p4_mapsapp.navigation.Routes
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-
-    val _showErrorMessage = MutableLiveData(false)
-    val showErrorMessage = _showErrorMessage
-
-
-    // Funcion que determina si dos bitmaps son iguales o no
-    val _userRegister = MutableLiveData(false)
-    val userRegister = _userRegister
-
-    val _userLogin = MutableLiveData(false)
-    val userLogin = _userLogin
-
-
-    val _email = MutableLiveData("")
-    val email = _email
-
-    val _password = MutableLiveData("")
-    val password = _password
-
-
-    private val _url = MutableLiveData("")
-    val url = _url
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
 
-
-    private val _usersList = MutableLiveData<List<User>>()
-    val usersList = _usersList
+    private val _url = MutableLiveData("")
+    val url = _url
 
     private val _goToNext = MutableLiveData(false)
     val goToNext = _goToNext
-
-    private val _showProgressBar = MutableLiveData(false)
-    val showProgressBar = _showProgressBar
-
-    private val _userId = MutableLiveData<String>()
-    val userId = _userId
-
-    private val _loggedUser = MutableLiveData<String>()
-    val loggedUser = _loggedUser
-
-    private val _actualUser = MutableLiveData<User?>()
-    val actualUser = _actualUser
-
-    private val _userName = MutableLiveData("")
-    val userName = _userName
-
-    private val _age = MutableLiveData("")
-    val age = _age
 
     private val _prevScreen = MutableLiveData("MapScreen")
     val prevScreen = _prevScreen
@@ -104,65 +69,59 @@ class ViewModel : ViewModel() {
 
     private val _icon = MutableLiveData<Bitmap>()
     val icon = _icon
-
-    private val _photoTaken = MutableLiveData<Boolean>()
-    val photoTaken = _photoTaken
-
+    
     private val _selectedImage = MutableLiveData<Bitmap>()
     val selectedImage = _selectedImage
-    fun modPassword(password: String) {
-        _password.value = password
-    }
 
-    fun modEmail(email: String) {
-        _email.value = email
-    }
+    private val _email = MutableLiveData<String>()
+    val email: LiveData<String> = _email
 
-    fun modUserRegister(boolean: Boolean) {
-        _userRegister.value = boolean
-    }
+    private val _nombreState = MutableLiveData<String>()
+    val nombre: LiveData<String> = _nombreState
 
-    fun modShowErrorMessage(boolean: Boolean) {
-        _showErrorMessage.value = boolean
-    }
+    private val _apellidoState = MutableLiveData<String>()
+    val apellido: LiveData<String> = _apellidoState
 
-    fun modUserLogin(boolean: Boolean) {
-        _userLogin.value = boolean
-    }
+    private val _ciudadState = MutableLiveData<String>()
+    val ciudad: LiveData<String> = _ciudadState
 
-    fun getMarkers() {
-        repo.getMarkersFromDatabase().addSnapshotListener(object : EventListener<QuerySnapshot> {
-            override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
-                if (error != null) {
-                    Log.e("Firestore error", error.message.toString())
-                    return
-                }
-                val tempList = mutableListOf<Marker>()
-                for (dc: DocumentChange in value?.documentChanges!!) {
-                    if (dc.type == DocumentChange.Type.ADDED) {
-                        val document = dc.document
-                        val id = document.getString("id") ?: ""
-                        val latitude = document.get("latitude") ?: ""
-                        val longitude = document.get("longitude") ?: ""
-                        val name = document.getString("name") ?: ""
-                        val url = document.getString("url") ?: ""
+    private val _password = MutableLiveData<String>()
+    val password: LiveData<String> = _password
 
-                        val newMark = Marker(
-                            id,
-                            MarkerState(
-                                LatLng(
-                                    latitude.toString().toDouble(), longitude.toString().toDouble()
-                                )
-                            ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
-                        )
-                        tempList.add(newMark)
-                    }
-                }
-                _markers.value = tempList
-            }
-        })
-    }
+    private val _errorPass = MutableLiveData<Boolean>()
+    val errorPass: LiveData<Boolean> = _errorPass
 
+    private val _showLoginDialog = MutableLiveData<Boolean>()
+    val showLoginDialog: LiveData<Boolean> = _showLoginDialog
+
+    private val _isLoading = MutableLiveData(true)
+    val isLoading = _isLoading
+
+    private val _validLogin = MutableLiveData<Boolean>()
+    val validLogin: LiveData<Boolean> = _validLogin
+
+    private val _userId = MutableLiveData<String>()
+
+    private val _verContrasena = MutableLiveData<Boolean>()
+    val verContrasena = _verContrasena
+
+    private val _permanecerLogged = MutableLiveData<Boolean>()
+    val keepLogged = _permanecerLogged
+
+    private val _markerId = MutableLiveData("")
+    val markerId = _markerId
+
+    private val _selectedUri = MutableLiveData<Uri>()
+    val selectedUri = _selectedUri
+
+    private val _showRegisterDialog = MutableLiveData<Boolean>()
+    val showRegisterDialog: LiveData<Boolean> = _showRegisterDialog
+
+    private val _errorEmail = MutableLiveData<Boolean>()
+    val errorEmail: LiveData<Boolean> = _errorEmail
+
+    private val _loggedUser = MutableLiveData<String>()
+    val loggedUser = _loggedUser
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
     }
@@ -171,126 +130,91 @@ class ViewModel : ViewModel() {
         _url.value = url
     }
 
-    fun getUsers() {
-        repo.getUsers().addSnapshotListener { value, error ->
-            if (error != null) {
-                Log.e("Firestore error", error.message.toString())
-                return@addSnapshotListener
-            }
-            val tempList = mutableListOf<User>()
-            for (dc: DocumentChange in value?.documentChanges!!) {
-                if (dc.type == DocumentChange.Type.ADDED) {
-                    val newUser = dc.document.toObject(User::class.java)
-                    newUser.userId = dc.document.id
-                    tempList.add(newUser)
-                }
-            }
-            _usersList.value = tempList
-        }
+    fun modificarEmailState(value: String) {
+        _email.value = value
     }
 
-    fun register(username: String, password: String) {
-        if (isValidEmail(username)) {
-            auth.createUserWithEmailAndPassword(username, password).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _goToNext.value = true
-                    Log.d("SUCCESS", "User registered")
-                } else {
-                    _goToNext.value = false
-                    // Log the error message
-                    Log.d("Error", "Error creating user: ${task.exception?.message}")
-                }
-                modifyProcessing()
-            }
-        } else {
-            _goToNext.value = false
-            Log.d("ERROR", "Invalid email")
-        }
+    fun modificarPasswordState(value: String) {
+        _password.value = value
     }
 
-    fun isValidEmail(target: CharSequence?): Boolean {
-        return !TextUtils.isEmpty(target) && target?.let {
-            android.util.Patterns.EMAIL_ADDRESS.matcher(it)
-                .matches()
-        } == true
+    fun modificarNombreState(value: String) {
+        _nombreState.value = value
     }
 
-    fun isValidPassword(password: CharSequence?): Boolean {
-        val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
-        val passwordMatcher = Regex(passwordPattern)
-
-        return password != null && passwordMatcher.matches(password)
+    fun modificarApellidoState(value: String) {
+        _apellidoState.value = value
     }
 
-    fun login(username: String?, password: String?) {
-        if (isValidEmail(username)) {
-            auth.signInWithEmailAndPassword(username!!, password!!).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    _userId.value = task.result?.user?.uid
-                    _loggedUser.value = task.result?.user?.email?.split("@")?.get(0)
-                    _goToNext.value = true
-                } else {
-                    _goToNext.value = false
-                    // Log the error message
-                    Log.d("Error", "Error signing in: ${task.exception?.message}")
-                }
-                modifyProcessing()
-            }
-        }
+    fun modificarCiudadState(value: String) {
+        _ciudadState.value = value
     }
 
-    fun modifyProcessing() {
-        _showProgressBar.value = (showProgressBar.value == true)
+    fun showDialogLogin(value: Boolean) {
+        _showLoginDialog.value = value
     }
 
-    fun getUser(userId: String) {
-        repo.getUser(userId).addSnapshotListener { value, error ->
-            if (error != null) {
-                Log.w("UserRepository", "Listen failed.", error)
-                return@addSnapshotListener
-            }
-            if (value != null && value.exists()) {
-                val user = value.toObject(User::class.java)
-                if (user != null) {
-                    user.userId = userId
-                }
-
-                _actualUser.value = user
-                _userName.value = _actualUser.value!!.userName
-                _age.value = _actualUser.value!!.age.toString()
-
-            } else {
-                Log.d("UserRepository", "Current data: null")
-            }
-        }
+    fun modInvalidPass(value: Boolean) {
+        _errorPass.value = value
+    }
+    fun modInvalidEmail(value: Boolean) {
+        _errorEmail.value = value
     }
 
-    fun uploadImage(imageUri: Uri) {
-        repo.uploadImage(imageUri, _markers.value?.last()!!)
+    fun modifyProcessing(newValue: Boolean) {
+        _isLoading.value = newValue
     }
 
-    fun modPhotoTaken(boolean: Boolean) {
-        _photoTaken.value = boolean
+    fun showDialogRegister(value: Boolean) {
+        _showRegisterDialog.value = value
     }
 
-    fun modBottomSheet(boolean: Boolean) {
+    fun pillarLoggedUser(): String {
+        return _loggedUser.value.toString()
+    }
+
+    fun modPrevScreen(screen: String) {
+        _prevScreen.value = screen
+    }
+
+    fun goBack(navController: NavController, prevScreen: String) {
+        navController.navigate(prevScreen)
+    }
+
+    fun editMarker(marker: Marker) {
+        repo.editMarker(marker)
+    }
+
+    fun modMarkerId(id: String) {
+        _markerId.value = id
+    }
+
+    fun modSelectedImage(selectedBitmap: Bitmap) {
+        _selectedImage.value = selectedBitmap
+    }
+
+    fun modSelectedUri(uri: Uri) {
+        _selectedUri.value = uri
+    }
+
+    fun modificarLoggedUser(nuevo: String) {
+        _loggedUser.value = nuevo
+    }
+    fun modVerContrasena(nuevoBoolean: Boolean) {
+        _verContrasena.value = nuevoBoolean
+    }
+
+    fun modKeepLogged(nuevoBoolean: Boolean) {
+        _permanecerLogged.value = nuevoBoolean
+    }
+
+    fun showBottomSheet(boolean: Boolean) {
         _showBottomSheet.value = boolean
     }
 
     fun modMarcadorActual(lat: Double, long: Double) {
         _marcadorActual.value = LatLng(lat, long)
     }
-
-    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
-        val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
-        val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
-        val id = UUID.randomUUID().toString()
-        markersTemp.add(Marker(id, markerState, name, icon, url))
-        _markers.value = markersTemp.toMutableList()
-        repo.addMarker(_markers.value?.last()!!)
-    }
-
-
     fun modMarkerIcon(icon: Bitmap) {
         _icon.value = icon
     }
@@ -311,6 +235,197 @@ class ViewModel : ViewModel() {
         _getUserLocation.value = boolean
     }
 
+    fun getMarkers() {
+        repo.getMarkersFromDatabase().addSnapshotListener(object : EventListener<QuerySnapshot> {
+            override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
+                if (error != null) {
+                    Log.e("Firestore error", error.message.toString())
+                    return
+                }
+                val tempList = mutableListOf<Marker>()
+                for (dc: DocumentChange in value?.documentChanges!!) {
+                    if (dc.type == DocumentChange.Type.ADDED) {
+                        val document = dc.document
+                        val owner = document.getString("owner") ?: ""
+                        val id = document.getString("id") ?: ""
+                        val latitude = document.get("latitude") ?: ""
+                        val longitude = document.get("longitude") ?: ""
+                        val name = document.getString("name") ?: ""
+                        val url = document.getString("url") ?: ""
+
+                        val newMark = Marker(
+                            owner,
+                            id,
+                            MarkerState(
+                                LatLng(
+                                    latitude.toString().toDouble(), longitude.toString().toDouble()
+                                )
+                            ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
+                        )
+                        tempList.add(newMark)
+                    }
+                }
+                _markers.value = tempList
+            }
+        })
+    }
+
+    fun register(context: Context, username: String, password: String) {
+        val userPrefs = UserPrefs(context)
+        auth.createUserWithEmailAndPassword(username, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _goToNext.value = true
+                    modifyProcessing(false)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userPrefs.saveUserData(_email.value!!, _password.value!!)
+                    }
+                    val userRef =
+                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                    userRef.get()
+                        .addOnSuccessListener { documents ->
+                            if (documents.isEmpty) {
+                                database.collection("user")
+                                    .add(
+                                        hashMapOf(
+                                            "owner" to _loggedUser.value,
+                                            "name" to _nombreState.value,
+                                            "apellido" to _apellidoState.value,
+                                            "ciudad" to _ciudadState.value,
+                                            // "password"
+                                        )
+                                    )
+                            }
+                        }
+                } else {
+                    _goToNext.value = false
+                    Log.d("Error", "Error creating user : ${task.exception}")
+                    modifyProcessing(true)
+                    _errorEmail.value = true
+                    _showRegisterDialog.value = true
+                }
+            }
+    }
+
+
+    fun isValidEmail(target: CharSequence?): Boolean {
+        return !TextUtils.isEmpty(target) && target?.let {
+            android.util.Patterns.EMAIL_ADDRESS.matcher(it)
+                .matches()
+        } == true
+    }
+
+    fun isValidPass(password: CharSequence?): Boolean {
+        val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
+        val passwordMatcher = Regex(passwordPattern)
+
+        return password != null && passwordMatcher.matches(password)
+    }
+
+    fun login(username: String?, password: String?) {
+        auth.signInWithEmailAndPassword(username!!, password!!)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _userId.value = task.result.user?.uid
+                    _loggedUser.value = task.result.user?.email
+                    _goToNext.value = true
+                    modifyProcessing(false)
+                    val userRef =
+                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                    userRef.get()
+                        .addOnSuccessListener { documents ->
+                            if (documents.isEmpty) {
+                                database.collection("user")
+                                    .add(
+                                        hashMapOf(
+                                            "owner" to _loggedUser.value,
+                                            "name" to _nombreState.value,
+                                            "apellido" to _apellidoState.value,
+                                            "ciudad" to _ciudadState.value,
+                                            // "password"
+                                        )
+                                    )
+                            }
+                        }
+                } else {
+                    _goToNext.value = false
+                    Log.d("Error", "Error signing in: ${task.exception}")
+                    modifyProcessing(true)
+                    _errorEmail.value = false
+                    _showRegisterDialog.value = true
+                }
+            }
+            .addOnFailureListener {
+                _validLogin.value = false
+            }
+    }
+    fun signOut(context: Context, navController: NavController) {
+
+        val userPrefs = UserPrefs(context)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            userPrefs.clearUserData()
+        }
+
+        auth.signOut()
+
+        _goToNext.value = false
+        _password.value = ""
+
+        modifyProcessing(true)
+        navController.navigate(Routes.LoginScreen.route)
+    }
+
+    fun signInWithGoogleCredential(credential: AuthCredential, home: () -> Unit) =
+        viewModelScope.launch {
+            modifyProcessing(false)
+            try {
+                auth.signInWithCredential(credential)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d("GOOGLE_SIGNIN", "Log con exito")
+                            val userRef =
+                                database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                            userRef.get()
+                                .addOnSuccessListener { documents ->
+                                    if (documents.isEmpty) {
+                                        database.collection("user")
+                                            .add(
+                                                hashMapOf(
+                                                    "owner" to _loggedUser.value,
+                                                     "name" to _nombreState.value,
+                                                     "apellido" to _apellidoState.value,
+                                                     "ciudad" to _ciudadState.value,
+                                                )
+                                            )
+                                    }
+                                }
+                            home()
+                        }
+                    }
+                    .addOnFailureListener {
+                        Log.d("GOOGLE_SIGNIN", "Fallo .addOnFailureListener")
+                    }
+            } catch (ex: Exception) {
+                Log.d("GOOGLE_SIGNIN", "Excepción" + ex.localizedMessage)
+            }
+        }
+
+
+
+    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
+        val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
+        val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
+        val id = UUID.randomUUID().toString()
+        markersTemp.add(Marker(_loggedUser.value, id, markerState, name, icon, url))
+        _markers.value = markersTemp.toMutableList()
+        repo.addMarker(_markers.value?.last()!!)
+    }
+
+    fun uploadImage(imageUri: Uri) {
+        repo.uploadImage(imageUri, _markers.value?.last()!!)
+    }
+
     fun resetMarkerValues(context: Context) {
         _inputLat.value = ""
         _inputLong.value = ""
@@ -318,63 +433,6 @@ class ViewModel : ViewModel() {
         val img: Bitmap =
             ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
         _icon.value = img
-        _photoTaken.value = false
         _url.value = ""
     }
-
-    fun modPrevScreen(screen: String) {
-        _prevScreen.value = screen
-    }
-
-    fun goBackLogin(
-        userLogin: Boolean, userRegister: Boolean, navController: NavController, prevScreen: String
-    ) {
-        if (userLogin || userRegister) {
-            modUserLogin(false)
-            modUserRegister(false)
-            modShowErrorMessage(false)
-        } else {
-            goBack(navController, prevScreen)
-        }
-    }
-
-    fun goBack(navController: NavController, prevScreen: String) {
-        navController.navigate(prevScreen)
-    }
-
-    fun editMarker(marker: Marker) {
-        repo.editMarker(marker)
-    }
-
-    private val _markerId = MutableLiveData("")
-    val markerId = _markerId
-    fun modMarkerId(id: String) {
-        _markerId.value = id
-    }
-
-    fun modSelectedImage(selectedBitmap: Bitmap) {
-        _selectedImage.value = selectedBitmap
-    }
-
-
-    private val _selectedUri = MutableLiveData<Uri>()
-    val selectedUri = _selectedUri
-    fun modSelectedUri(uri: Uri) {
-        _selectedUri.value = uri
-    }
-
-//    fun markerExists(lat: String?, long: String?): Boolean {
-//        val latDouble = lat?.toDouble()
-//        val longDouble = long?.toDouble()
-//        val markers = _markers.value
-//        var repeated = false
-//        if (markers != null) {
-//            for (marker in markers) {
-//                if (marker.markerState.position.latitude.toString().toDouble() == latDouble && marker.markerState.position.longitude.toString().toDouble() == longDouble) {
-//                    repeated =  true
-//                }
-//            }
-//        }
-//        return repeated
-//    }
 }

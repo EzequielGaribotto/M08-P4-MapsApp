@@ -70,8 +70,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         modifier = Modifier
             .clickable {
                 if (prevScreen == "MapScreen") {
-                    vm.modBottomSheet(true)
-                    vm.modPhotoTaken(false)
+                    vm.showBottomSheet(true)
                     vm.modSelectedImage(emptyImg)
                 }
                 vm.goBack(navController, prevScreen)
@@ -103,8 +102,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         )
         Button(
             onClick = {
-                vm.modBottomSheet(true)
-                vm.modPhotoTaken(true)
+                vm.showBottomSheet(true)
                 vm.modMarkerIcon(selectedImage)
                 vm.modUrl(selectedImageUri.toString())
                 if (prevScreen != null) {

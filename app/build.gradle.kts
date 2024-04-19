@@ -28,6 +28,7 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+                //buildConfigField("String", "TOKEN", "990029406212-1hj9jk6tlcfsgau2s0i1heg4e0ulhcmo.apps.googleusercontent.com")
             )
         }
     }

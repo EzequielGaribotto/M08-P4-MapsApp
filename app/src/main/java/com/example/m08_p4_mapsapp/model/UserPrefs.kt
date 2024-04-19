@@ -31,4 +31,10 @@ class UserPrefs(private val context: Context) {
         }
     }
 
+    suspend fun clearUserData() {
+        context.dataStore.edit { prefs ->
+            prefs.clear()
+        }
+    }
+
 }

@@ -72,10 +72,9 @@ fun MapScreen(vm: ViewModel) {
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             onMapLongClick = {
-                vm.modPhotoTaken(false)
                 vm.modInputLat(it.latitude.toString())
                 vm.modInputLong(it.longitude.toString())
-                vm.modBottomSheet(true)
+                vm.showBottomSheet(true)
             }
         ) {
             val markers by vm.markers.observeAsState(mutableListOf())

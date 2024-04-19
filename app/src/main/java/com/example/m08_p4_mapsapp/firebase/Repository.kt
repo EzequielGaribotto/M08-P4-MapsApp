@@ -16,31 +16,57 @@ class Repository {
     private val database = FirebaseFirestore.getInstance()
 
     // INSERT
-    fun addUser(user: User) {
+    fun addUser(newUser: User) {
         database.collection("users").add(
             hashMapOf(
-                "userName" to user.userName,
-                "age" to user.age,
-                "profilePicture" to user.profilePicture
+                "userName" to newUser.userName,
+                "age" to newUser.age,
+                "profilePicture" to newUser.profilePicture,
+                "ciudad" to newUser.ciudad,
+                "email" to newUser.email,
+                "password" to newUser.password
             )
         )
     }
-    
+
 
     // UPDATE
-    fun editUser(editedUser: User) {
-        database.collection("users").document(editedUser.userId!!).set(
-            hashMapOf(
-                "userName" to editedUser.userName,
-                "age" to editedUser.age,
-                "profilePicture" to editedUser.profilePicture
-            )
-        )
+    fun editUser(user: User) {
+        database.collection("users")
+            .whereEqualTo("userId", user.userId)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("users").document(document.id).set(
+                        hashMapOf(
+                            "userName" to user.userName,
+                            "age" to user.age,
+                            "profilePicture" to user.profilePicture,
+                            "ciudad" to user.ciudad,
+                            "email" to user.email,
+                            "password" to user.password
+                        )
+                    )
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("ERROR", "Error getting documents: ", exception)
+            }
     }
 
     // DELETE
-    fun deleteUser(userId: String) {
-        database.collection("users").document(userId).delete()
+    fun removeUser(user: User) {
+        database.collection("users")
+            .whereEqualTo("userId", user.userId)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("users").document(document.id).delete()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.w("ERROR", "Error getting documents: ", exception)
+            }
     }
 
     fun addMarker(marker: Marker) {
@@ -77,23 +103,22 @@ class Repository {
             }
     }
 
-    fun removeMarker(marker:Marker) {
+    fun removeMarker(marker: Marker) {
         database.collection("markers")
             .whereEqualTo("id", marker.id)
-                .get()
-                .addOnSuccessListener { documents ->
-                    for (document in documents) {
-                        database.collection("markers").document(document.id).delete()
-                    }
-                }.addOnFailureListener { exception ->
-                    Log.w("ERROR", "Error getting documents: ", exception)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    database.collection("markers").document(document.id).delete()
+                }
+            }.addOnFailureListener { exception ->
+                Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
 
-
-//    fun removeMarker(marker:Marker) {
-//        database.collection("markers").document(marker.id).delete()
-//    }
+    fun getUserImageUri(): CollectionReference {
+        return database.collection("user")
+    }
 
     // SELECT
     fun getUsers(): CollectionReference {
@@ -117,7 +142,7 @@ class Repository {
             .addOnSuccessListener {
                 Log.i("IMAGE UPLOADED", "Image uploaded successfully")
                 storage.downloadUrl.addOnSuccessListener {
-                    Log.i("IMAGEN",it.toString())
+                    Log.i("IMAGEN", it.toString())
                     marker.url = it.toString()
                 }
             }

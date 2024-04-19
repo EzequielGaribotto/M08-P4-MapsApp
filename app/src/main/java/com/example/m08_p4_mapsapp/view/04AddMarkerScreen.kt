@@ -87,7 +87,7 @@ fun AddMarker(
     Button(onClick = {
         vm.addMarker(lat, long, name, icon, url)
         vm.uploadImage(url.toUri())
-        vm.modBottomSheet(false)
+        vm.showBottomSheet(false)
 
         if (vm.prevScreen.value == "AddMarkerScreen") {
             navigationController.navigate(Routes.MapScreen.route)
@@ -153,7 +153,7 @@ fun SetPhoto(
         if (currentRoute != null) {
             vm.modPrevScreen(currentRoute)
         }
-        vm.modBottomSheet(false)
+        vm.showBottomSheet(false)
         vm.modMarcadorActual(
             lat.toDoubleOrNull() ?: 0.0,
             long.toDoubleOrNull() ?: 0.0
@@ -168,7 +168,7 @@ fun SetPhoto(
         if (currentRoute != null) {
             vm.modPrevScreen(currentRoute)
         }
-        vm.modBottomSheet(false)
+        vm.showBottomSheet(false)
         vm.modMarcadorActual(
             lat.toDoubleOrNull() ?: 0.0,
             long.toDoubleOrNull() ?: 0.0

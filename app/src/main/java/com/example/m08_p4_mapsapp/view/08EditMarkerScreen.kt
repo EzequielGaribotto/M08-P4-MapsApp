@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -45,7 +45,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val url by vm.url.observeAsState("")
     val id by vm.markerId.observeAsState("")
 
-    vm.modBottomSheet(false)
+    vm.showBottomSheet(false)
     Icon(imageVector = Icons.Filled.ArrowBackIosNew,
         contentDescription = "Enrere",
         modifier = Modifier
@@ -82,9 +82,11 @@ private fun EditMarker(
 ) {
     val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
     Button(onClick = {
+        val loggedUser = vm.loggedUser.value
 
         vm.editMarker(
             marker = Marker(
+                owner = loggedUser,
                 id = id,
                 markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble())),
                 name = name,

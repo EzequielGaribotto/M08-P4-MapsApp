@@ -18,6 +18,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Divider
@@ -61,6 +62,7 @@ import com.example.m08_p4_mapsapp.view.GalleryScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.MarkerListScreen
+import com.example.m08_p4_mapsapp.view.RegisterScreen
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -91,7 +93,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(vm: ViewModel, context:Context) {
+fun GeoPermission(vm: ViewModel, context: Context) {
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
@@ -124,46 +126,40 @@ fun MyDrawer(vm: ViewModel, context: Context) {
                     scope.launch {
                         state.close()
                     }
-                })
+                }
+            )
             Text(
                 "Menu",
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.headlineLarge
             )
-            Divider()
-            NavigationDrawerItem(label = { Text(text = "Map") }, selected = false, onClick = {
-                if (currentRoute != "MapScreen") {
+
+            arrayOf("MapScreen", "MarkerListScreen", "AddMarkerScreen").forEach { screen ->
+                if (currentRoute != null) {
+                    createNavigationDrawerItem(
+                        currentRoute = currentRoute,
+                        targetRoute = screen,
+                        state = state,
+                        scope = scope,
+                        navigationController = navigationController,
+                        vm = vm
+                    )
+                }
+            }
+
+            // Crea un drawer item para hacer logOut
+            NavigationDrawerItem(
+                label = { Text("Log Out") },
+                selected = currentRoute == "LoginScreen",
+                onClick = {
                     scope.launch {
                         state.close()
                     }
-                    navigationController.navigate(Routes.MapScreen.route)
-                }
-            })
-            Divider()
-            NavigationDrawerItem(label = { Text(text = "Marker List") },
-                selected = false,
-                onClick = {
-                    if (currentRoute != "MarkerListScreen") {
-                        scope.launch {
-                            state.close()
-                        }
-                        vm.modPhotoTaken(false)
-                        navigationController.navigate("MarkerListScreen")
-                    }
+                    vm.signOut(context,navigationController)
+                    navigationController.navigate(Routes.LoginScreen.route)
                 }
             )
-            Divider()
-            NavigationDrawerItem(label = { Text(text = "Add Marker") },
-                selected = false,
-                onClick = {
-                    if (currentRoute != Routes.AddMarkerScreen.route) {
-                        scope.launch {
-                            state.close()
-                        }
-                        navigationController.navigate(Routes.AddMarkerScreen.route)
-                    }
-                }
-            )
+
         }
     }) {
         MyScaffold(vm, state, scope, navigationController, context)
@@ -203,6 +199,12 @@ fun MyScaffold(
                         navigationController, vm
                     )
                 }
+
+                composable(Routes.RegisterScreen.route) {
+                    RegisterScreen(
+                        navigationController, vm
+                    )
+                }
                 composable(Routes.MapScreen.route) {
                     MapScreen(
                         navigationController, vm
@@ -233,7 +235,7 @@ fun MyScaffold(
         if (showBottomSheet && vm.prevScreen.value != Routes.AddMarkerScreen.route) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    vm.modBottomSheet(false)
+                    vm.showBottomSheet(false)
                 }, sheetState = sheetState
             ) {
                 Column(
@@ -244,7 +246,7 @@ fun MyScaffold(
                     IconButton(onClick = {
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
-                                vm.modBottomSheet(false)
+                                vm.showBottomSheet(false)
                             }
                         }
                     }) {
@@ -268,8 +270,8 @@ fun MyTopAppBar(
     navigationController: NavHostController,
     vm: ViewModel
 ) {
-    if (currentRoute != Routes.LoginScreen.route) {
-
+    if (currentRoute != Routes.LoginScreen.route && currentRoute != Routes.RegisterScreen.route) {
+        val loggedUser by vm.loggedUser.observeAsState("")
         TopAppBar(title = { Text(text = "Los Mapas") }, colors = TopAppBarDefaults.topAppBarColors(
             containerColor = LightGreen,
             titleContentColor = Color.White,
@@ -280,13 +282,16 @@ fun MyTopAppBar(
             EnableDrawerButton(state, scope)
         }, actions = {
             IconButton(onClick = {
+                if (loggedUser != "") {
+                    vm.signOut(context = navigationController.context, navigationController)
+                }
                 scope.launch {
                     state.close()
                 }
                 vm.modPrevScreen(currentRoute)
                 navigationController.navigate(Routes.LoginScreen.route)
             }) {
-                Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "User")
+                Icon(imageVector = Icons.Filled.run{if (loggedUser != "") Cancel else AccountCircle}, contentDescription = "User")
             }
         })
     }
@@ -303,3 +308,28 @@ private fun EnableDrawerButton(state: DrawerState, scope: CoroutineScope) {
     }
 }
 
+@Composable
+fun createNavigationDrawerItem(
+    currentRoute: String,
+    targetRoute: String,
+    state: DrawerState,
+    scope: CoroutineScope,
+    navigationController: NavHostController,
+    vm: ViewModel? = null
+) {
+    NavigationDrawerItem(
+        label = {
+            val formattedText = targetRoute.replace(Regex("([A-Z])"), " $1").replace("Screen", "")
+            Text(text = formattedText) },
+        selected = currentRoute == targetRoute,
+        onClick = {
+            if (currentRoute != targetRoute) {
+                scope.launch {
+                    state.close()
+                }
+                navigationController.navigate(targetRoute)
+            }
+        }
+    )
+    Divider()
+}

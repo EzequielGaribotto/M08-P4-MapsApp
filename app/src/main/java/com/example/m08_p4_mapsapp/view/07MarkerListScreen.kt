@@ -131,7 +131,7 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)
                         vm.modPrevScreen("MarkerListScreen")
-                        vm.modBottomSheet(false)
+                        vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)
                         vm.editMarker(marker)
                     }

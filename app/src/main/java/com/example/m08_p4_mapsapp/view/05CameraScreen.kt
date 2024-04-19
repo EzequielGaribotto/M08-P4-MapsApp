@@ -92,7 +92,6 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
                         val uri = saveBitmapToExternalStorage(context, photo)
                         if (uri != null) {
                             vm.modUrl(uri.toString())
-                            vm.modPhotoTaken(true)
                             println("FOTO SACADA")
                         } else {
                             println("FOTO NO SACADA")
@@ -107,7 +106,7 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
 
             IconButton(
                 onClick = {
-                    vm.modBottomSheet(true)
+                    vm.showBottomSheet(true)
                     if (prevScreen != null) {
                         navController.navigate(prevScreen)
                     }
