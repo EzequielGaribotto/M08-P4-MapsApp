@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.firebase.Repository
 import com.example.m08_p4_mapsapp.model.Marker
+import com.example.m08_p4_mapsapp.model.User
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.MarkerState
@@ -33,6 +34,8 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -69,23 +72,23 @@ class ViewModel : ViewModel() {
 
     private val _icon = MutableLiveData<Bitmap>()
     val icon = _icon
-    
+
     private val _selectedImage = MutableLiveData<Bitmap>()
     val selectedImage = _selectedImage
 
-    private val _email = MutableLiveData<String>()
+    private val _email = MutableLiveData<String>("")
     val email: LiveData<String> = _email
 
-    private val _nombreState = MutableLiveData<String>()
-    val nombre: LiveData<String> = _nombreState
+    private val _nombre = MutableLiveData<String>("")
+    val nombre: LiveData<String> = _nombre
 
-    private val _apellidoState = MutableLiveData<String>()
-    val apellido: LiveData<String> = _apellidoState
+    private val _apellido = MutableLiveData<String>("")
+    val apellido: LiveData<String> = _apellido
 
-    private val _ciudadState = MutableLiveData<String>()
-    val ciudad: LiveData<String> = _ciudadState
+    private val _ciudad = MutableLiveData<String>("")
+    val ciudad: LiveData<String> = _ciudad
 
-    private val _password = MutableLiveData<String>()
+    private val _password = MutableLiveData<String>("")
     val password: LiveData<String> = _password
 
     private val _errorPass = MutableLiveData<Boolean>()
@@ -122,6 +125,16 @@ class ViewModel : ViewModel() {
 
     private val _loggedUser = MutableLiveData<String>()
     val loggedUser = _loggedUser
+
+    // live data para solicitarregistrar
+
+    private val _showRegisterRequestDialog = MutableLiveData(false)
+    val showRegisterRequestDialog = _showRegisterRequestDialog
+
+    fun showRegisterRequestDialog(value: Boolean) {
+        _showRegisterRequestDialog.value = value
+    }
+
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
     }
@@ -139,24 +152,25 @@ class ViewModel : ViewModel() {
     }
 
     fun modificarNombreState(value: String) {
-        _nombreState.value = value
+        _nombre.value = value
     }
 
     fun modificarApellidoState(value: String) {
-        _apellidoState.value = value
+        _apellido.value = value
     }
 
     fun modificarCiudadState(value: String) {
-        _ciudadState.value = value
+        _ciudad.value = value
     }
 
-    fun showDialogLogin(value: Boolean) {
+    fun showLoginDialog(value: Boolean) {
         _showLoginDialog.value = value
     }
 
     fun modInvalidPass(value: Boolean) {
         _errorPass.value = value
     }
+
     fun modInvalidEmail(value: Boolean) {
         _errorEmail.value = value
     }
@@ -165,11 +179,11 @@ class ViewModel : ViewModel() {
         _isLoading.value = newValue
     }
 
-    fun showDialogRegister(value: Boolean) {
+    fun showRegisterDialog(value: Boolean) {
         _showRegisterDialog.value = value
     }
 
-    fun pillarLoggedUser(): String {
+    fun getLoggedUser(): String {
         return _loggedUser.value.toString()
     }
 
@@ -200,6 +214,7 @@ class ViewModel : ViewModel() {
     fun modificarLoggedUser(nuevo: String) {
         _loggedUser.value = nuevo
     }
+
     fun modVerContrasena(nuevoBoolean: Boolean) {
         _verContrasena.value = nuevoBoolean
     }
@@ -215,6 +230,7 @@ class ViewModel : ViewModel() {
     fun modMarcadorActual(lat: Double, long: Double) {
         _marcadorActual.value = LatLng(lat, long)
     }
+
     fun modMarkerIcon(icon: Bitmap) {
         _icon.value = icon
     }
@@ -236,38 +252,41 @@ class ViewModel : ViewModel() {
     }
 
     fun getMarkers() {
-        repo.getMarkersFromDatabase().addSnapshotListener(object : EventListener<QuerySnapshot> {
-            override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
-                if (error != null) {
-                    Log.e("Firestore error", error.message.toString())
-                    return
-                }
-                val tempList = mutableListOf<Marker>()
-                for (dc: DocumentChange in value?.documentChanges!!) {
-                    if (dc.type == DocumentChange.Type.ADDED) {
-                        val document = dc.document
-                        val owner = document.getString("owner") ?: ""
-                        val id = document.getString("id") ?: ""
-                        val latitude = document.get("latitude") ?: ""
-                        val longitude = document.get("longitude") ?: ""
-                        val name = document.getString("name") ?: ""
-                        val url = document.getString("url") ?: ""
-
-                        val newMark = Marker(
-                            owner,
-                            id,
-                            MarkerState(
-                                LatLng(
-                                    latitude.toString().toDouble(), longitude.toString().toDouble()
-                                )
-                            ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
-                        )
-                        tempList.add(newMark)
+        repo.getMarkersFromDatabase()
+            .whereEqualTo("owner", _loggedUser.value)
+            .addSnapshotListener(object : EventListener<QuerySnapshot> {
+                override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
+                    if (error != null) {
+                        Log.e("Firestore error", error.message.toString())
+                        return
                     }
+                    val tempList = mutableListOf<Marker>()
+                    for (dc: DocumentChange in value?.documentChanges!!) {
+                        if (dc.type == DocumentChange.Type.ADDED) {
+                            val document = dc.document
+                            val owner = document.getString("owner") ?: ""
+                            val id = document.getString("id") ?: ""
+                            val latitude = document.get("latitude") ?: ""
+                            val longitude = document.get("longitude") ?: ""
+                            val name = document.getString("name") ?: ""
+                            val url = document.getString("url") ?: ""
+
+                            val newMark = Marker(
+                                owner,
+                                id,
+                                MarkerState(
+                                    LatLng(
+                                        latitude.toString().toDouble(),
+                                        longitude.toString().toDouble()
+                                    )
+                                ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
+                            )
+                            tempList.add(newMark)
+                        }
+                    }
+                    _markers.value = tempList
                 }
-                _markers.value = tempList
-            }
-        })
+            })
     }
 
     fun register(context: Context, username: String, password: String) {
@@ -285,24 +304,18 @@ class ViewModel : ViewModel() {
                     userRef.get()
                         .addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
-                                database.collection("user")
-                                    .add(
-                                        hashMapOf(
-                                            "owner" to _loggedUser.value,
-                                            "name" to _nombreState.value,
-                                            "apellido" to _apellidoState.value,
-                                            "ciudad" to _ciudadState.value,
-                                            // "password"
-                                        )
-                                    )
+                                repo.addUser(
+                                    User(_nombre.value!!,
+                                        _apellido.value!!,
+                                        _ciudad.value!!,
+                                        _loggedUser.value!!)
+                                )
                             }
                         }
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error creating user : ${task.exception}")
                     modifyProcessing(true)
-                    _errorEmail.value = true
-                    _showRegisterDialog.value = true
                 }
             }
     }
@@ -335,30 +348,24 @@ class ViewModel : ViewModel() {
                     userRef.get()
                         .addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
-                                database.collection("user")
-                                    .add(
-                                        hashMapOf(
-                                            "owner" to _loggedUser.value,
-                                            "name" to _nombreState.value,
-                                            "apellido" to _apellidoState.value,
-                                            "ciudad" to _ciudadState.value,
-                                            // "password"
-                                        )
-                                    )
+                                repo.addUser(
+                                    User(_nombre.value!!, _apellido.value!!,
+                                        _ciudad.value!!, _loggedUser.value!!)
+                                )
                             }
                         }
                 } else {
                     _goToNext.value = false
-                    Log.d("Error", "Error signing in: ${task.exception}")
+                    Log.d("Error", "Error logging in: ${task.exception}")
                     modifyProcessing(true)
-                    _errorEmail.value = false
-                    _showRegisterDialog.value = true
+                    _showRegisterRequestDialog.value = true
                 }
             }
             .addOnFailureListener {
                 _validLogin.value = false
             }
     }
+
     fun signOut(context: Context, navController: NavController) {
 
         val userPrefs = UserPrefs(context)
@@ -373,7 +380,40 @@ class ViewModel : ViewModel() {
         _password.value = ""
 
         modifyProcessing(true)
+
+        resetUserValues()
+        resetMarkerValues(context)
+
         navController.navigate(Routes.LoginScreen.route)
+    }
+
+    private fun resetUserValues() {
+        _loggedUser.value = ""
+        _userId.value = ""
+        _nombre.value = ""
+        _apellido.value = ""
+        _ciudad.value = ""
+        _showRegisterRequestDialog.value = false
+        _showRegisterDialog.value = false
+        _showLoginDialog.value = false
+        _validLogin.value = false
+        _verContrasena.value = false
+        _permanecerLogged.value = false
+        _markers.value = mutableListOf()
+        _inputLat.value = ""
+        _inputLong.value = ""
+        _markerName.value = ""
+        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        _url.value = ""
+        _showBottomSheet.value = false
+        _marcadorActual.value = LatLng(0.0, 0.0)
+        _getUserLocation.value = true
+        _prevScreen.value = "MapScreen"
+        _errorPass.value = false
+        _errorEmail.value = false
+        _markerId.value = ""
+        _selectedImage.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        _selectedUri.value = Uri.EMPTY
     }
 
     fun signInWithGoogleCredential(credential: AuthCredential, home: () -> Unit) =
@@ -393,9 +433,9 @@ class ViewModel : ViewModel() {
                                             .add(
                                                 hashMapOf(
                                                     "owner" to _loggedUser.value,
-                                                     "name" to _nombreState.value,
-                                                     "apellido" to _apellidoState.value,
-                                                     "ciudad" to _ciudadState.value,
+                                                    "name" to _nombre.value,
+                                                    "apellido" to _apellido.value,
+                                                    "ciudad" to _ciudad.value,
                                                 )
                                             )
                                     }
@@ -410,7 +450,6 @@ class ViewModel : ViewModel() {
                 Log.d("GOOGLE_SIGNIN", "Excepción" + ex.localizedMessage)
             }
         }
-
 
 
     fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
@@ -434,5 +473,11 @@ class ViewModel : ViewModel() {
             ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
         _icon.value = img
         _url.value = ""
+    }
+
+    private val _successfulRegister = MutableLiveData<Boolean>()
+    val successfulRegister: LiveData<Boolean> = _successfulRegister
+    fun showSuccessfulRegisterDialog(b: Boolean) {
+        _successfulRegister.value = b
     }
 }

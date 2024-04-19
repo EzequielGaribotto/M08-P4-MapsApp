@@ -17,14 +17,12 @@ class Repository {
 
     // INSERT
     fun addUser(newUser: User) {
-        database.collection("users").add(
+        database.collection("user").add(
             hashMapOf(
-                "userName" to newUser.userName,
-                "age" to newUser.age,
-                "profilePicture" to newUser.profilePicture,
+                "nombre" to newUser.nombre,
+                "apellido" to newUser.apellido,
                 "ciudad" to newUser.ciudad,
-                "email" to newUser.email,
-                "password" to newUser.password
+                "owner" to newUser.owner,
             )
         )
     }
@@ -32,19 +30,17 @@ class Repository {
 
     // UPDATE
     fun editUser(user: User) {
-        database.collection("users")
-            .whereEqualTo("userId", user.userId)
+        database.collection("user")
+            .whereEqualTo("owner", user.owner)
             .get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
-                    database.collection("users").document(document.id).set(
+                    database.collection("user").document(document.id).set(
                         hashMapOf(
-                            "userName" to user.userName,
-                            "age" to user.age,
-                            "profilePicture" to user.profilePicture,
+                            "userName" to user.nombre,
+                            "age" to user.apellido,
                             "ciudad" to user.ciudad,
-                            "email" to user.email,
-                            "password" to user.password
+                            "profilePicture" to user.owner,
                         )
                     )
                 }
@@ -57,11 +53,11 @@ class Repository {
     // DELETE
     fun removeUser(user: User) {
         database.collection("users")
-            .whereEqualTo("userId", user.userId)
+            .whereEqualTo("owner", user.owner)
             .get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
-                    database.collection("users").document(document.id).delete()
+                    database.collection("user").document(document.id).delete()
                 }
             }
             .addOnFailureListener { exception ->
@@ -72,6 +68,7 @@ class Repository {
     fun addMarker(marker: Marker) {
         database.collection("markers").add(
             hashMapOf(
+                "owner" to marker.owner,
                 "id" to marker.id,
                 "name" to marker.name,
                 "latitude" to marker.markerState.position.latitude,

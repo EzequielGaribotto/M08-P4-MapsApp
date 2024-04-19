@@ -6,8 +6,8 @@ import com.google.maps.android.compose.MarkerState
 class Marker {
     var owner: String?
     var id: String
-    var markerState: MarkerState
     var name: String
+    var markerState: MarkerState
     var icon: Bitmap
     var url:String
 

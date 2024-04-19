@@ -141,8 +141,7 @@ fun MyDrawer(vm: ViewModel, context: Context) {
                         targetRoute = screen,
                         state = state,
                         scope = scope,
-                        navigationController = navigationController,
-                        vm = vm
+                        navigationController = navigationController
                     )
                 }
             }
@@ -272,7 +271,7 @@ fun MyTopAppBar(
 ) {
     if (currentRoute != Routes.LoginScreen.route && currentRoute != Routes.RegisterScreen.route) {
         val loggedUser by vm.loggedUser.observeAsState("")
-        TopAppBar(title = { Text(text = "Los Mapas") }, colors = TopAppBarDefaults.topAppBarColors(
+        TopAppBar(title = { Text(text = "Los Mapas: ${vm.getLoggedUser()}") }, colors = TopAppBarDefaults.topAppBarColors(
             containerColor = LightGreen,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
@@ -315,7 +314,6 @@ fun createNavigationDrawerItem(
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController,
-    vm: ViewModel? = null
 ) {
     NavigationDrawerItem(
         label = {

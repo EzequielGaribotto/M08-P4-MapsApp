@@ -79,6 +79,7 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val errorEmail by vm.errorEmail.observeAsState(false)
     val errorPass by vm.errorPass.observeAsState(false)
     val showRegisterDialog: Boolean by vm.showRegisterDialog.observeAsState(false)
+    val successfulRegister by vm.successfulRegister.observeAsState(false)
 
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
@@ -124,14 +125,29 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
             PasswordTextfield(password, vm, verContrasena)
             KeepMeLoggedInCheckbox(keepLogged, vm)
             RegisterButton(vm, email, password, errorEmail,
-                errorPass, keepLogged, userPrefs, context)
-            CustomClickableText("¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController)
+                errorPass, keepLogged, userPrefs, context, goToNext)
+            CustomClickableText("¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm)
             GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext))
         }
 
-        InvalidRegisterDialog(
-            showRegisterDialog,vm,
-        ) { vm.showDialogRegister(false) }
+        InvalidRegisterDialog(showRegisterDialog,vm)
+        SuccessfulRegisterDialog(successfulRegister, vm,)
+    }
+}
+
+@Composable
+fun SuccessfulRegisterDialog(successfulRegister: Boolean, vm: ViewModel) {
+    if (successfulRegister) {
+        Dialog(onDismissRequest = { vm.showSuccessfulRegisterDialog(false) }) {
+            Column(
+                Modifier
+                    .background(Color.White)
+                    .padding(24.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "¡Registro exitoso!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+        }
     }
 }
 
@@ -199,7 +215,7 @@ private fun clientLauncher(
                 if (account.email != null) vm.modificarLoggedUser(account.email!!)
                 if (keepLogged) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        userPrefs.saveUserData(vm.pillarLoggedUser(), "")
+                        userPrefs.saveUserData(vm.getLoggedUser(), "")
                     }
                 }
             } catch (e: Exception) {
@@ -235,30 +251,35 @@ private fun clientLauncher(
 @Composable
 private fun RegisterButton(
     vm: ViewModel,
-    emailState: String,
-    passState: String,
+    email: String,
+    pass: String,
     errorEmail: Boolean,
     errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
-    context: Context
+    context: Context,
+    goToNext: Boolean
 ) {
     Button(
         onClick = {
-            vm.modInvalidEmail(!vm.isValidEmail(emailState))
-            vm.modInvalidPass(!vm.isValidPass(passState))
+            vm.modInvalidEmail(!vm.isValidEmail(email))
+            vm.modInvalidPass(!vm.isValidPass(pass))
             if (!(errorEmail || errorPass)) {
                 if (keepLogged) {
                     CoroutineScope(Dispatchers.IO).launch {
-                        userPrefs.saveUserData(vm.pillarLoggedUser(), "")
+                        userPrefs.saveUserData(vm.getLoggedUser(), "")
                     }
                 }
-                vm.register(context, emailState, passState)
+                vm.register(context, email, pass)
+                if (goToNext) {
+                    vm.showSuccessfulRegisterDialog(true)
+                }
             } else {
-                vm.showDialogRegister(true)
+                vm.showRegisterDialog(true)
             }
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        enabled = email.isNotEmpty() && pass.isNotEmpty()
     ) {
         Text(
             text = "Registrar",
@@ -286,19 +307,19 @@ fun KeepMeLoggedInCheckbox(
 }
 
 @Composable
-fun InvalidRegisterDialog(show: Boolean, vm:ViewModel, onDismiss: () -> Unit) {
+fun InvalidRegisterDialog(show: Boolean, vm:ViewModel) {
     if (show) {
-        Dialog(onDismissRequest = { onDismiss() }) {
+        Dialog(onDismissRequest = { vm.showRegisterDialog(false) }) {
             Column(
                 Modifier
                     .background(Color.White)
                     .padding(24.dp)
                     .fillMaxWidth()
             ) {
-                val text = StringBuilder()
-                if (vm.errorPass.value == true) text.appendLine("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial")
-                if (vm.errorEmail.value == true) text.appendLine("Ya existe una cuenta con este email, o es inválido")
-                Text(text=text.toString().trim())
+                val message = StringBuilder()
+                if (vm.errorPass.value == true) message.appendLine("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial")
+                if (vm.errorEmail.value == true) message.appendLine("Ya existe una cuenta con este email, o es inválido")
+                Text(text=message.toString().trim())
             }
         }
     }
