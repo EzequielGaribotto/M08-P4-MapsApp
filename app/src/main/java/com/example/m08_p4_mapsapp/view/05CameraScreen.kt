@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.runtime.Composable
@@ -138,8 +137,8 @@ fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
 
     val uri: Uri? =
         context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-    uri?.let {
-        val outstream: OutputStream? = context.contentResolver.openOutputStream(it)
+    uri?.let { ur1 ->
+        val outstream: OutputStream? = context.contentResolver.openOutputStream(ur1)
         outstream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
         outstream?.close()
     }

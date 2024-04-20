@@ -39,15 +39,31 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val url by vm.url.observeAsState("")
     val id by vm.markerId.observeAsState("")
     val showSaveChangesDialog by vm.showSaveChangesDialog.observeAsState(false)
-
+    val loggedUser by vm.loggedUser.observeAsState("")
 
     vm.showBottomSheet(false)
+
+    ClickOutsideToDismissKeyboard {
+        CustomGoBackButton("MarkerListScreen",
+            vm,
+            navController,
+            posteriorActions = { vm.resetMarkerValues(context) })
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            SetPhoto(url, icon, vm, lat, long, navController, true)
+            SetName(name, vm)
+            EditMarker(name, lat, long, vm)
+        }
+    }
+
     CustomDialog(show = showSaveChangesDialog,
         question = "¿Seguro que quieres guardar los cambios?",
         option1 = "SÍ",
         onOption1Click = {
             vm.showSaveChangesDialog(false)
-            val loggedUser = vm.loggedUser.value
             vm.editMarker(
                 marker = Marker(
                     owner = loggedUser,
@@ -64,22 +80,8 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         option2 = "No",
         onOption2Click = {
             vm.showSaveChangesDialog(false)
-        })
-    ClickOutsideToDismissKeyboard {
-        CustomGoBackButton("MarkerListScreen",
-            vm,
-            navController,
-            posteriorActions = { vm.resetMarkerValues(context) })
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            SetPhoto(url, icon, vm, lat, long, navController, true)
-            SetName(name, vm)
-            EditMarker(name, lat, long, vm)
         }
-    }
+    )
 }
 
 @Composable

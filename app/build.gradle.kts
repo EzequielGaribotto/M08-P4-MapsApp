@@ -65,7 +65,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.3")
     implementation("androidx.camera:camera-extensions:1.3.3")
 //Icons
-
+    implementation("io.coil-kt:coil-compose:1.4.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.6")
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.6")

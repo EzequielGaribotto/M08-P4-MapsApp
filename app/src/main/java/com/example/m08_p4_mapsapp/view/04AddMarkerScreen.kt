@@ -144,8 +144,9 @@ fun SetPhoto(
 ) {
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    println("PEPE PEREZ SANTOS"+url)
     GlideImage(
-        model = if (url == "") icon else url,
+        model = if (url.isNullOrBlank()) icon else url,
         contentDescription = "Marker Image",
         contentScale = ContentScale.Crop,
         modifier = Modifier

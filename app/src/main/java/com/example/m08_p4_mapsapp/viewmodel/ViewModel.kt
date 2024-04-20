@@ -34,13 +34,6 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-    private val _showSaveChangesDialog = MutableLiveData(false)
-    val showSaveChangesDialog: LiveData<Boolean> = _showSaveChangesDialog
-
-    fun showSaveChangesDialog(b: Boolean) {
-        _showSaveChangesDialog.value = b
-    }
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -134,72 +127,69 @@ class ViewModel : ViewModel() {
     private val _showRegisterRequestDialog = MutableLiveData(false)
     val showRegisterRequestDialog = _showRegisterRequestDialog
 
+    private val _successfulRegister = MutableLiveData<Boolean>()
+    val successfulRegister: LiveData<Boolean> = _successfulRegister
+
+    private val _showLogOutDialog = MutableLiveData<Boolean>()
+    val showLogOutDialog: LiveData<Boolean> = _showLogOutDialog
+
+    private val _showSaveChangesDialog = MutableLiveData(false)
+    val showSaveChangesDialog: LiveData<Boolean> = _showSaveChangesDialog
+
+    fun showSaveChangesDialog(b: Boolean) {
+        _showSaveChangesDialog.value = b
+    }
+    fun showSuccessfulRegisterDialog(b: Boolean) {
+        _successfulRegister.value = b
+    }
+    fun showLogOutDialog(b: Boolean) {
+        _showLogOutDialog.value = b
+    }
+    fun modGoToNext(b: Boolean) {
+        _goToNext.value = b
+    }
     fun showRegisterRequestDialog(boolean: Boolean) {
         _showRegisterRequestDialog.value = boolean
     }
-
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
     }
-
     fun modUrl(url: String) {
         _url.value = url
     }
-
     fun modificarEmailState(value: String) {
         _email.value = value
     }
-
     fun modificarPasswordState(value: String) {
         _password.value = value
     }
-
     fun modificarNombreState(value: String) {
         _nombre.value = value
     }
-
     fun modificarApellidoState(value: String) {
         _apellido.value = value
     }
-
     fun modificarCiudadState(value: String) {
         _ciudad.value = value
     }
-
     fun showLoginDialog(boolean: Boolean) {
         _showLoginDialog.value = boolean
     }
-
     fun modErrorPass(boolean: Boolean) {
         _errorPass.value = boolean
     }
-
     fun modErrorEmail(boolean: Boolean) {
         _errorEmail.value = boolean
     }
-
     fun modShowLoading(boolean: Boolean) {
         _isLoading.value = boolean
     }
-
     fun showRegisterDialog(boolean: Boolean) {
         _showRegisterDialog.value = boolean
     }
 
-    fun getLoggedUser(): String {
-        return _loggedUser.value.toString()
-    }
-
     fun modPrevScreen(screen: String) {
         _prevScreen.value = screen
-    }
-
-    fun goBack(navController: NavController, prevScreen: String) {
-        navController.navigate(prevScreen)
-    }
-
-    fun editMarker(marker: Marker) {
-        repo.editMarker(marker)
     }
 
     fun modMarkerId(id: String) {
@@ -230,10 +220,6 @@ class ViewModel : ViewModel() {
         _showBottomSheet.value = boolean
     }
 
-    fun modMarcadorActual(lat: Double, long: Double) {
-        _marcadorActual.value = LatLng(lat, long)
-    }
-
     fun modMarkerIcon(icon: Bitmap) {
         _icon.value = icon
     }
@@ -252,6 +238,18 @@ class ViewModel : ViewModel() {
 
     fun modGetUserLocation(boolean: Boolean) {
         _getUserLocation.value = boolean
+    }
+
+    fun modMarcadorActual(lat: Double, long: Double) {
+        _marcadorActual.value = LatLng(lat, long)
+    }
+
+    fun goBack(navController: NavController, prevScreen: String) {
+        navController.navigate(prevScreen)
+    }
+
+    fun editMarker(marker: Marker) {
+        repo.editMarker(marker)
     }
 
     fun getMarkers() {
@@ -494,19 +492,5 @@ class ViewModel : ViewModel() {
         _url.value = ""
     }
 
-    private val _successfulRegister = MutableLiveData<Boolean>()
-    val successfulRegister: LiveData<Boolean> = _successfulRegister
-    fun showSuccessfulRegisterDialog(b: Boolean) {
-        _successfulRegister.value = b
-    }
 
-    private val _showLogOutDialog = MutableLiveData<Boolean>()
-    val showLogOutDialog: LiveData<Boolean> = _showLogOutDialog
-    fun showLogOutDialog(b: Boolean) {
-        _showLogOutDialog.value = b
-    }
-
-    fun modGoToNext(b: Boolean) {
-        _goToNext.value = b
-    }
 }

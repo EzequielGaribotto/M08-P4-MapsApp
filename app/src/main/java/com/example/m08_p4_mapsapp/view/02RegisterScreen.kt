@@ -11,9 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,9 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -82,9 +80,13 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val errorPass by vm.errorPass.observeAsState(false)
     val showRegisterDialog by vm.showRegisterDialog.observeAsState(false)
     val successfulRegister by vm.successfulRegister.observeAsState(false)
-
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
+    // GOOGLE LOGIN
+    val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
+    val validLogin by vm.validLogin.observeAsState(false)
+    val loggedUser by vm.loggedUser.observeAsState("")
+
     ClickOutsideToDismissKeyboard {
         if (isLoading) {
             Column(
@@ -119,7 +121,7 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
                 CustomClickableText(
                     "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
                 )
-                //GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext))
+                GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext, loggedUser))
             }
 
             InvalidRegisterDialog(showRegisterDialog, vm)
@@ -193,7 +195,8 @@ private fun clientLauncher(
     context: Context,
     storedUserData: State<List<String>>,
     validLogin: Boolean,
-    goToNext: Boolean
+    goToNext: Boolean,
+    loggedUser: String
 ): Pair<ManagedActivityResultLauncher<Intent, ActivityResult>, GoogleSignInClient> {
     //val token = BuildConfig.TOKEN
     val launcher = rememberLauncherForActivityResult(
@@ -210,7 +213,7 @@ private fun clientLauncher(
             if (account.email != null) vm.modificarLoggedUser(account.email!!)
             if (keepLogged) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    userPrefs.saveUserData(vm.getLoggedUser(), "")
+                    userPrefs.saveUserData(loggedUser, "")
                 }
             }
         } catch (e: Exception) {
