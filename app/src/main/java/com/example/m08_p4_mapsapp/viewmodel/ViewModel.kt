@@ -34,7 +34,12 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+    private val _showSaveChangesDialog = MutableLiveData(false)
+    val showSaveChangesDialog: LiveData<Boolean> = _showSaveChangesDialog
 
+    fun showSaveChangesDialog(b: Boolean) {
+        _showSaveChangesDialog.value = b
+    }
 
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
@@ -350,10 +355,9 @@ class ViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
-                    _goToNext.value = true
                     if (keepLogged) {
                         CoroutineScope(Dispatchers.IO).launch {
-                            userPrefs.saveUserData(_email.value!!, _password.value!!)
+                            userPrefs.saveUserData(_loggedUser.value!!, _password.value!!)
                         }
                     }
                     val userRef =
@@ -363,11 +367,12 @@ class ViewModel : ViewModel() {
                             repo.addUser(
                                 User(
                                     _nombre.value!!, _apellido.value!!,
-                                    _ciudad.value!!, _email.value!!
+                                    _ciudad.value!!, _loggedUser.value!!
                                 )
                             )
                         }
                     }
+                    _goToNext.value = true
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error logging in: ${task.exception}")
@@ -493,5 +498,15 @@ class ViewModel : ViewModel() {
     val successfulRegister: LiveData<Boolean> = _successfulRegister
     fun showSuccessfulRegisterDialog(b: Boolean) {
         _successfulRegister.value = b
+    }
+
+    private val _showLogOutDialog = MutableLiveData<Boolean>()
+    val showLogOutDialog: LiveData<Boolean> = _showLogOutDialog
+    fun showLogOutDialog(b: Boolean) {
+        _showLogOutDialog.value = b
+    }
+
+    fun modGoToNext(b: Boolean) {
+        _goToNext.value = b
     }
 }

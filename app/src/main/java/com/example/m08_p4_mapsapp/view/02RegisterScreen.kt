@@ -68,19 +68,19 @@ import java.lang.StringBuilder
 fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val isLoading: Boolean by vm.isLoading.observeAsState(true)
-    val goToNext: Boolean by vm.goToNext.observeAsState(false)
-    val email: String by vm.email.observeAsState("")
-    val password: String by vm.password.observeAsState("")
-    val nombre: String by vm.nombre.observeAsState("")
-    val apellido: String by vm.apellido.observeAsState("")
-    val ciudad: String by vm.ciudad.observeAsState("")
-    val verContrasena: Boolean by vm.verContrasena.observeAsState(false)
-    val keepLogged: Boolean by vm.keepLogged.observeAsState(false)
+    val isLoading by vm.isLoading.observeAsState(true)
+    val goToNext by vm.goToNext.observeAsState(false)
+    val email by vm.email.observeAsState("")
+    val password by vm.password.observeAsState("")
+    val nombre by vm.nombre.observeAsState("")
+    val apellido by vm.apellido.observeAsState("")
+    val ciudad by vm.ciudad.observeAsState("")
+    val verContrasena by vm.verContrasena.observeAsState(false)
+    val keepLogged by vm.keepLogged.observeAsState(false)
 
     val errorEmail by vm.errorEmail.observeAsState(false)
     val errorPass by vm.errorPass.observeAsState(false)
-    val showRegisterDialog: Boolean by vm.showRegisterDialog.observeAsState(false)
+    val showRegisterDialog by vm.showRegisterDialog.observeAsState(false)
     val successfulRegister by vm.successfulRegister.observeAsState(false)
 
     val context = LocalContext.current

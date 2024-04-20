@@ -163,7 +163,7 @@ fun SetPhoto(
         )
         navigationController.navigate(Routes.CameraScreen.route)
     }) {
-        Text((if (photoTaken) "RE" else "") + "TOMAR FOTO")
+        Text((if (photoTaken) "Retomar foto" else "Tomar foto"))
     }
 
 
@@ -178,6 +178,6 @@ fun SetPhoto(
         )
         navigationController.navigate(Routes.GalleryScreen.route)
     }) {
-        Text("BUSCAR FOTO EN GALERÍA")
+        Text("Buscar foto en galería")
     }
 }

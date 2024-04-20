@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,12 +39,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
+import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -56,14 +55,14 @@ import java.lang.StringBuilder
 fun LoginScreen(navController: NavController, vm: ViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val isLoading: Boolean by vm.isLoading.observeAsState(true)
-    val email: String by vm.email.observeAsState("")
-    val password: String by vm.password.observeAsState("")
+    val isLoading by vm.isLoading.observeAsState(true)
+    val email by vm.email.observeAsState("")
+    val password by vm.password.observeAsState("")
     val errorEmail by vm.errorEmail.observeAsState(false)
     val errorPass by vm.errorPass.observeAsState(false)
-    val showLoginDialog: Boolean by vm.showLoginDialog.observeAsState(false)
-    val verContrasena: Boolean by vm.verContrasena.observeAsState(false)
-    val keepLogged: Boolean by vm.keepLogged.observeAsState(false)
+    val showLoginDialog by vm.showLoginDialog.observeAsState(false)
+    val verContrasena by vm.verContrasena.observeAsState(false)
+    val keepLogged by vm.keepLogged.observeAsState(false)
     val showRegisterRequestDialog by vm.showRegisterRequestDialog.observeAsState(false)
     val goToNext by vm.goToNext.observeAsState(false)
 
@@ -71,6 +70,10 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val userPrefs = UserPrefs(context)
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
     println("Stored user data: ${storedUserData.value}")
+    if (goToNext) {
+        navController.navigate(Routes.MapScreen.route)
+        vm.modGoToNext(false)
+    }
     UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
     ClickOutsideToDismissKeyboard {
         Column(
@@ -88,12 +91,7 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
                 EmailTextfield(email, vm, keyboardController)
                 PasswordTextfield(password, vm, verContrasena)
                 KeepMeLoggedInCheckbox(keepLogged, vm)
-                LogInButton(vm, email, password, errorEmail, errorPass,
-                    keepLogged,
-                    userPrefs,
-                    navController,
-                    goToNext
-                )
+                LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
                 CustomClickableText(
                     "¿No tienes cuenta? ",
                     "Regístrate",
@@ -102,7 +100,17 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
                     vm
                 )
                 InvalidLoginDialog(showLoginDialog, vm)
-                SolicitarRegistrarDialog(showRegisterRequestDialog, vm, navController)
+                CustomDialog(
+                    show = showRegisterRequestDialog,
+                    question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
+                    option1 = "SÍ",
+                    onOption1Click = {
+                        vm.showRegisterRequestDialog(false)
+                        navController.navigate("RegisterScreen")
+                    },
+                    option2 = "NO",
+                    onOption2Click = { vm.showRegisterRequestDialog(false) }
+                )
             }
 
         }
@@ -122,7 +130,7 @@ private fun UseStoredData(
     ) {
         vm.modShowLoading(true)
         vm.login(storedUserData.value[0], storedUserData.value[1], keepLogged, userPrefs)
-        navController.navigate(Routes.MapScreen.route)
+        navController.navigate("MapScreen")
         vm.modShowLoading(false)
     } else {
         vm.modShowLoading(false)
@@ -214,8 +222,6 @@ private fun LogInButton(
     errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
-    navController: NavController,
-    goNext: Boolean
 ) {
     Button(
         onClick = {
@@ -225,7 +231,6 @@ private fun LogInButton(
                 vm.showLoginDialog(true)
             } else {
                 vm.login(email, pass, keepLogged, userPrefs)
-                if (goNext) navController.navigate(Routes.MapScreen.route)
             }
         },
         modifier = Modifier.fillMaxWidth(),
@@ -251,56 +256,6 @@ fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
                 if (vm.errorPass.value == true) message.appendLine("Contraseña incorrecta")
                 if (vm.errorEmail.value == true) message.appendLine("El email no es válido")
                 Text(text = message.toString().trim())
-            }
-        }
-    }
-}
-
-@Composable
-fun SolicitarRegistrarDialog(show: Boolean, vm: ViewModel, navController: NavController) {
-    if (show) {
-        Dialog(onDismissRequest = { vm.showRegisterRequestDialog(false) }) {
-            Column(
-                Modifier
-                    .background(Color.White)
-                    .padding(24.dp)
-                    .fillMaxWidth()
-            ) {
-                val message = StringBuilder()
-                if (vm.goToNext.value == false) {
-                    message.appendLine("Parece que aún no te has registrado.\n¿Deseas registrarte?")
-                }
-                Text(
-                    text = message.toString().trim(),
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp),
-                    textAlign = TextAlign.Center
-                )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(onClick = {
-                        vm.showRegisterDialog(false)
-                        navController.navigate("RegisterScreen")
-                    }) {
-                        Text(
-                            text = "SÍ",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                    Button(onClick = { vm.showRegisterRequestDialog(false) }) {
-                        Text(
-                            text = "NO",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
             }
         }
     }
