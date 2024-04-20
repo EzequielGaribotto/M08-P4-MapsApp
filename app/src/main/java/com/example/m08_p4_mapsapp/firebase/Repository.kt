@@ -37,10 +37,10 @@ class Repository {
                 for (document in documents) {
                     database.collection("user").document(document.id).set(
                         hashMapOf(
-                            "userName" to user.nombre,
-                            "age" to user.apellido,
+                            "nombre" to user.nombre,
+                            "apellido" to user.apellido,
                             "ciudad" to user.ciudad,
-                            "profilePicture" to user.owner,
+                            "owner" to user.owner,
                         )
                     )
                 }
@@ -52,7 +52,7 @@ class Repository {
 
     // DELETE
     fun removeUser(user: User) {
-        database.collection("users")
+        database.collection("user")
             .whereEqualTo("owner", user.owner)
             .get()
             .addOnSuccessListener { documents ->
@@ -120,11 +120,11 @@ class Repository {
 
     // SELECT
     fun getUsers(): CollectionReference {
-        return database.collection("users")
+        return database.collection("user")
     }
 
     fun getUser(userId: String): DocumentReference {
-        return database.collection("users").document(userId)
+        return database.collection("user").document(userId)
     }
 
     fun getMarkersFromDatabase(): CollectionReference {

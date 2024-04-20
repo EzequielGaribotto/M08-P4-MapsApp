@@ -87,6 +87,10 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val validLogin by vm.validLogin.observeAsState(false)
     val loggedUser by vm.loggedUser.observeAsState("")
 
+    if (goToNext) {
+        navController.navigate(Routes.MapScreen.route)
+        vm.modGoToNext(false)
+    }
     ClickOutsideToDismissKeyboard {
         if (isLoading) {
             Column(
@@ -121,7 +125,7 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
                 CustomClickableText(
                     "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
                 )
-                GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext, loggedUser))
+                //GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext, loggedUser))
             }
 
             InvalidRegisterDialog(showRegisterDialog, vm)

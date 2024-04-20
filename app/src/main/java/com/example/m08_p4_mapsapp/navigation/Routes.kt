@@ -10,4 +10,5 @@ sealed class Routes(val route: String) {
     data object CameraScreen : Routes("CameraScreen")
     data object GalleryScreen : Routes("GalleryScreen")
     data object EditMarkerScreen : Routes("EditMarkerScreen")
+    data object UserInfoScreen : Routes("UserInfoScreen")
 }

@@ -22,10 +22,10 @@ import androidx.compose.material.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
@@ -62,14 +62,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.m08_p4_mapsapp.navigation.Routes
-import com.example.m08_p4_mapsapp.ui.theme.LightGolden50
 import com.example.m08_p4_mapsapp.ui.theme.LightGreen
 import com.example.m08_p4_mapsapp.ui.theme.LightRed
 import com.example.m08_p4_mapsapp.ui.theme.LighterGreen160
@@ -83,6 +81,7 @@ import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
 import com.example.m08_p4_mapsapp.view.MarkerListScreen
 import com.example.m08_p4_mapsapp.view.RegisterScreen
+import com.example.m08_p4_mapsapp.view.UserInfoScreen
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -90,7 +89,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.lang.StringBuilder
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
@@ -169,8 +167,9 @@ fun MyDrawer(vm: ViewModel, context: Context) {
             )
             val screenMap = mapOf(
                 "MapScreen" to Icons.Filled.Map,
-                "MarkerListScreen" to Icons.Filled.List,
-                "AddMarkerScreen" to Icons.Filled.Add
+                "MarkerListScreen" to Icons.AutoMirrored.Filled.List,
+                "AddMarkerScreen" to Icons.Filled.Add,
+                "UserInfoScreen" to Icons.Filled.AccountCircle
             )
 
             screenMap.forEach { (screen, icon) ->
@@ -300,7 +299,7 @@ fun MyScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
-        if (currentRoute in arrayOf("AddMarkerScreen", "MapScreen", "MarkerListScreen") && currentRoute != null) {
+        if (currentRoute in arrayOf("AddMarkerScreen", "MapScreen", "MarkerListScreen", "UserInfoScreen") && currentRoute != null) {
             MyTopAppBar(currentRoute, state, scope, navigationController, vm)
         }
     }) { paddingValues ->
@@ -347,6 +346,10 @@ fun MyScaffold(
                 }
                 composable(Routes.EditMarkerScreen.route) {
                     EditMarkerScreen(vm, navigationController)
+                }
+
+                composable(Routes.UserInfoScreen.route) {
+                    UserInfoScreen(vm)
                 }
             }
         }

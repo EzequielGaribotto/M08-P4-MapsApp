@@ -103,7 +103,24 @@ class ViewModel : ViewModel() {
     val validLogin: LiveData<Boolean> = _validLogin
 
     private val _userId = MutableLiveData("")
+    val userId: LiveData<String> = _userId
 
+    fun getUser(userid: String = ""): User {
+        var user = User("","","","")
+        repo.getUsers().whereEqualTo("uid", userid).get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                user = User(
+                    document.getString("nombre") ?: "",
+                    document.getString("apellido") ?: "",
+                    document.getString("ciudad") ?: "",
+                    document.getString("owner") ?: ""
+                )
+            }
+        }.addOnFailureListener {
+                Log.d("ERROR", "Error getting documents: ", it)
+            }
+        return user
+    }
     private val _verContrasena = MutableLiveData(false)
     val verContrasena = _verContrasena
 
