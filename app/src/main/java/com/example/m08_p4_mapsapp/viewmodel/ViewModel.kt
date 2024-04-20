@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -51,7 +52,7 @@ class ViewModel : ViewModel() {
     val getUserLocation = _getUserLocation
 
     private val _marcadorActual = MutableLiveData(LatLng(0.0, 0.0))
-    val marcadorActual = _marcadorActual
+    val latLngActual = _marcadorActual
 
     private val _showBottomSheet = MutableLiveData(false)
     val showBottomSheet = _showBottomSheet
@@ -136,6 +137,18 @@ class ViewModel : ViewModel() {
     private val _showSaveChangesDialog = MutableLiveData(false)
     val showSaveChangesDialog: LiveData<Boolean> = _showSaveChangesDialog
 
+    private val _deleteMarkerDialog = MutableLiveData(false)
+    val deleteMarkerDialog: LiveData<Boolean> = _deleteMarkerDialog
+
+    private val _currentMarker: MutableLiveData<Marker> = MutableLiveData()
+    val currentMarker: LiveData<Marker> = _currentMarker
+
+    fun modCurrentMarker(marker: Marker) {
+        _currentMarker.value = marker
+    }
+    fun showDeleteMarkerDialog(boolean: Boolean) {
+        _deleteMarkerDialog.value = boolean
+    }
     fun showSaveChangesDialog(b: Boolean) {
         _showSaveChangesDialog.value = b
     }

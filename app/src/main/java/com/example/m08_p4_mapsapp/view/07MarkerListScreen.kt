@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.DarkBrown
@@ -49,9 +50,23 @@ fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
 
         val markers:MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
         vm.getMarkers()
+        val deleteMarkerDialog by vm.deleteMarkerDialog.observeAsState(false)
+        val marker by vm.currentMarker.observeAsState()
+        CustomDialog(
+            show = deleteMarkerDialog,
+            question = "¿Estás seguro de que quieres eliminar el marcador?",
+            option1 = "SI",
+            onOption1Click = {
+                vm.showDeleteMarkerDialog(false)
+                vm.removeMarker(marker!!)
+                             },
+            option2 = "NO",
+            onOption2Click = { vm.showDeleteMarkerDialog(false) }
+        )
         if (markers.isNotEmpty()) {
             LazyColumn {
                 items(markers) { marker ->
+                    vm.modCurrentMarker(marker)
                     MarkerItem(marker, vm, navController) { lat, long ->
                         vm.modMarcadorActual(lat, long)
                         navController.navigate(Routes.MapScreen.route)
@@ -113,7 +128,7 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                     .padding(8.dp)
                     .align(Alignment.TopEnd)
                     .clickable {
-                        vm.removeMarker(marker)
+                        vm.showDeleteMarkerDialog(true)
                     }
             )
             Icon(

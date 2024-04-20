@@ -33,7 +33,7 @@ fun MapScreen(navController: NavController, vm: ViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val prevScreen = vm.prevScreen.value
-        val marcadorActual by vm.marcadorActual.observeAsState(LatLng(0.0, 0.0))
+        val marcadorActual by vm.latLngActual.observeAsState(LatLng(0.0, 0.0))
         val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 12f) }
         val getUserLocation by vm.getUserLocation.observeAsState(true)
         if (getUserLocation) {
