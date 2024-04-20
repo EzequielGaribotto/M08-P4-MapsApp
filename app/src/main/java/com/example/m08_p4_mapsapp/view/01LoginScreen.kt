@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -71,31 +72,39 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
     println("Stored user data: ${storedUserData.value}")
     UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
+    ClickOutsideToDismissKeyboard {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
+                )
+            } else {
+                EmailTextfield(email, vm, keyboardController)
+                PasswordTextfield(password, vm, verContrasena)
+                KeepMeLoggedInCheckbox(keepLogged, vm)
+                LogInButton(vm, email, password, errorEmail, errorPass,
+                    keepLogged,
+                    userPrefs,
+                    navController,
+                    goToNext
+                )
+                CustomClickableText(
+                    "¿No tienes cuenta? ",
+                    "Regístrate",
+                    "RegisterScreen",
+                    navController,
+                    vm
+                )
+                InvalidLoginDialog(showLoginDialog, vm)
+                SolicitarRegistrarDialog(showRegisterRequestDialog, vm, navController)
+            }
 
-    Column(Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
-            )
-        } else {
-            EmailTextfield(email, vm, keyboardController)
-            PasswordTextfield(password, vm, verContrasena)
-            KeepMeLoggedInCheckbox(keepLogged, vm)
-            LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs, navController, goToNext)
-            CustomClickableText(
-                "¿No tienes cuenta? ",
-                "Regístrate",
-                "RegisterScreen",
-                navController,
-                vm
-            )
-            InvalidLoginDialog(showLoginDialog, vm)
-            SolicitarRegistrarDialog(showRegisterRequestDialog, vm, navController)
         }
     }
 }

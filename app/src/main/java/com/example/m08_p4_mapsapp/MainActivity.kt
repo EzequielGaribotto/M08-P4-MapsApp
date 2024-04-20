@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,10 +42,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -94,6 +97,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun GeoPermission(vm: ViewModel, context: Context) {
+
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
     LaunchedEffect(Unit) {
@@ -156,7 +160,7 @@ fun MyDrawer(vm: ViewModel, context: Context) {
                         scope.launch {
                             state.close()
                         }
-                        vm.signOut(context,navigationController)
+                        vm.signOut(context, navigationController)
                         navigationController.navigate(Routes.LoginScreen.route)
                     }
                 )
@@ -167,6 +171,22 @@ fun MyDrawer(vm: ViewModel, context: Context) {
     }
 }
 
+@Composable
+fun ClickOutsideToDismissKeyboard(content: @Composable () -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                keyboardController?.hide()
+            }
+    ) {
+        content()
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -273,28 +293,34 @@ fun MyTopAppBar(
 ) {
     if (currentRoute != Routes.LoginScreen.route && currentRoute != Routes.RegisterScreen.route) {
         val loggedUser by vm.loggedUser.observeAsState("")
-        TopAppBar(title = { Text(text = "Los Mapas: $loggedUser") }, colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = LightGreen,
-            titleContentColor = Color.White,
-            navigationIconContentColor = Color.White,
-            actionIconContentColor = Color.Black,
+        TopAppBar(title = { Text(text = "Los Mapas: $loggedUser") },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = LightGreen,
+                titleContentColor = Color.White,
+                navigationIconContentColor = Color.White,
+                actionIconContentColor = Color.Black,
 
-            ), navigationIcon = {
-            EnableDrawerButton(state, scope)
-        }, actions = {
-            IconButton(onClick = {
-                if (loggedUser.isNotEmpty() && loggedUser.isNotBlank()) {
-                    vm.signOut(context = navigationController.context, navigationController)
+                ),
+            navigationIcon = {
+                EnableDrawerButton(state, scope)
+            },
+            actions = {
+                IconButton(onClick = {
+                    if (loggedUser.isNotEmpty() && loggedUser.isNotBlank()) {
+                        vm.signOut(context = navigationController.context, navigationController)
+                    }
+                    scope.launch {
+                        state.close()
+                    }
+                    vm.modPrevScreen(currentRoute)
+                    navigationController.navigate(Routes.LoginScreen.route)
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.run { if (loggedUser != "") Cancel else AccountCircle },
+                        contentDescription = "User"
+                    )
                 }
-                scope.launch {
-                    state.close()
-                }
-                vm.modPrevScreen(currentRoute)
-                navigationController.navigate(Routes.LoginScreen.route)
-            }) {
-                Icon(imageVector = Icons.Filled.run{if (loggedUser != "") Cancel else AccountCircle}, contentDescription = "User")
-            }
-        })
+            })
     }
 }
 
@@ -320,7 +346,8 @@ fun CreateNavigationDrawerItem(
     NavigationDrawerItem(
         label = {
             val formattedText = targetRoute.replace(Regex("([A-Z])"), " $1").replace("Screen", "")
-            Text(text = formattedText) },
+            Text(text = formattedText)
+        },
         selected = currentRoute == targetRoute,
         onClick = {
             if (currentRoute != targetRoute) {

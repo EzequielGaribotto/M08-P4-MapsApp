@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -57,15 +58,17 @@ fun AddMarkerContent(
     val url by vm.url.observeAsState("")
     val photoTaken = if (url == "") !icon.sameAs(img) else true
 
-    Box {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
-        ) {
-            SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
-            SetData(name, vm, lat, long)
-            AddMarker(photoTaken, name, lat, long, vm, icon, url, navigationController, context)
+    ClickOutsideToDismissKeyboard {
+        Box {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
+            ) {
+                SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
+                SetData(name, vm, lat, long)
+                AddMarker(photoTaken, name, lat, long, vm, icon, url, navigationController, context)
+            }
         }
     }
 }

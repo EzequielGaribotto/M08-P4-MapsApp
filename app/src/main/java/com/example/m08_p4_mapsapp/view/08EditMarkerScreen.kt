@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +16,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
+import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -40,11 +45,9 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val id by vm.markerId.observeAsState("")
 
     vm.showBottomSheet(false)
-
-    CustomGoBackButton("MarkerListScreen", vm, navController,
-        posteriorActions = { vm.resetMarkerValues(context) })
-
-    Box {
+    ClickOutsideToDismissKeyboard {
+        CustomGoBackButton("MarkerListScreen", vm, navController,
+            posteriorActions = { vm.resetMarkerValues(context) })
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
