@@ -50,7 +50,7 @@ fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
 
         val markers:MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
         vm.getMarkers()
-        val deleteMarkerDialog by vm.deleteMarkerDialog.observeAsState(false)
+        val deleteMarkerDialog by vm.showDeleteMarkerDialog.observeAsState(false)
         val marker by vm.currentMarker.observeAsState()
         CustomDialog(
             show = deleteMarkerDialog,
@@ -68,7 +68,7 @@ fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
                 items(markers) { marker ->
                     vm.modCurrentMarker(marker)
                     MarkerItem(marker, vm, navController) { lat, long ->
-                        vm.modMarcadorActual(lat, long)
+                        vm.modPosicionActual(lat, long)
                         navController.navigate(Routes.MapScreen.route)
                     }
                 }
@@ -86,7 +86,7 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
     val long = marker.getMarkerState().position.longitude
     val photo = marker.getIcon()
     val name = marker.getName()
-    val url = marker.getUrl()
+    val uri = marker.getUri()
     val id = marker.getId()
 
     Card(
@@ -103,7 +103,7 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlideImage(
-                    model = url,
+                    model = uri,
                     contentDescription = "Marker Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(80.dp)
@@ -138,17 +138,15 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                     .padding(8.dp)
                     .align(Alignment.BottomEnd)
                     .clickable {
-                        vm.modMarcadorActual(lat, long)
                         vm.modMarkerName(name)
                         vm.modMarkerIcon(photo)
-                        vm.modUrl(url)
+                        vm.modUrl(uri)
                         vm.modInputLat(lat.toString())
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)
                         vm.modPrevScreen("MarkerListScreen")
                         vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)
-                        vm.editMarker(marker)
                     }
             )
         }

@@ -2,6 +2,7 @@ package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +37,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val context = LocalContext.current
     val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val icon by vm.icon.observeAsState(img)
-    val url by vm.url.observeAsState("")
+    val url by vm.url.observeAsState(Uri.EMPTY)
     val id by vm.markerId.observeAsState("")
     val showSaveChangesDialog by vm.showSaveChangesDialog.observeAsState(false)
     val loggedUser by vm.loggedUser.observeAsState("")
@@ -47,7 +48,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         CustomGoBackButton("MarkerListScreen",
             vm,
             navController,
-            posteriorActions = { vm.resetMarkerValues(context) })
+            after = { vm.resetMarkerValues(context) })
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -71,7 +72,8 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
                     markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble())),
                     name = name,
                     icon = icon,
-                    url = url
+                    url = url.toString(),
+                    categoria = ""
                 )
             )
             vm.resetMarkerValues(context)

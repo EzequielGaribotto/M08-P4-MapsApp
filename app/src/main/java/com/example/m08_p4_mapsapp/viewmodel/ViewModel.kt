@@ -39,7 +39,7 @@ class ViewModel : ViewModel() {
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
 
-    private val _url = MutableLiveData("")
+    private val _url = MutableLiveData(Uri.EMPTY)
     val url = _url
 
     private val _goToNext = MutableLiveData(false)
@@ -51,8 +51,8 @@ class ViewModel : ViewModel() {
     private val _getUserLocation = MutableLiveData(true)
     val getUserLocation = _getUserLocation
 
-    private val _marcadorActual = MutableLiveData(LatLng(0.0, 0.0))
-    val latLngActual = _marcadorActual
+    private val _posicionActual = MutableLiveData(LatLng(0.0, 0.0))
+    val posicionActual = _posicionActual
 
     private val _showBottomSheet = MutableLiveData(false)
     val showBottomSheet = _showBottomSheet
@@ -154,17 +154,17 @@ class ViewModel : ViewModel() {
     private val _showSaveChangesDialog = MutableLiveData(false)
     val showSaveChangesDialog: LiveData<Boolean> = _showSaveChangesDialog
 
-    private val _deleteMarkerDialog = MutableLiveData(false)
-    val deleteMarkerDialog: LiveData<Boolean> = _deleteMarkerDialog
+    private val _showDeleteMarkerDialog = MutableLiveData(false)
+    val showDeleteMarkerDialog: LiveData<Boolean> = _showDeleteMarkerDialog
 
-    private val _currentMarker: MutableLiveData<Marker> = MutableLiveData()
-    val currentMarker: LiveData<Marker> = _currentMarker
+    private val _currentMarker: MutableLiveData<Marker?> = MutableLiveData()
+    val currentMarker = _currentMarker
 
     fun modCurrentMarker(marker: Marker) {
         _currentMarker.value = marker
     }
     fun showDeleteMarkerDialog(boolean: Boolean) {
-        _deleteMarkerDialog.value = boolean
+        _showDeleteMarkerDialog.value = boolean
     }
     fun showSaveChangesDialog(b: Boolean) {
         _showSaveChangesDialog.value = b
@@ -184,7 +184,7 @@ class ViewModel : ViewModel() {
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
     }
-    fun modUrl(url: String) {
+    fun modUrl(url: Uri) {
         _url.value = url
     }
     fun modificarEmailState(value: String) {
@@ -270,8 +270,8 @@ class ViewModel : ViewModel() {
         _getUserLocation.value = boolean
     }
 
-    fun modMarcadorActual(lat: Double, long: Double) {
-        _marcadorActual.value = LatLng(lat, long)
+    fun modPosicionActual(lat: Double, long: Double) {
+        _posicionActual.value = LatLng(lat, long)
     }
 
     fun goBack(navController: NavController, prevScreen: String) {
@@ -297,21 +297,16 @@ class ViewModel : ViewModel() {
                             val document = dc.document
                             val owner = document.getString("owner") ?: ""
                             val id = document.getString("id") ?: ""
+
                             val latitude = document.get("latitude") ?: ""
                             val longitude = document.get("longitude") ?: ""
+                            val markerState = MarkerState(LatLng(latitude.toString().toDouble(), longitude.toString().toDouble()))
+
                             val name = document.getString("name") ?: ""
                             val url = document.getString("url") ?: ""
+                            val categoria = document.getString("categoria") ?: ""
 
-                            val newMark = Marker(
-                                owner,
-                                id,
-                                MarkerState(
-                                    LatLng(
-                                        latitude.toString().toDouble(),
-                                        longitude.toString().toDouble()
-                                    )
-                                ), name, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url
-                            )
+                            val newMark = Marker(owner, id, name, markerState, url, categoria)
                             tempList.add(newMark)
                         }
                     }
@@ -423,44 +418,43 @@ class ViewModel : ViewModel() {
 
         auth.signOut()
 
-        _goToNext.value = false
-        _password.value = ""
-
-        modShowLoading(true)
-
         resetUserValues()
         resetMarkerValues(context)
+        resetSelectedValues()
 
         navController.navigate(Routes.LoginScreen.route)
     }
 
     private fun resetUserValues() {
+        _markers.value = mutableListOf()
+        _posicionActual.value = LatLng(0.0, 0.0)
         _loggedUser.value = ""
         _userId.value = ""
         _nombre.value = ""
         _apellido.value = ""
         _ciudad.value = ""
+        _password.value = ""
+        //_email.value = ""
+
+        _currentMarker.value = null
+        _showBottomSheet.value = false
+        _showSaveChangesDialog.value = false
+        _showDeleteMarkerDialog.value = false
         _showRegisterRequestDialog.value = false
         _showRegisterDialog.value = false
         _showLoginDialog.value = false
+        _showLogOutDialog.value = false
+
         _validLogin.value = false
+        _goToNext.value = false
         _verContrasena.value = false
         _keepLogged.value = false
-        _markers.value = mutableListOf()
-        _inputLat.value = ""
-        _inputLong.value = ""
-        _markerName.value = ""
-        _icon.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        _url.value = ""
-        _showBottomSheet.value = false
-        _marcadorActual.value = LatLng(0.0, 0.0)
+
         _getUserLocation.value = true
         _prevScreen.value = "MapScreen"
         _errorPass.value = false
         _errorEmail.value = false
-        _markerId.value = ""
-        _selectedImage.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        _selectedUri.value = Uri.EMPTY
+        _isLoading.value = true
     }
 
     fun signInWithGoogleCredential(credential: AuthCredential, home: () -> Unit) =
@@ -499,11 +493,11 @@ class ViewModel : ViewModel() {
         }
 
 
-    fun addMarker(lat: String, long: String, name: String, icon: Bitmap, url: String) {
+    fun addMarker(lat: String, long: String, name: String, url: Uri) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         val id = UUID.randomUUID().toString()
-        markersTemp.add(Marker(_loggedUser.value, id, markerState, name, icon, url))
+        markersTemp.add(Marker(_loggedUser.value, id, name, markerState, url.toString(), ""))
         _markers.value = markersTemp.toMutableList()
         repo.addMarker(_markers.value?.last()!!)
     }
@@ -513,14 +507,16 @@ class ViewModel : ViewModel() {
     }
 
     fun resetMarkerValues(context: Context) {
+        _markerName.value = ""
+        _icon.value = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+        _url.value = Uri.EMPTY
         _inputLat.value = ""
         _inputLong.value = ""
-        _markerName.value = ""
-        val img: Bitmap =
-            ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-        _icon.value = img
-        _url.value = ""
+        _markerId.value = ""
     }
 
-
+    fun resetSelectedValues() {
+        _selectedImage.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        _selectedUri.value = Uri.EMPTY
+    }
 }

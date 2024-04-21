@@ -73,7 +73,8 @@ class Repository {
                 "name" to marker.name,
                 "latitude" to marker.markerState.position.latitude,
                 "longitude" to marker.markerState.position.longitude,
-                "url" to marker.url
+                "url" to marker.url,
+                "categoria" to marker.categoria
             )
         )
     }
@@ -91,7 +92,8 @@ class Repository {
                             "name" to marker.name,
                             "latitude" to marker.markerState.position.latitude,
                             "longitude" to marker.markerState.position.longitude,
-                            "url" to marker.url
+                            "url" to marker.url,
+                            "categoria" to marker.categoria
                         )
                     )
                 }

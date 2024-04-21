@@ -1,23 +1,26 @@
 package com.example.m08_p4_mapsapp.model
 
 import android.graphics.Bitmap
+import android.net.Uri
+import androidx.core.net.toUri
 import com.google.maps.android.compose.MarkerState
 
-class Marker {
-    var owner: String?
-    var id: String
-    var name: String
-    var markerState: MarkerState
-    var icon: Bitmap
-    var url:String
+data class Marker(
+    var owner: String?,
+    var id: String,
+    var name: String,
+    var markerState: MarkerState,
+    var icon: Bitmap,
+    var url:String,
+    var categoria: String) {
 
-    constructor(owner:String?, id:String, markerState: MarkerState, name: String, icon: Bitmap, url: String) {
+    constructor(owner:String?, id:String, name: String, markerState: MarkerState, url: String, categoria: String) : this(owner, id, name, markerState, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), url, categoria){
         this.owner = owner
         this.id = id
         this.markerState = markerState
         this.name = name
-        this.icon = icon
         this.url = url
+        this.categoria = categoria
     }
 
     fun updId(id: String) {
@@ -46,8 +49,8 @@ class Marker {
     }
 
     @JvmName("getUrl1")
-    fun getUrl(): String {
-        return this.url
+    fun getUri(): Uri {
+        return this.url.toUri()
     }
 
     @JvmName("getMarkerState1")

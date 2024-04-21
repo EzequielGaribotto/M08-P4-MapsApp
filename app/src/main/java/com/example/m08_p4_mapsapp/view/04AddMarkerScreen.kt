@@ -3,6 +3,7 @@ package com.example.m08_p4_mapsapp.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -42,7 +42,6 @@ fun AddMarkerScreen(vm: ViewModel, navController: NavController) {
     AddMarkerContent(vm, true, navController)
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AddMarkerContent(
     vm: ViewModel,
@@ -53,10 +52,10 @@ fun AddMarkerContent(
     val long by vm.inputLong.observeAsState("")
     val name by vm.markerName.observeAsState("")
     val context = LocalContext.current
-    val img: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
-    val icon by vm.icon.observeAsState(img)
-    val url by vm.url.observeAsState("")
-    val photoTaken = if (url == "") !icon.sameAs(img) else true
+    val emptyIcon: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val icon by vm.icon.observeAsState(emptyIcon)
+    val url by vm.url.observeAsState(Uri.EMPTY)
+    val photoTaken = if (url == Uri.EMPTY) !icon.sameAs(emptyIcon) else true
 
     ClickOutsideToDismissKeyboard {
         Box {
@@ -67,7 +66,7 @@ fun AddMarkerContent(
             ) {
                 SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
                 SetData(name, vm, lat, long)
-                AddMarker(photoTaken, name, lat, long, vm, icon, url, navigationController, context)
+                AddMarker(photoTaken, name, lat, long, vm, url, navigationController, context)
             }
         }
     }
@@ -80,16 +79,15 @@ fun AddMarker(
     lat: String,
     long: String,
     vm: ViewModel,
-    icon: Bitmap,
-    url: String,
+    url: Uri,
     navigationController: NavController,
     context: Context
 ) {
     val canAddMarker =
         photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
     Button(onClick = {
-        vm.addMarker(lat, long, name, icon, url)
-        vm.uploadImage(url.toUri())
+        vm.addMarker(lat, long, name, url)
+        vm.uploadImage(url)
         vm.showBottomSheet(false)
 
         if (vm.prevScreen.value == "AddMarkerScreen") {
@@ -134,7 +132,7 @@ fun SetName(name: String, vm: ViewModel) {
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
 fun SetPhoto(
-    url: String?,
+    url: Uri,
     icon: Bitmap?,
     vm: ViewModel,
     lat: String,
@@ -144,9 +142,9 @@ fun SetPhoto(
 ) {
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    println("PEPE PEREZ SANTOS"+url)
+    println("PEPE PEREZ SANTOS$url")
     GlideImage(
-        model = if (url.isNullOrBlank()) icon else url,
+        model = if (url.takeIf { it != Uri.EMPTY } != null) url else icon!!,
         contentDescription = "Marker Image",
         contentScale = ContentScale.Crop,
         modifier = Modifier
@@ -158,7 +156,7 @@ fun SetPhoto(
             vm.modPrevScreen(currentRoute)
         }
         vm.showBottomSheet(false)
-        vm.modMarcadorActual(
+        vm.modPosicionActual(
             lat.toDoubleOrNull() ?: 0.0,
             long.toDoubleOrNull() ?: 0.0
         )
@@ -173,7 +171,7 @@ fun SetPhoto(
             vm.modPrevScreen(currentRoute)
         }
         vm.showBottomSheet(false)
-        vm.modMarcadorActual(
+        vm.modPosicionActual(
             lat.toDoubleOrNull() ?: 0.0,
             long.toDoubleOrNull() ?: 0.0
         )

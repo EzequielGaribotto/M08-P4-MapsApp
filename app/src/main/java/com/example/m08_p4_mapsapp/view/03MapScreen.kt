@@ -33,8 +33,8 @@ fun MapScreen(navController: NavController, vm: ViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val prevScreen = vm.prevScreen.value
-        val marcadorActual by vm.latLngActual.observeAsState(LatLng(0.0, 0.0))
-        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(marcadorActual, 12f) }
+        val posicionActual by vm.posicionActual.observeAsState(LatLng(0.0, 0.0))
+        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(posicionActual, 12f) }
         val getUserLocation by vm.getUserLocation.observeAsState(true)
         if (getUserLocation) {
             val context = LocalContext.current
@@ -42,8 +42,8 @@ fun MapScreen(navController: NavController, vm: ViewModel) {
             val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
             locationResult.addOnCompleteListener(context as MainActivity) { task ->
                 if (task.isSuccessful) {
-                    vm.modMarcadorActual(task.result.latitude, task.result.longitude)
-                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(marcadorActual, 12f)
+                    vm.modPosicionActual(task.result.latitude, task.result.longitude)
+                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(posicionActual, 12f)
                     vm.modGetUserLocation(false)
                 } else {
                     Log.e("Error", "Exception: %s", task.exception)

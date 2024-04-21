@@ -90,7 +90,7 @@ private fun TakePhotoButton(
             takePhoto(context, controller) { photo ->
                 val uri = saveBitmapToExternalStorage(context, photo)
                 if (uri != null) {
-                    vm.modUrl(uri.toString())
+                    vm.modUrl(uri)
                 }
             }
         },

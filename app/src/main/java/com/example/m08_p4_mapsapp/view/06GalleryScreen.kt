@@ -3,6 +3,7 @@ package com.example.m08_p4_mapsapp.view
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -46,31 +47,26 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 fun GalleryScreen(vm: ViewModel, navController: NavController) {
     val prevScreen by vm.prevScreen.observeAsState("")
     val context = LocalContext.current
-    val emptyImg: Bitmap =
-        ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val selectedImage by vm.selectedImage.observeAsState(emptyImg)
-    val selectedImageUri by vm.selectedUri.observeAsState("")
+    val selectedUri by vm.selectedUri.observeAsState(Uri.EMPTY)
     val launchImage = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            if (uri != null) {
-                vm.modSelectedUri(uri)
-                val selectedBitmap = if (Build.VERSION.SDK_INT >= 28) {
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                } else {
-                    val source = ImageDecoder.createSource(context.contentResolver, uri)
-                    ImageDecoder.decodeBitmap(source)
-                }
-                vm.modSelectedImage(selectedBitmap)
-            }
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            vm.modSelectedUri(uri)
+            vm.modSelectedImage(
+                if (Build.VERSION.SDK_INT >= 28) { MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else { ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+            })
         }
-    )
+    }
 
     CustomGoBackButton(prevScreen, vm, navController,
-        previousActions = {
+        before = {
             if (prevScreen == "MapScreen") {
                 vm.showBottomSheet(true)
-                vm.modSelectedImage(emptyImg)
+                vm.resetSelectedValues()
             }
         }
     )
@@ -101,7 +97,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
             onClick = {
                 vm.showBottomSheet(true)
                 vm.modMarkerIcon(selectedImage)
-                vm.modUrl(selectedImageUri.toString())
+                vm.modUrl(selectedUri)
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }
@@ -118,16 +114,16 @@ fun CustomGoBackButton(
     prevScreen: String,
     vm: ViewModel,
     navController: NavController,
-    previousActions: () -> Unit = {},
-    posteriorActions: () -> Unit = {}
+    before: () -> Unit = {},
+    after: () -> Unit = {}
 ) {
     Icon(imageVector = Icons.Filled.ArrowBackIosNew,
         contentDescription = "Enrere",
         modifier = Modifier
             .clickable {
-                previousActions()
+                before()
                 vm.goBack(navController, prevScreen)
-                posteriorActions()
+                after()
             }
             .padding(16.dp)
     )
