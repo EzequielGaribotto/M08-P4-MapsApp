@@ -56,8 +56,11 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         if (uri != null) {
             vm.modSelectedUri(uri)
             vm.modSelectedImage(
-                if (Build.VERSION.SDK_INT >= 28) { MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                } else { ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                if (Build.VERSION.SDK_INT < 28) {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else {
+                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
             })
         }
     }
