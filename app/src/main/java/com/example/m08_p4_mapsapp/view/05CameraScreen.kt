@@ -84,11 +84,9 @@ private fun TakePhotoButton(
     IconButton(
         onClick = {
 
-            takePhoto(context, controller) { photo ->
-                val uri = saveBitmapToExternalStorage(context, photo)
-                if (uri != null) {
-                    vm.modUrl(uri)
-                }
+            takePhoto(context, controller, vm) { photo ->
+                vm.modMarkerIcon(photo)
+                vm.modUrl(saveBitmapToExternalStorage(context, photo)!!)
             }
         },
     ) {
@@ -146,6 +144,7 @@ fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
 private fun takePhoto(
     context: Context,
     controller: LifecycleCameraController,
+    vm: ViewModel,
     onPhotoTaken: (Bitmap) -> Unit
 ) {
     controller.takePicture(
