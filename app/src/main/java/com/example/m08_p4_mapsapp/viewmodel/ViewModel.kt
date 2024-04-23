@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.LiveData
@@ -22,6 +24,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
@@ -34,7 +38,16 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-
+    private val _showGrantPermissionsDialog = MutableLiveData(false)
+    val showGrantPermissionsDialog: LiveData<Boolean> = MutableLiveData(false)
+    fun modShowGrantPermissionsDialog(b: Boolean) {
+        _showGrantPermissionsDialog.value = b
+    }
+    private val _grantPermissions = MutableLiveData(false)
+    val grantPermissions = _grantPermissions
+    fun modGrantPermissions(b:Boolean) {
+        _grantPermissions.value = b
+    }
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -106,7 +119,7 @@ class ViewModel : ViewModel() {
     val userId: LiveData<String> = _userId
 
     fun getUser(userid: String = ""): User {
-        var user = User("","","","")
+        var user = User("", "", "", "")
         repo.getUsers().whereEqualTo("uid", userid).get().addOnSuccessListener { documents ->
             for (document in documents) {
                 user = User(
@@ -117,10 +130,11 @@ class ViewModel : ViewModel() {
                 )
             }
         }.addOnFailureListener {
-                Log.d("ERROR", "Error getting documents: ", it)
-            }
+            Log.d("ERROR", "Error getting documents: ", it)
+        }
         return user
     }
+
     private val _verContrasena = MutableLiveData(false)
     val verContrasena = _verContrasena
 
@@ -163,57 +177,75 @@ class ViewModel : ViewModel() {
     fun modCurrentMarker(marker: Marker) {
         _currentMarker.value = marker
     }
+
     fun showDeleteMarkerDialog(boolean: Boolean) {
         _showDeleteMarkerDialog.value = boolean
     }
+
     fun showSaveChangesDialog(b: Boolean) {
         _showSaveChangesDialog.value = b
     }
+
     fun showSuccessfulRegisterDialog(b: Boolean) {
         _successfulRegister.value = b
     }
+
     fun showLogOutDialog(b: Boolean) {
         _showLogOutDialog.value = b
     }
+
     fun modGoToNext(b: Boolean) {
         _goToNext.value = b
     }
+
     fun showRegisterRequestDialog(boolean: Boolean) {
         _showRegisterRequestDialog.value = boolean
     }
+
     fun removeMarker(marker: Marker) {
         repo.removeMarker(marker)
     }
+
     fun modUrl(url: Uri) {
         _url.value = url
     }
+
     fun modificarEmailState(value: String) {
         _email.value = value
     }
+
     fun modificarPasswordState(value: String) {
         _password.value = value
     }
+
     fun modificarNombreState(value: String) {
         _nombre.value = value
     }
+
     fun modificarApellidoState(value: String) {
         _apellido.value = value
     }
+
     fun modificarCiudadState(value: String) {
         _ciudad.value = value
     }
+
     fun showLoginDialog(boolean: Boolean) {
         _showLoginDialog.value = boolean
     }
+
     fun modErrorPass(boolean: Boolean) {
         _errorPass.value = boolean
     }
+
     fun modErrorEmail(boolean: Boolean) {
         _errorEmail.value = boolean
     }
+
     fun modShowLoading(boolean: Boolean) {
         _isLoading.value = boolean
     }
+
     fun showRegisterDialog(boolean: Boolean) {
         _showRegisterDialog.value = boolean
     }
@@ -300,7 +332,12 @@ class ViewModel : ViewModel() {
 
                             val latitude = document.get("latitude") ?: ""
                             val longitude = document.get("longitude") ?: ""
-                            val markerState = MarkerState(LatLng(latitude.toString().toDouble(), longitude.toString().toDouble()))
+                            val markerState = MarkerState(
+                                LatLng(
+                                    latitude.toString().toDouble(),
+                                    longitude.toString().toDouble()
+                                )
+                            )
 
                             val name = document.getString("name") ?: ""
                             val url = document.getString("url") ?: ""
@@ -347,7 +384,8 @@ class ViewModel : ViewModel() {
                             userPrefs.saveUserData(_email.value!!, _password.value!!)
                         }
                     }
-                    val userRef = database.collection("user").whereEqualTo("owner", _loggedUser.value)
+                    val userRef =
+                        database.collection("user").whereEqualTo("owner", _loggedUser.value)
                     userRef.get()
                         .addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
@@ -518,5 +556,15 @@ class ViewModel : ViewModel() {
     fun resetSelectedValues() {
         _selectedImage.value = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
         _selectedUri.value = Uri.EMPTY
+    }
+
+    private val _notGrantedPermission = MutableLiveData(mutableListOf<String>())
+    val notGrantedPermission = _notGrantedPermission
+    fun addNotGrantedPermission(permission : String) {
+        _notGrantedPermission.value?.add(permission)
+    }
+
+    fun removeNotGrantedPermission(permission: String) {
+        _notGrantedPermission.value?.remove(permission)
     }
 }
