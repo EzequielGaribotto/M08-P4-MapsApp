@@ -78,7 +78,7 @@ fun MarkerItem(
     onClickGo: (Double, Double) -> Unit
 ) {
     val deleteMarkerDialog by vm.showDeleteMarkerDialog.observeAsState(false)
-
+    val deletingMarker by vm.deletingMarker.observeAsState(marker)
     val lat = marker.getMarkerState().position.latitude
     val long = marker.getMarkerState().position.longitude
     val photo = marker.getIcon()
@@ -125,8 +125,8 @@ fun MarkerItem(
                     .padding(8.dp)
                     .align(Alignment.TopEnd)
                     .clickable {
-                        vm.modCurrentMarker(marker)
-                        vm.removeMarker(marker)
+                        vm.modDeletingMarker(marker)
+                        vm.showDeleteMarkerDialog(true)
                     }
             )
             Icon(
@@ -149,10 +149,11 @@ fun MarkerItem(
             )
             CustomDialog(
                 show = deleteMarkerDialog,
-                question = "¿Estás seguro de que quieres eliminar el marcador ${marker.name}?",
+                question = "¿Estás seguro de que quieres eliminar el marcador \"${deletingMarker!!.name}\"?",
                 option1 = "SI",
                 onOption1Click = {
                     vm.showDeleteMarkerDialog(false)
+                    vm.removeMarker(deletingMarker!!)
                 },
                 option2 = "NO",
                 onOption2Click = { vm.showDeleteMarkerDialog(false) }

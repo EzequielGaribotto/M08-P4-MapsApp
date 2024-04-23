@@ -32,6 +32,13 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+    private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
+    val deletingMarker = _deletingMarker
+
+    fun modDeletingMarker(marker: Marker) {
+        _deletingMarker.value = marker
+    }
+
     private val _showSaveUserChangesDialog = MutableLiveData(false)
     val showSaveUserChangesDialog = _showSaveUserChangesDialog
 
