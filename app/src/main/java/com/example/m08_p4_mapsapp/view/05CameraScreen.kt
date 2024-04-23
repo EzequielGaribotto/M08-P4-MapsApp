@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.navigation.Routes
+import com.example.m08_p4_mapsapp.PermissionDeclinedScreen
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -53,17 +53,16 @@ import java.io.OutputStream
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CameraScreen(vm: ViewModel, navController: NavController) {
-    val prevScreen by vm.prevScreen.observeAsState("")
-    val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-
     val context = LocalContext.current
-    val controller = remember {
-        LifecycleCameraController(context).apply {
-            CameraController.IMAGE_CAPTURE
-        }
-    }
+    val prevScreen by vm.prevScreen.observeAsState("")
+    val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
     LaunchedEffect(Unit) { permissionState.launchPermissionRequest() }
     if (permissionState.status.isGranted) {
+        val controller = remember {
+            LifecycleCameraController(context).apply {
+                CameraController.IMAGE_CAPTURE
+            }
+        }
         CameraPreview(controller = controller, modifier = Modifier.fillMaxSize())
 
         Column(
@@ -80,10 +79,7 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
             }
         }
     } else {
-        vm.modPrevScreen("CameraScreen")
-        vm.addNotGrantedPermission(Manifest.permission.CAMERA)
-        vm.modShowGrantPermissionsDialog(true)
-        navController.navigate(Routes.EnablePermissionsScreen.route)
+        PermissionDeclinedScreen("Esta app necesita que le proporciones permisos de cámara para funcionar.")
     }
 
 }

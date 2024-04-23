@@ -1,9 +1,7 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,16 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
-import coil.request.ImageRequest
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.navigation.Routes
@@ -93,27 +88,6 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
     val name = marker.getName()
     val uri = marker.getUri()
     val id = marker.getId()
-    val context = LocalContext.current
-    val inputStream = remember(marker.getUri()) {
-        try {
-            context.contentResolver.openInputStream(marker.getUri())
-        } catch (e: Exception) {
-            // Log the exception
-            Log.e("MarkerItem", "Failed to open InputStream", e)
-            null
-        }
-    }
-
-    val painter = if (inputStream != null) {
-        rememberImagePainter(
-            request = ImageRequest.Builder(context)
-                .data(inputStream)
-                .build()
-        )
-    } else {
-        // Provide a default painter or handle the error case
-        null
-    }
 
     Card(
         border = BorderStroke(2.dp, DarkBrown),
@@ -128,15 +102,12 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                println(uri)
-                if (painter != null) {
-                    Image(
-                        painter = painter,
-                        contentDescription = "Marker Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
+                GlideImage(
+                    model = uri,
+                    contentDescription = "Marker Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(80.dp)
+                )
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,

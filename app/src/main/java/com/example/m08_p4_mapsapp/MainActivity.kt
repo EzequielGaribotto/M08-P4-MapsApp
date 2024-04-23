@@ -1,9 +1,13 @@
 package com.example.m08_p4_mapsapp
 
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -29,6 +33,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -41,7 +46,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -56,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -103,7 +109,8 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    GeoPermission(viewModel, context) }
+                    GeoPermission(viewModel, context)
+                }
             }
         }
     }
@@ -116,14 +123,49 @@ fun GeoPermission(vm: ViewModel, context: Context) {
 
     val permissionState =
         rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
+    if (!permissionState.status.isGranted) {
+        LaunchedEffect(Unit) {
+            permissionState.launchPermissionRequest()
+        }
     }
     if (permissionState.status.isGranted) {
         MyDrawer(vm = vm, context)
+    } else {
+        PermissionDeclinedScreen("Esta App necesita que le proporciones permisos de ubicación")
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun PermissionDeclinedScreen(message:String = "Permisos necesarios") {
+    val context = LocalContext.current
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Text(text = "Permisos necesarios", fontWeight = FontWeight.Bold)
+        Text(text = message)
+        Button(onClick = {
+            val activity = context as Activity
+            val intent = Intent().apply {
+                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                data = Uri.fromParts("package", activity.packageName, null)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            activity.startActivity(intent)
+        }) {
+            Text(text = "Aceptar")
+        }
+
+        IconButton(onClick = { (context as Activity).recreate() }) {
+            Icon(
+                imageVector = Icons.Rounded.CheckCircle,
+                contentDescription = "Recargar"
+            )
+        }
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
@@ -155,11 +197,13 @@ fun MyDrawer(vm: ViewModel, context: Context) {
             Icon(
                 imageVector = Icons.Filled.Menu,
                 contentDescription = "MenuIcon",
-                modifier = Modifier.clickable {
-                    scope.launch {
-                        state.close()
+                modifier = Modifier
+                    .clickable {
+                        scope.launch {
+                            state.close()
+                        }
                     }
-                }.padding(16.dp)
+                    .padding(16.dp)
             )
             Text(
                 "Menu",
@@ -300,7 +344,13 @@ fun MyScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     Scaffold(topBar = {
-        if (currentRoute in arrayOf("AddMarkerScreen", "MapScreen", "MarkerListScreen", "UserInfoScreen") && currentRoute != null) {
+        if (currentRoute in arrayOf(
+                "AddMarkerScreen",
+                "MapScreen",
+                "MarkerListScreen",
+                "UserInfoScreen"
+            ) && currentRoute != null
+        ) {
             MyTopAppBar(currentRoute, state, scope, navigationController, vm)
         }
     }) { paddingValues ->
@@ -398,13 +448,13 @@ fun MyTopAppBar(
 ) {
     val loggedUser by vm.loggedUser.observeAsState("")
     TopAppBar(title = { Text(text = "Los Mapas: $loggedUser") },
-    //TopAppBar(title = { Text(text = "Los Mapas) },
+        //TopAppBar(title = { Text(text = "Los Mapas) },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = LightGreen,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
             actionIconContentColor = Color.Black,
-            ),
+        ),
         navigationIcon = {
             EnableDrawerButton(state, scope)
         },
