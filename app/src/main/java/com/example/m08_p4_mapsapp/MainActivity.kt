@@ -22,7 +22,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
@@ -55,8 +57,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -109,7 +113,14 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    GeoPermission(viewModel, context)
+                    val isLoading by viewModel.isLoading.observeAsState(true)
+
+                    AskForPermission(
+                        permission = android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        onDeclineMsg = "Esta app requiere que le proporciones permisos de localización para funcionar", isLoading, viewModel) {
+
+                        MyDrawer(viewModel, context)
+                    }
                 }
             }
         }
@@ -119,33 +130,64 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun GeoPermission(vm: ViewModel, context: Context) {
+fun AskForPermission(
+    permission: String,
+    onDeclineMsg: String = "Esta app requiere que le proporciones permisos",
+    isLoading: Boolean,
+    vm: ViewModel,
+    onAccept: @Composable () -> Unit = {}
+) {
+    val permissionState = rememberPermissionState(permission)
 
-    val permissionState =
-        rememberPermissionState(permission = android.Manifest.permission.ACCESS_FINE_LOCATION)
-    if (!permissionState.status.isGranted) {
+    if (!permissionState.status.isGranted && !isLoading) {
         LaunchedEffect(Unit) {
             permissionState.launchPermissionRequest()
         }
     }
-    if (permissionState.status.isGranted) {
-        MyDrawer(vm = vm, context)
-    } else {
-        PermissionDeclinedScreen("Esta App necesita que le proporciones permisos de ubicación")
+
+    when {
+        isLoading -> {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(64.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(1000)
+                    vm.modShowLoading(false)
+                }
+            }
+        }
+        permissionState.status.isGranted -> {
+            onAccept()
+        }
+        else -> {
+            PermissionDeclinedScreen(onDeclineMsg)
+        }
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun PermissionDeclinedScreen(message:String = "Permisos necesarios") {
+fun PermissionDeclinedScreen(message: String = "Esta app requiere que le proporciones permisos") {
     val context = LocalContext.current
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(26.dp)
     ) {
-        Text(text = "Permisos necesarios", fontWeight = FontWeight.Bold)
-        Text(text = message)
+        Text(
+            text = "Permisos necesarios",
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            textAlign = TextAlign.Center
+        )
+        Text(text = message, textAlign = TextAlign.Center)
         Button(onClick = {
             val activity = context as Activity
             val intent = Intent().apply {

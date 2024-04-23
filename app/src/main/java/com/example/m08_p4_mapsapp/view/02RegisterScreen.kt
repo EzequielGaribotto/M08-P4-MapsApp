@@ -1,23 +1,13 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
-import android.util.Log
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,8 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -38,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,18 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
-import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.lang.StringBuilder
 
 @SuppressLint("UnrememberedMutableState")
@@ -82,10 +60,6 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val successfulRegister by vm.successfulRegister.observeAsState(false)
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
-    // GOOGLE LOGIN
-    val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
-    val validLogin by vm.validLogin.observeAsState(false)
-    val loggedUser by vm.loggedUser.observeAsState("")
 
     if (goToNext) {
         navController.navigate(Routes.MapScreen.route)
@@ -125,7 +99,6 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
                 CustomClickableText(
                     "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
                 )
-                //GoogleRegister(clientLauncher(vm, navController, keepLogged, userPrefs, context, storedUserData, validLogin, goToNext, loggedUser))
             }
 
             InvalidRegisterDialog(showRegisterDialog, vm)
@@ -169,81 +142,6 @@ fun DatosTextField(value: String, label: String, onValueChange: (String) -> Unit
         ),
         keyboardActions = KeyboardActions(onNext = { keyboardController?.hide() })
     )
-}
-
-@Composable
-private fun GoogleRegister(pair: Pair<ManagedActivityResultLauncher<Intent, ActivityResult>, GoogleSignInClient>) {
-    Row(
-        modifier = Modifier.clickable { pair.first.launch(pair.second.signInIntent) },
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.google),
-            contentDescription = "Google icon",
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            text = "Registrarse con Google",
-            fontSize = 24.sp,
-        )
-    }
-}
-
-@Composable
-private fun clientLauncher(
-    vm: ViewModel,
-    navController: NavController,
-    keepLogged: Boolean,
-    userPrefs: UserPrefs,
-    context: Context,
-    storedUserData: State<List<String>>,
-    validLogin: Boolean,
-    goToNext: Boolean,
-    loggedUser: String
-): Pair<ManagedActivityResultLauncher<Intent, ActivityResult>, GoogleSignInClient> {
-    //val token = BuildConfig.TOKEN
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-            vm.signInWithGoogleCredential(credential) {
-                vm.modShowLoading(true)
-                navController.navigate(Routes.MapScreen.route)
-            }
-            if (account.email != null) vm.modificarLoggedUser(account.email!!)
-            if (keepLogged) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    userPrefs.saveUserData(loggedUser, "")
-                }
-            }
-        } catch (e: Exception) {
-            Log.d("GOOGLE_SIGNIN", "GoogleSign failed")
-        }
-    }
-
-    val opciones = GoogleSignInOptions.Builder(
-            GoogleSignInOptions.DEFAULT_SIGN_IN
-        )
-        //.requestIdToken(token)
-        .requestEmail().build()
-    val googleSignInCliente = GoogleSignIn.getClient(context, opciones)
-
-    if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != "" && storedUserData.value[1] != "" && validLogin) {
-        vm.modShowLoading(false)
-        vm.login(storedUserData.value[0], storedUserData.value[1], keepLogged, userPrefs)
-        if (goToNext) {
-            navController.navigate(Routes.MapScreen.route)
-        }
-    } else if (storedUserData.value.isNotEmpty() && storedUserData.value[0] != "") {
-        vm.modShowLoading(false)
-        launcher.launch(googleSignInCliente.signInIntent)
-
-    }
-    return Pair(launcher, googleSignInCliente)
 }
 
 @Composable

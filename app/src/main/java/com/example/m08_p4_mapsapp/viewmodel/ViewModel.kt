@@ -567,4 +567,8 @@ class ViewModel : ViewModel() {
     fun removeNotGrantedPermission(permission: String) {
         _notGrantedPermission.value?.remove(permission)
     }
+
+    fun modIsLoading(b: Boolean) {
+        _isLoading.value = b
+    }
 }

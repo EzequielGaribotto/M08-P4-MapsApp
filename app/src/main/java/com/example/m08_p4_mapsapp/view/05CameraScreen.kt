@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -40,24 +39,19 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.PermissionDeclinedScreen
+import com.example.m08_p4_mapsapp.AskForPermission
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import java.io.OutputStream
 
 
 @RequiresApi(Build.VERSION_CODES.P)
-@OptIn(ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CameraScreen(vm: ViewModel, navController: NavController) {
-    val context = LocalContext.current
     val prevScreen by vm.prevScreen.observeAsState("")
-    val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
-    LaunchedEffect(Unit) { permissionState.launchPermissionRequest() }
-    if (permissionState.status.isGranted) {
+    val context = LocalContext.current
+    val isLoading by vm.isLoading.observeAsState(true)
+    AskForPermission(permission = Manifest.permission.CAMERA, onDeclineMsg = "Esta app necesita que le proporciones permisos de cámara para funcionar.", isLoading, vm) {
         val controller = remember {
             LifecycleCameraController(context).apply {
                 CameraController.IMAGE_CAPTURE
@@ -78,10 +72,7 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
                 SwitchCameraButton(controller)
             }
         }
-    } else {
-        PermissionDeclinedScreen("Esta app necesita que le proporciones permisos de cámara para funcionar.")
     }
-
 }
 
 @Composable

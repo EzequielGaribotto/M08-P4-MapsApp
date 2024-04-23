@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +49,7 @@ import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
+import kotlinx.coroutines.delay
 import java.lang.StringBuilder
 
 @SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
@@ -55,7 +57,7 @@ import java.lang.StringBuilder
 fun LoginScreen(navController: NavController, vm: ViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val isLoading by vm.isLoading.observeAsState(true)
+    val isLoading by vm.isLoading.observeAsState(false)
     val email by vm.email.observeAsState("")
     val password by vm.password.observeAsState("")
     val errorEmail by vm.errorEmail.observeAsState(false)
@@ -70,51 +72,65 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val userPrefs = UserPrefs(context)
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
     println("Stored user data: ${storedUserData.value}")
+    UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
     if (goToNext) {
         navController.navigate(Routes.MapScreen.route)
         vm.modGoToNext(false)
     }
-    UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
-    ClickOutsideToDismissKeyboard {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
+    when {
+        isLoading -> {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                androidx.compose.material.CircularProgressIndicator(
+                    modifier = Modifier.width(64.dp),
+                    color = MaterialTheme.colorScheme.secondary
                 )
-            } else {
-                EmailTextfield(email, vm, keyboardController)
-                PasswordTextfield(password, vm, verContrasena)
-                KeepMeLoggedInCheckbox(keepLogged, vm)
-                LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
-                CustomClickableText(
-                    "¿No tienes cuenta? ",
-                    "Regístrate",
-                    "RegisterScreen",
-                    navController,
-                    vm
-                )
-                InvalidLoginDialog(showLoginDialog, vm)
-                CustomDialog(
-                    show = showRegisterRequestDialog,
-                    question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
-                    option1 = "SÍ",
-                    onOption1Click = {
-                        vm.showRegisterRequestDialog(false)
-                        navController.navigate("RegisterScreen")
-                    },
-                    option2 = "NO",
-                    onOption2Click = { vm.showRegisterRequestDialog(false) }
-                )
+                LaunchedEffect(Unit) {
+                    vm.modGoToNext(true)
+                    delay(1000)
+                }
             }
-
+        }
+        else -> {
+            ClickOutsideToDismissKeyboard {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    EmailTextfield(email, vm, keyboardController)
+                    PasswordTextfield(password, vm, verContrasena)
+                    KeepMeLoggedInCheckbox(keepLogged, vm)
+                    LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
+                    CustomClickableText(
+                        "¿No tienes cuenta? ",
+                        "Regístrate",
+                        "RegisterScreen",
+                        navController,
+                        vm
+                    )
+                    InvalidLoginDialog(showLoginDialog, vm)
+                    CustomDialog(
+                        show = showRegisterRequestDialog,
+                        question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
+                        option1 = "SÍ",
+                        onOption1Click = {
+                            vm.showRegisterRequestDialog(false)
+                            navController.navigate("RegisterScreen")
+                        },
+                        option2 = "NO",
+                        onOption2Click = { vm.showRegisterRequestDialog(false) }
+                    )
+                }
+            }
         }
     }
+
 }
 
 @Composable
@@ -128,6 +144,7 @@ private fun UseStoredData(
     if (storedUserData.value.isNotEmpty() &&
         storedUserData.value[0] != "" && storedUserData.value[1] != ""
     ) {
+        vm.goToNext.value = true
         vm.modShowLoading(true)
         vm.login(storedUserData.value[0], storedUserData.value[1], keepLogged, userPrefs)
         navController.navigate("MapScreen")
