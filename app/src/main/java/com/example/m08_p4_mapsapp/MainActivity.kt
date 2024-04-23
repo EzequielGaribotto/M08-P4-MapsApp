@@ -86,7 +86,6 @@ import com.example.m08_p4_mapsapp.view.AddMarkerContent
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
 import com.example.m08_p4_mapsapp.view.CameraScreen
 import com.example.m08_p4_mapsapp.view.EditMarkerScreen
-import com.example.m08_p4_mapsapp.view.EnablePermissionsScreen
 import com.example.m08_p4_mapsapp.view.GalleryScreen
 import com.example.m08_p4_mapsapp.view.LoginScreen
 import com.example.m08_p4_mapsapp.view.MapScreen
@@ -315,6 +314,7 @@ fun CustomDialog(
     onOption2Click: () -> Unit
 ) {
     if (show) {
+        println("Hola")
         Dialog(onDismissRequest = onOption2Click) {
             Column(
                 Modifier
@@ -440,12 +440,9 @@ fun MyScaffold(
                 composable(Routes.EditMarkerScreen.route) {
                     EditMarkerScreen(vm, navigationController)
                 }
-                composable(Routes.EnablePermissionsScreen.route) {
-                    EnablePermissionsScreen(vm, navigationController)
-                }
 
                 composable(Routes.UserInfoScreen.route) {
-                    UserInfoScreen(vm)
+                    UserInfoScreen(vm, navigationController)
                 }
             }
         }

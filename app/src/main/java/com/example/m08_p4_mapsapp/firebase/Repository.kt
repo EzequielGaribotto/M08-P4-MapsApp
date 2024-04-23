@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,6 +20,7 @@ class Repository {
     fun addUser(newUser: User) {
         database.collection("user").add(
             hashMapOf(
+                "avatarUrl" to newUser.avatarUrl,
                 "nombre" to newUser.nombre,
                 "apellido" to newUser.apellido,
                 "ciudad" to newUser.ciudad,
@@ -37,6 +39,7 @@ class Repository {
                 for (document in documents) {
                     database.collection("user").document(document.id).set(
                         hashMapOf(
+                            "avatarUrl" to user.avatarUrl,
                             "nombre" to user.nombre,
                             "apellido" to user.apellido,
                             "ciudad" to user.ciudad,
@@ -44,12 +47,20 @@ class Repository {
                         )
                     )
                 }
+                Log.d("User", "User updated successfully, new user name: ${user.nombre} ${user.apellido}")
             }
             .addOnFailureListener { exception ->
                 Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
-
+    fun deleteUserAuth() {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.delete()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("User Account", "User account deleted.")
+            }
+        }
+    }
     // DELETE
     fun removeUser(user: User) {
         database.collection("user")
@@ -125,8 +136,8 @@ class Repository {
         return database.collection("user")
     }
 
-    fun getUser(userId: String): DocumentReference {
-        return database.collection("user").document(userId)
+    fun getUser(owner: String): DocumentReference {
+        return database.collection("user").document(owner)
     }
 
     fun getMarkersFromDatabase(): CollectionReference {
@@ -150,4 +161,5 @@ class Repository {
                 Log.i("IMAGE UPLOAD CANCELED", "Image upload canceled")
             }
     }
+
 }

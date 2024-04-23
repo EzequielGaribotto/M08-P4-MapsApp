@@ -6,14 +6,11 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.firebase.Repository
@@ -24,9 +21,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.MarkerState
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.EventListener
@@ -38,16 +32,19 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-    private val _showGrantPermissionsDialog = MutableLiveData(false)
-    val showGrantPermissionsDialog: LiveData<Boolean> = MutableLiveData(false)
-    fun modShowGrantPermissionsDialog(b: Boolean) {
-        _showGrantPermissionsDialog.value = b
+    private val _showSaveUserChangesDialog = MutableLiveData(false)
+    val showSaveUserChangesDialog = _showSaveUserChangesDialog
+
+    private val _showDeleteUserDialog = MutableLiveData(false)
+    val showDeleteUserDialog = _showDeleteUserDialog
+    fun showDeleteUserDialog(b: Boolean) {
+        _showDeleteUserDialog.value = b
     }
-    private val _grantPermissions = MutableLiveData(false)
-    val grantPermissions = _grantPermissions
-    fun modGrantPermissions(b:Boolean) {
-        _grantPermissions.value = b
+    fun showSaveUserChangesDialog(b: Boolean) {
+        _showSaveUserChangesDialog.value = b
     }
+
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -118,11 +115,13 @@ class ViewModel : ViewModel() {
     private val _userId = MutableLiveData("")
     val userId: LiveData<String> = _userId
 
-    fun getUser(userid: String = ""): User {
-        var user = User("", "", "", "")
-        repo.getUsers().whereEqualTo("uid", userid).get().addOnSuccessListener { documents ->
+    private val _currentUser = MutableLiveData<User?>()
+    val currentUser = _currentUser
+    fun getUser() {
+        repo.getUsers().whereEqualTo("owner", _loggedUser.value).get().addOnSuccessListener { documents ->
             for (document in documents) {
-                user = User(
+                _currentUser.value = User(
+                    document.getString("avatarUrl") ?: "",
                     document.getString("nombre") ?: "",
                     document.getString("apellido") ?: "",
                     document.getString("ciudad") ?: "",
@@ -132,7 +131,6 @@ class ViewModel : ViewModel() {
         }.addOnFailureListener {
             Log.d("ERROR", "Error getting documents: ", it)
         }
-        return user
     }
 
     private val _verContrasena = MutableLiveData(false)
@@ -266,10 +264,6 @@ class ViewModel : ViewModel() {
         _selectedUri.value = uri
     }
 
-    fun modificarLoggedUser(nuevo: String) {
-        _loggedUser.value = nuevo
-    }
-
     fun modVerContrasena(boolean: Boolean) {
         _verContrasena.value = boolean
     }
@@ -390,7 +384,7 @@ class ViewModel : ViewModel() {
                         .addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
                                 repo.addUser(
-                                    User(
+                                    User(_avatarUrl.value?:"",
                                         _nombre.value!!, _apellido.value!!,
                                         _ciudad.value!!, _email.value!!
                                     )
@@ -403,6 +397,24 @@ class ViewModel : ViewModel() {
                     modShowLoading(true)
                 }
             }
+    }
+
+    fun updateNombre(newNombre: String) {
+        _currentUser.value?.nombre = newNombre
+    }
+
+    fun updateApellido(newApellido: String) {
+        _currentUser.value?.apellido = newApellido
+    }
+
+    fun updateCiudad(newCiudad: String) {
+        _currentUser.value?.ciudad = newCiudad
+    }
+
+    private val _avatarUrl = MutableLiveData<String>("")
+    val avatarUrl = _avatarUrl
+    fun modAvatarUrl(url:String) {
+        _avatarUrl.value = url
     }
 
     fun login(
@@ -426,7 +438,7 @@ class ViewModel : ViewModel() {
                     userRef.get().addOnSuccessListener { documents ->
                         if (documents.isEmpty) {
                             repo.addUser(
-                                User(
+                                User( _avatarUrl.value?:"",
                                     _nombre.value!!, _apellido.value!!,
                                     _ciudad.value!!, _loggedUser.value!!
                                 )
@@ -464,6 +476,7 @@ class ViewModel : ViewModel() {
     }
 
     private fun resetUserValues() {
+        _currentUser.value = null
         _markers.value = mutableListOf()
         _posicionActual.value = LatLng(0.0, 0.0)
         _loggedUser.value = ""
@@ -495,42 +508,6 @@ class ViewModel : ViewModel() {
         _isLoading.value = true
     }
 
-    fun signInWithGoogleCredential(credential: AuthCredential, home: () -> Unit) =
-        viewModelScope.launch {
-            modShowLoading(false)
-            try {
-                auth.signInWithCredential(credential)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("GOOGLE_SIGNIN", "Log con exito")
-                            val userRef =
-                                database.collection("user").whereEqualTo("owner", _loggedUser.value)
-                            userRef.get()
-                                .addOnSuccessListener { documents ->
-                                    if (documents.isEmpty) {
-                                        database.collection("user")
-                                            .add(
-                                                hashMapOf(
-                                                    "owner" to _email.value,
-                                                    "name" to _nombre.value,
-                                                    "apellido" to _apellido.value,
-                                                    "ciudad" to _ciudad.value,
-                                                )
-                                            )
-                                    }
-                                }
-                            home()
-                        }
-                    }
-                    .addOnFailureListener {
-                        Log.d("GOOGLE_SIGNIN", "Fallo .addOnFailureListener")
-                    }
-            } catch (ex: Exception) {
-                Log.d("GOOGLE_SIGNIN", "Excepción" + ex.localizedMessage)
-            }
-        }
-
-
     fun addMarker(lat: String, long: String, name: String, url: Uri) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
@@ -558,17 +535,12 @@ class ViewModel : ViewModel() {
         _selectedUri.value = Uri.EMPTY
     }
 
-    private val _notGrantedPermission = MutableLiveData(mutableListOf<String>())
-    val notGrantedPermission = _notGrantedPermission
-    fun addNotGrantedPermission(permission : String) {
-        _notGrantedPermission.value?.add(permission)
+    fun updateUser() {
+        repo.editUser(_currentUser.value!!)
     }
 
-    fun removeNotGrantedPermission(permission: String) {
-        _notGrantedPermission.value?.remove(permission)
-    }
-
-    fun modIsLoading(b: Boolean) {
-        _isLoading.value = b
+    fun removeUser() {
+        repo.removeUser(_currentUser.value!!)
+        repo.deleteUserAuth()
     }
 }
