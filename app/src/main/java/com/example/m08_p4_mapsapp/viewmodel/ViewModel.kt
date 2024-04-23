@@ -519,13 +519,14 @@ class ViewModel : ViewModel() {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         val id = UUID.randomUUID().toString()
-        markersTemp.add(Marker(_loggedUser.value, id, name, markerState, url.toString(), ""))
+        _currentMarker.value = Marker(_loggedUser.value, id, name, markerState, url.toString(), "")
+        markersTemp.add(_currentMarker.value!!)
         _markers.value = markersTemp.toMutableList()
         repo.addMarker(_markers.value?.last()!!)
     }
 
     fun uploadImage(imageUri: Uri) {
-        repo.uploadImage(imageUri, _markers.value?.last()!!)
+        repo.uploadImage(imageUri)
     }
 
     fun resetMarkerValues(context: Context) {

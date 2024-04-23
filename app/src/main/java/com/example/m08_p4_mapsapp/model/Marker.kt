@@ -23,26 +23,6 @@ data class Marker(
         this.categoria = categoria
     }
 
-    fun updId(id: String) {
-        this.id = id
-    }
-
-    fun updUrl(url: String) {
-        this.url = url
-    }
-
-    fun updMarkerState(markerState: MarkerState) {
-        this.markerState = markerState
-    }
-
-    fun updName(name: String) {
-        this.name = name
-    }
-
-    fun updIcon(icon: Bitmap) {
-        this.icon = icon
-    }
-
     @JvmName("getId1")
     fun getId(): String {
         return this.id
@@ -66,11 +46,6 @@ data class Marker(
     @JvmName("getIcon1")
     fun getIcon(): Bitmap {
         return this.icon
-    }
-
-    @JvmName("getOwner1")
-    fun getOwner(): String? {
-        return this.owner
     }
 
     override fun toString(): String {

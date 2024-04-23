@@ -128,24 +128,17 @@ class Repository {
             }
     }
 
-    fun getUserImageUri(): CollectionReference {
-        return database.collection("user")
-    }
-
     // SELECT
     fun getUsers(): CollectionReference {
         return database.collection("user")
     }
 
-    fun getUser(owner: String): DocumentReference {
-        return database.collection("user").document(owner)
-    }
 
     fun getMarkersFromDatabase(): CollectionReference {
         return database.collection("markers")
     }
 
-    fun uploadImage(imageUri: Uri, marker: Marker) {
+    fun uploadImage(imageUri: Uri) {
         val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
         val now = Date()
         val fileName = formatter.format(now)
@@ -153,10 +146,6 @@ class Repository {
         storage.putFile(imageUri)
             .addOnSuccessListener {
                 Log.i("IMAGE UPLOADED", "Image uploaded successfully")
-                storage.downloadUrl.addOnSuccessListener { uri ->
-                    Log.i("IMAGEN", uri.toString())
-                    marker.url = uri.toString()
-                }
             }
             .addOnCanceledListener {
                 Log.i("IMAGE UPLOAD CANCELED", "Image upload canceled")

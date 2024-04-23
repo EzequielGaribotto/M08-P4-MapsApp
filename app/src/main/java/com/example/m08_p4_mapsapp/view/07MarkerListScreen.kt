@@ -1,6 +1,8 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,6 +29,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -38,7 +41,7 @@ import com.example.m08_p4_mapsapp.ui.theme.DarkBrown
 import com.example.m08_p4_mapsapp.ui.theme.LightBrown
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
-
+@RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MarkerListScreen(navController: NavController, vm: ViewModel) {
@@ -69,6 +72,7 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
     }
 }
 
+
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MarkerItem(
@@ -83,7 +87,6 @@ fun MarkerItem(
     val long = marker.getMarkerState().position.longitude
     val photo = marker.getIcon()
     val name = marker.getName()
-    val uri = marker.getUri()
     val id = marker.getId()
 
     Card(
@@ -100,7 +103,7 @@ fun MarkerItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 GlideImage(
-                    model = uri,
+                    model = marker.getUri(),
                     contentDescription = "Marker Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(80.dp)
@@ -138,7 +141,7 @@ fun MarkerItem(
                     .clickable {
                         vm.modMarkerName(name)
                         vm.modMarkerIcon(photo)
-                        vm.modUrl(uri)
+                        vm.modUrl(marker.getUri())
                         vm.modInputLat(lat.toString())
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)

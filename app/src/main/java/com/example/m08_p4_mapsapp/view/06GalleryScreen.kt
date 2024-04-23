@@ -1,11 +1,11 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -55,13 +55,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
     ) { uri ->
         if (uri != null) {
             vm.modSelectedUri(uri)
-            vm.modSelectedImage(
-                if (Build.VERSION.SDK_INT < 28) {
-                    @Suppress("DEPRECATION")
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                } else {
-                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
-            })
+            vm.modSelectedImage(loadImageFromUri(uri, context)!!)
         }
     }
 
@@ -111,7 +105,11 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         }
     }
 }
-
+fun loadImageFromUri(uri: Uri, context: Context): Bitmap? {
+    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        BitmapFactory.decodeStream(inputStream)
+    }
+}
 @Composable
 fun CustomGoBackButton(
     prevScreen: String,
