@@ -41,36 +41,26 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
+fun MarkerListScreen(navController: NavController, vm: ViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        val markers:MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
+        val markers: MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
         vm.getMarkers()
-        val deleteMarkerDialog by vm.showDeleteMarkerDialog.observeAsState(false)
-        val marker by vm.currentMarker.observeAsState()
-        CustomDialog(
-            show = deleteMarkerDialog,
-            question = "¿Estás seguro de que quieres eliminar el marcador?",
-            option1 = "SI",
-            onOption1Click = {
-                vm.showDeleteMarkerDialog(false)
-                vm.removeMarker(marker!!)
-                             },
-            option2 = "NO",
-            onOption2Click = { vm.showDeleteMarkerDialog(false) }
-        )
+
         if (markers.isNotEmpty()) {
             LazyColumn {
                 items(markers) { marker ->
-                    vm.modCurrentMarker(marker)
-                    MarkerItem(marker, vm, navController) { lat, long ->
-                        vm.modPosicionActual(lat, long)
-                        navController.navigate(Routes.MapScreen.route)
-                    }
+                    MarkerItem(
+                        marker, vm, navController,
+                        onClickGo = { lat, long ->
+                            vm.modPosicionActual(lat, long)
+                            navController.navigate(Routes.MapScreen.route)
+                        }
+                    )
                 }
             }
         } else {
@@ -81,7 +71,14 @@ fun MarkerListScreen(navController: NavController,  vm: ViewModel) {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onClickGo: (Double, Double) -> Unit) {
+fun MarkerItem(
+    marker: Marker,
+    vm: ViewModel,
+    navController: NavController,
+    onClickGo: (Double, Double) -> Unit
+) {
+    val deleteMarkerDialog by vm.showDeleteMarkerDialog.observeAsState(false)
+
     val lat = marker.getMarkerState().position.latitude
     val long = marker.getMarkerState().position.longitude
     val photo = marker.getIcon()
@@ -128,7 +125,8 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                     .padding(8.dp)
                     .align(Alignment.TopEnd)
                     .clickable {
-                        vm.showDeleteMarkerDialog(true)
+                        vm.modCurrentMarker(marker)
+                        vm.removeMarker(marker)
                     }
             )
             Icon(
@@ -148,6 +146,16 @@ fun MarkerItem(marker: Marker, vm: ViewModel, navController: NavController, onCl
                         vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)
                     }
+            )
+            CustomDialog(
+                show = deleteMarkerDialog,
+                question = "¿Estás seguro de que quieres eliminar el marcador ${marker.name}?",
+                option1 = "SI",
+                onOption1Click = {
+                    vm.showDeleteMarkerDialog(false)
+                },
+                option2 = "NO",
+                onOption2Click = { vm.showDeleteMarkerDialog(false) }
             )
         }
     }

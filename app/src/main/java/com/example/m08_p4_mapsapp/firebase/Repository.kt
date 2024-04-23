@@ -115,6 +115,7 @@ class Repository {
     }
 
     fun removeMarker(marker: Marker) {
+        println("Nom del marcador a borrar: ${marker.name}")
         database.collection("markers")
             .whereEqualTo("id", marker.id)
             .get()
