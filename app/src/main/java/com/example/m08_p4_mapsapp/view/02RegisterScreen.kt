@@ -54,7 +54,6 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val keepLogged by vm.keepLogged.observeAsState(false)
 
     val errorEmail by vm.errorEmail.observeAsState(false)
-    val errorEmailDuplicado by vm.errorEmailDuplicado.observeAsState(false)
     val errorPass by vm.errorPass.observeAsState(false)
     val showRegisterDialog by vm.showRegisterDialog.observeAsState(false)
     val successfulRegister by vm.successfulRegister.observeAsState(false)
@@ -155,7 +154,6 @@ private fun RegisterButton(
     Button(
         onClick = {
             vm.modErrorEmail(!vm.isValidEmail(email))
-            vm.modErrorPass(!vm.isValidPass(pass))
             if (errorEmail || errorPass) {
                 vm.showRegisterDialog(true)
             } else {
@@ -200,7 +198,7 @@ fun InvalidRegisterDialog(showRegisterDialog: Boolean, vm: ViewModel) {
                     .fillMaxWidth()
             ) {
                 val message = StringBuilder()
-                if (vm.errorPass.value == true) message.appendLine("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial")
+                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida\nLa contraseña debe tener como mínimo 6 caracteres.")
                 if (vm.errorEmail.value == true) message.appendLine("El email tiene un formato incorrecto")
                 if (vm.errorEmailDuplicado.value == true) message.appendLine("Ya existe una cuenta con este email")
                 Text(text = message.toString().trim())

@@ -7,21 +7,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.Button
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,7 +44,6 @@ import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-import kotlinx.coroutines.delay
 import java.lang.StringBuilder
 
 @SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
@@ -55,7 +51,6 @@ import java.lang.StringBuilder
 fun LoginScreen(navController: NavController, vm: ViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val isLoading by vm.isLoading.observeAsState(false)
     val email by vm.email.observeAsState("")
     val password by vm.password.observeAsState("")
     val errorEmail by vm.errorEmail.observeAsState(false)
@@ -219,7 +214,6 @@ private fun LogInButton(
     Button(
         onClick = {
             vm.modErrorEmail(!vm.isValidEmail(email))
-            vm.modErrorPass(!vm.isValidPass(pass))
             if (errorEmail || errorPass) {
                 vm.showLoginDialog(true)
             } else {
@@ -250,7 +244,7 @@ fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
                     .fillMaxWidth()
             ) {
                 val message = StringBuilder()
-                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida")
+                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida o incorrecta")
                 if (vm.errorEmail.value == true) message.appendLine("El email no es válido")
 
                 Text(text = message.toString().trim())
