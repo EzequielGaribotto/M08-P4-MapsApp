@@ -32,6 +32,10 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+
+
+
+
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -96,11 +100,7 @@ class ViewModel : ViewModel() {
     private val _isLoading = MutableLiveData(true)
     val isLoading = _isLoading
 
-    private val _validLogin = MutableLiveData(false)
-    val validLogin: LiveData<Boolean> = _validLogin
-
     private val _userId = MutableLiveData("")
-    val userId: LiveData<String> = _userId
 
     private val _currentUser = MutableLiveData<User?>()
     val currentUser = _currentUser
@@ -142,7 +142,6 @@ class ViewModel : ViewModel() {
     val showDeleteMarkerDialog: LiveData<Boolean> = _showDeleteMarkerDialog
 
     private val _currentMarker: MutableLiveData<Marker?> = MutableLiveData()
-    val currentMarker = _currentMarker
 
     private val _showFilter = MutableLiveData(false)
     val showFilter = _showFilter
@@ -167,6 +166,20 @@ class ViewModel : ViewModel() {
 
     private val _category = MutableLiveData("")
     val category = _category
+
+    private val _selectedUserPfp = MutableLiveData<Bitmap>()
+    val selectedPfp = _selectedUserPfp
+
+    private val _selectedPfpUri = MutableLiveData(Uri.EMPTY)
+    val selectedPfpUri = _selectedPfpUri
+
+    fun modPfpUri(uri: Uri) {
+        _selectedPfpUri.value = uri
+    }
+
+    fun modSelectedPfp(bitmap: Bitmap) {
+        _selectedUserPfp.value = bitmap
+    }
 
     fun switchShowFilter() {
         _showFilter.value = !_showFilter.value!!
@@ -193,10 +206,6 @@ class ViewModel : ViewModel() {
     }
     fun showSaveUserChangesDialog(b: Boolean) {
         _showSaveUserChangesDialog.value = b
-    }
-
-    fun modCurrentMarker(marker: Marker) {
-        _currentMarker.value = marker
     }
 
     fun showDeleteMarkerDialog(boolean: Boolean) {
@@ -458,11 +467,12 @@ class ViewModel : ViewModel() {
         _currentUser.value?.ciudad = newCiudad
     }
 
-    private val _avatarUrl = MutableLiveData<String>("")
-    val avatarUrl = _avatarUrl
-    fun modAvatarUrl(url:String) {
-        _avatarUrl.value = url
+    fun updateAvatarUrl(newAvatarUrl:Uri) {
+        _currentUser.value?.avatarUrl = newAvatarUrl.toString()
     }
+
+    private val _avatarUrl = MutableLiveData("")
+
 
     fun login(
         username: String,
@@ -501,7 +511,9 @@ class ViewModel : ViewModel() {
                 }
             }
             .addOnFailureListener {
-                _validLogin.value = false
+                Log.d("Error", "Error logging in: $it")
+                modShowLoading(false)
+                _showRegisterRequestDialog.value = true
             }
     }
 
@@ -543,7 +555,6 @@ class ViewModel : ViewModel() {
         _showLoginDialog.value = false
         _showLogOutDialog.value = false
 
-        _validLogin.value = false
         _goToNext.value = false
         _verContrasena.value = false
         _keepLogged.value = false
@@ -564,6 +575,10 @@ class ViewModel : ViewModel() {
 
     fun uploadImage(imageUri: Uri) {
         repo.uploadImage(imageUri, _currentMarker.value!!)
+    }
+
+    fun uploadPfp(imageUri: Uri) {
+        repo.uploadPfp(imageUri, _currentUser.value!!)
     }
 
     fun filterMarkers(
@@ -603,5 +618,9 @@ class ViewModel : ViewModel() {
 
     fun deletePhoto(uri: Uri) {
         repo.deletePhoto(uri)
+    }
+
+    fun modCurrentMarker(marker:Marker) {
+        _currentMarker.value = marker
     }
 }

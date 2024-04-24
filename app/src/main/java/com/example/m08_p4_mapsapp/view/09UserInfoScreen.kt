@@ -1,7 +1,20 @@
 package com.example.m08_p4_mapsapp.view
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,29 +33,52 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.core.net.toUri
 import androidx.navigation.NavController
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.CustomDialog
+import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
-@OptIn(ExperimentalGlideComposeApi::class)
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun UserInfoScreen(vm: ViewModel, navController: NavController) {
     val context = LocalContext.current
+    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val selectedPfp by vm.selectedPfp.observeAsState(emptyImg)
+    val selectedUri by vm.selectedPfpUri.observeAsState(Uri.EMPTY)
     val user by vm.currentUser.observeAsState()
     val showSaveUserChangesDialog by vm.showSaveUserChangesDialog.observeAsState(false)
     val showDeleteUserDialog by vm.showDeleteUserDialog.observeAsState(false)
     vm.getUser()
+    val galleryLaunch = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            vm.modPfpUri(uri)
+            vm.modSelectedPfp(
+                if (Build.VERSION.SDK_INT < 28) {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else {
+                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                }
+            )
+        }
+    }
 
     if (user != null) {
         val userName = remember { mutableStateOf(user!!.nombre) }
         val userLastName = remember { mutableStateOf(user!!.apellido) }
         val userCity = remember { mutableStateOf(user!!.ciudad) }
+        val userAvatar = remember { mutableStateOf(user!!.avatarUrl) }.value.toUri()
 
         Column(
             modifier = Modifier
@@ -51,14 +87,29 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            GlideImage(
-                model = user?.avatarUrl ?: "",
-                contentDescription = "User Avatar",
+            Row {
+                Button(onClick = {
+                    galleryLaunch.launch("image/*")
+                }) {
+                    Text(text = "Abrir Galería")
+                }
+            }
+
+            Image(
+                bitmap = userAvatar.toBitmapOrNull(context)?.asImageBitmap() ?: selectedPfp.asImageBitmap(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
+                    .clip(
+                        CircleShape
+                    )
+                    .size(250.dp)
+                    .background(Color.Transparent)
+                    .border(width = 1.dp, color = Color.White, shape = CircleShape)
             )
+
+
+
             UserTextField(
                 label = "Nombre",
                 value = userName.value,
@@ -83,6 +134,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                     vm.updateCiudad(newValue)
                 }
             )
+
 
             Button(
                 onClick = {
@@ -110,7 +162,9 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             question = "¿Quieres cambiar los datos del usuario?",
             option1 = "Si",
             onOption1Click = {
+                vm.updateAvatarUrl(selectedUri)
                 vm.updateUser()
+                vm.uploadPfp(selectedUri)
                 vm.showSaveUserChangesDialog(false)
             },
             option2 = "No",
@@ -140,6 +194,16 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             Text("Loading user info...", modifier = Modifier.padding(10.dp))
         }
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.P)
+private fun Uri.toBitmapOrNull(context: Context): Bitmap? {
+    return try {
+        ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, this))
+    } catch (e: Exception) {
+        null
+    }
+
 }
 
 @Composable

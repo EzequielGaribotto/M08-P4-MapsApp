@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.MainActivity
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.location.LocationServices
@@ -26,7 +25,7 @@ import com.google.maps.android.compose.rememberMarkerState
 
 @SuppressLint("MissingPermission")
 @Composable
-fun MapScreen(navController: NavController, vm: ViewModel) {
+fun MapScreen(vm: ViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

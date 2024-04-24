@@ -162,4 +162,21 @@ class Repository {
             }
             .addOnFailureListener { Log.e("Image delete", "Image delete failed") }
     }
+
+    fun uploadPfp(imageUri: Uri, user: User) {
+        val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
+        val now = Date()
+        val fileName = formatter.format(now)
+        val storage = FirebaseStorage.getInstance().getReference("images/$fileName")
+        storage.putFile(imageUri)
+            .addOnSuccessListener {
+                Log.i("Image upload", "Image uploaded correctly")
+                storage.downloadUrl.addOnSuccessListener {
+                    user.avatarUrl = it.toString()
+                    editUser(user)
+                    Log.i("Image upload", it.toString())
+                }
+                    .addOnFailureListener { Log.e("Image upload", "Image upload failed") }
+            }
+    }
 }

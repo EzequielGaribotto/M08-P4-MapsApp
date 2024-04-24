@@ -49,6 +49,8 @@ import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.DarkBrown
 import com.example.m08_p4_mapsapp.ui.theme.LightBrown
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.MarkerState
 
 @RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -120,6 +122,7 @@ fun MarkerItem(
 ) {
     val deleteMarkerDialog by vm.showDeleteMarkerDialog.observeAsState(false)
     val deletingMarker by vm.deletingMarker.observeAsState(marker)
+    val loggedUser by vm.loggedUser.observeAsState("")
     val lat = marker.getMarkerState().position.latitude
     val long = marker.getMarkerState().position.longitude
     val photo = marker.getIcon()
@@ -200,6 +203,7 @@ fun MarkerItem(
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)
                         vm.modCategory(category)
+                        vm.modCurrentMarker(Marker(loggedUser, id, name, MarkerState(LatLng(lat,long)), marker.getUri().toString(), category))
                         vm.modPrevScreen("MarkerListScreen")
                         vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)

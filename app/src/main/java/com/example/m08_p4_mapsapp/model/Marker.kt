@@ -55,6 +55,4 @@ data class Marker(
     fun getCategoria(): String {
         return this.categoria
     }
-
-
 }

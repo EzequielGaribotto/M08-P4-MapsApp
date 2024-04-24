@@ -23,8 +23,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
@@ -36,10 +36,10 @@ import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
@@ -48,7 +48,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -76,7 +76,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.m08_p4_mapsapp.navigation.Routes
-import com.example.m08_p4_mapsapp.ui.theme.LightGreen
+import com.example.m08_p4_mapsapp.ui.theme.DarkBlue
 import com.example.m08_p4_mapsapp.ui.theme.LightRed
 import com.example.m08_p4_mapsapp.ui.theme.LighterGreen160
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
@@ -385,7 +385,7 @@ fun MyScaffold(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentRoute = navBackStackEntry?.destination?.route?: "LoginScreen"
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     ClickOutsideToDismissKeyboard {
         Scaffold(topBar = {
@@ -394,7 +394,7 @@ fun MyScaffold(
                     "MapScreen",
                     "MarkerListScreen",
                     "UserInfoScreen"
-                ) && currentRoute != null
+                )
             ) {
                 MyTopAppBar(currentRoute, state, scope, navigationController, vm)
             }
@@ -421,9 +421,7 @@ fun MyScaffold(
                         )
                     }
                     composable(Routes.MapScreen.route) {
-                        MapScreen(
-                            navigationController, vm
-                        )
+                        MapScreen(vm)
                     }
                     composable(Routes.MarkerListScreen.route) {
                         MarkerListScreen(
@@ -472,9 +470,7 @@ fun MyScaffold(
                             }) {
                                 Icon(Icons.Filled.Clear, contentDescription = "Close")
                             }
-                            if (currentRoute != null) {
-                                AddMarkerContent(vm, false, navigationController)
-                            }
+                            AddMarkerContent(vm, false, navigationController)
                         }
                     }
                 }
@@ -493,10 +489,9 @@ fun MyTopAppBar(
     vm: ViewModel,
 ) {
     val loggedUser by vm.loggedUser.observeAsState("")
-    TopAppBar(title = { Text(text = "Los Mapas: $loggedUser") },
-        //TopAppBar(title = { Text(text = "Los Mapas) },
+    TopAppBar(title = { Text(text = "Los Mapas") },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = LightGreen,
+            containerColor = DarkBlue,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
             actionIconContentColor = Color.Black,
@@ -567,5 +562,5 @@ fun CreateNavigationDrawerItem(
             selectedBadgeColor = LighterGreen160,
         )
     )
-    Divider()
+    HorizontalDivider()
 }

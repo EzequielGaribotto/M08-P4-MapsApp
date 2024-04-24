@@ -1,9 +1,7 @@
 package com.example.m08_p4_mapsapp.view
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
@@ -21,9 +19,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.runtime.Composable
@@ -63,7 +61,8 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 } else {
                     ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
-                })
+                }
+            )
         }
     }
 
@@ -75,7 +74,6 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
             }
         }
     )
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -101,8 +99,8 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         Button(
             onClick = {
                 vm.showBottomSheet(true)
-                vm.modMarkerIcon(selectedImage)
                 vm.modUrl(selectedUri)
+                vm.modMarkerIcon(selectedImage)
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }
@@ -113,11 +111,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         }
     }
 }
-fun loadImageFromUri(uri: Uri, context: Context): Bitmap? {
-    return context.contentResolver.openInputStream(uri)?.use { inputStream ->
-        BitmapFactory.decodeStream(inputStream)
-    }
-}
+
 @Composable
 fun CustomGoBackButton(
     prevScreen: String,

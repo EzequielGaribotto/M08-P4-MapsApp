@@ -23,8 +23,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -84,7 +84,7 @@ private fun TakePhotoButton(
     IconButton(
         onClick = {
 
-            takePhoto(context, controller, vm) { photo ->
+            takePhoto(context, controller) { photo ->
                 vm.modMarkerIcon(photo)
                 vm.modUrl(saveBitmapToExternalStorage(context, photo)!!)
             }
@@ -144,7 +144,6 @@ fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
 private fun takePhoto(
     context: Context,
     controller: LifecycleCameraController,
-    vm: ViewModel,
     onPhotoTaken: (Bitmap) -> Unit
 ) {
     controller.takePicture(
