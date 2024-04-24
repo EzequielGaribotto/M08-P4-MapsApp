@@ -457,22 +457,24 @@ fun MyScaffold(
                         vm.showBottomSheet(false)
                     }, sheetState = sheetState
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.End,
-                    ) {
-                        IconButton(onClick = {
-                            scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
-                                    vm.showBottomSheet(false)
+                    ClickOutsideToDismissKeyboard {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.End,
+                        ) {
+                            IconButton(onClick = {
+                                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                    if (!sheetState.isVisible) {
+                                        vm.showBottomSheet(false)
+                                    }
                                 }
+                            }) {
+                                Icon(Icons.Filled.Clear, contentDescription = "Close")
                             }
-                        }) {
-                            Icon(Icons.Filled.Clear, contentDescription = "Close")
-                        }
-                        if (currentRoute != null) {
-                            AddMarkerContent(vm, false, navigationController)
+                            if (currentRoute != null) {
+                                AddMarkerContent(vm, false, navigationController)
+                            }
                         }
                     }
                 }
