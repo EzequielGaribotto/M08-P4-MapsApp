@@ -358,6 +358,7 @@ class ViewModel : ViewModel() {
                     document.getString("ciudad") ?: "",
                     document.getString("owner") ?: ""
                 )
+                println("User found: ${_currentUser.value}")
             }
         }.addOnFailureListener {
             Log.d("ERROR", "Error getting documents: ", it)
@@ -465,10 +466,6 @@ class ViewModel : ViewModel() {
 
     fun updateCiudad(newCiudad: String) {
         _currentUser.value?.ciudad = newCiudad
-    }
-
-    fun updateAvatarUrl(newAvatarUrl:Uri) {
-        _currentUser.value?.avatarUrl = newAvatarUrl.toString()
     }
 
     private val _avatarUrl = MutableLiveData("")

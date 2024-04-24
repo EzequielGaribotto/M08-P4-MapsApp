@@ -1,6 +1,5 @@
 package com.example.m08_p4_mapsapp.view
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -9,7 +8,6 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -43,15 +40,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun UserInfoScreen(vm: ViewModel, navController: NavController) {
     val context = LocalContext.current
-    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val emptyImg: Bitmap =
+        ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val selectedPfp by vm.selectedPfp.observeAsState(emptyImg)
     val selectedUri by vm.selectedPfpUri.observeAsState(Uri.EMPTY)
     val user by vm.currentUser.observeAsState()
@@ -68,7 +69,12 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                     @Suppress("DEPRECATION")
                     MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 } else {
-                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                    ImageDecoder.decodeBitmap(
+                        ImageDecoder.createSource(
+                            context.contentResolver,
+                            uri
+                        )
+                    )
                 }
             )
         }
@@ -95,20 +101,16 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                 }
             }
 
-            Image(
-                bitmap = userAvatar.toBitmapOrNull(context)?.asImageBitmap() ?: selectedPfp.asImageBitmap(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            GlideImage(
+                model = selectedUri.toString().ifEmpty { userAvatar.toString().ifEmpty { selectedPfp }},
+                contentDescription = "User Avatar",
                 modifier = Modifier
-                    .clip(
-                        CircleShape
-                    )
                     .size(250.dp)
+                    .clip(CircleShape)
                     .background(Color.Transparent)
-                    .border(width = 1.dp, color = Color.White, shape = CircleShape)
+                    .border(width = 1.dp, color = Color.White, shape = CircleShape),
+                contentScale = ContentScale.Crop
             )
-
-
 
             UserTextField(
                 label = "Nombre",
@@ -162,9 +164,12 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             question = "¿Quieres cambiar los datos del usuario?",
             option1 = "Si",
             onOption1Click = {
-                vm.updateAvatarUrl(selectedUri)
-                vm.updateUser()
+                println("1USUARIO: NOMBRE: ${userName.value}, APELLIDO: ${userLastName.value}, CIUDAD: ${userCity.value}, AVATAR: ${selectedUri.toString()}")
                 vm.uploadPfp(selectedUri)
+                Thread.sleep(1000)
+                println("2USUARIO: NOMBRE: ${userName.value}, APELLIDO: ${userLastName.value}, CIUDAD: ${userCity.value}, AVATAR: ${selectedUri.toString()}")
+                vm.updateUser()
+                println("3USUARIO: NOMBRE: ${userName.value}, APELLIDO: ${userLastName.value}, CIUDAD: ${userCity.value}, AVATAR: ${selectedUri.toString()}")
                 vm.showSaveUserChangesDialog(false)
             },
             option2 = "No",
@@ -194,16 +199,6 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             Text("Loading user info...", modifier = Modifier.padding(10.dp))
         }
     }
-}
-
-@RequiresApi(Build.VERSION_CODES.P)
-private fun Uri.toBitmapOrNull(context: Context): Bitmap? {
-    return try {
-        ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, this))
-    } catch (e: Exception) {
-        null
-    }
-
 }
 
 @Composable
