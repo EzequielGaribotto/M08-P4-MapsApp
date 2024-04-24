@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -34,6 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.R
+import com.example.m08_p4_mapsapp.CustomButton
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
@@ -70,7 +70,12 @@ fun AddMarkerContent(
             verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
         ) {
             SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
-            Row { MarkerCategories(markerCategories, vm) }
+            Row(
+                modifier = Modifier.padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+
+            ) { MarkerCategories(markerCategories, vm) }
+            Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
             SetData(name, vm, lat, long)
             AddMarker(
                 photoTaken,
@@ -83,7 +88,6 @@ fun AddMarkerContent(
                 navigationController,
                 context
             )
-            Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
         }
     }
 }
@@ -102,7 +106,7 @@ fun AddMarker(
 ) {
     val canAddMarker =
         photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
-    Button(onClick = {
+    CustomButton(onClick = {
         vm.addMarker(lat, long, name, url, selectedCategory)
         vm.uploadImage(url)
         vm.showBottomSheet(false)
@@ -168,7 +172,7 @@ fun SetPhoto(
             .size(120.dp)
             .padding(bottom = 10.dp)
     )
-    Button(onClick = {
+    CustomButton(onClick = {
         if (currentRoute != null) {
             vm.modPrevScreen(currentRoute)
         }
@@ -183,7 +187,7 @@ fun SetPhoto(
     }
 
 
-    Button(onClick = {
+    CustomButton(onClick = {
         if (currentRoute != null) {
             vm.modPrevScreen(currentRoute)
         }
@@ -208,7 +212,7 @@ fun MarkerCategories(markerCategories: Map<String, Int>, vm: ViewModel) {
                 painterResource(id = category.value),
                 contentDescription = category.key,
                 modifier = Modifier
-                    .size(50.dp)
+                    .fillMaxSize()
                     .padding(5.dp)
             )
         }

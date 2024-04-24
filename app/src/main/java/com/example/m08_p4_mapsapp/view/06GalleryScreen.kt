@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
@@ -39,6 +38,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.R
+import com.example.m08_p4_mapsapp.CustomButton
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 @RequiresApi(Build.VERSION_CODES.P)
@@ -79,7 +79,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = {
+        CustomButton(onClick = {
             launchImage.launch("image/*")
         }) {
             Text(text = "Abrir Galería")
@@ -96,7 +96,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
                 .background(Color.Transparent)
                 .border(width = 1.dp, color = Color.White, shape = CircleShape)
         )
-        Button(
+        CustomButton(
             onClick = {
                 vm.showBottomSheet(true)
                 vm.modUrl(selectedUri)

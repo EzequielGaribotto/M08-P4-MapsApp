@@ -13,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -41,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.CustomDialog
+import com.example.m08_p4_mapsapp.CustomButton
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -211,7 +211,7 @@ private fun LogInButton(
     keepLogged: Boolean,
     userPrefs: UserPrefs,
 ) {
-    Button(
+    CustomButton(
         onClick = {
             vm.modErrorEmail(!vm.isValidEmail(email))
             if (errorEmail || errorPass) {

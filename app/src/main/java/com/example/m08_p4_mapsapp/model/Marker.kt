@@ -48,11 +48,11 @@ data class Marker(
         return this.icon
     }
 
-    override fun toString(): String {
-        return "Marker(id=$id, markerState=$markerState, name=$name, icon=$icon, url=$url)"
-    }
     @JvmName("getCategoria1")
     fun getCategoria(): String {
         return this.categoria
+    }
+    override fun toString(): String {
+        return "Marker(id=$id, markerState=$markerState, name=$name, icon=$icon, url=$url)"
     }
 }

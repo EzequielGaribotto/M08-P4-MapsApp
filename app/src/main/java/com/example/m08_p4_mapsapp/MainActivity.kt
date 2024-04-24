@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -190,7 +189,7 @@ fun PermissionDeclinedScreen(message: String = "Esta app requiere que le proporc
             textAlign = TextAlign.Center
         )
         Text(text = message, textAlign = TextAlign.Center)
-        Button(onClick = {
+        CustomButton(onClick = {
             val activity = context as Activity
             val intent = Intent().apply {
                 action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
@@ -335,7 +334,7 @@ fun CustomDialog(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(onClick = onOption1Click) {
+                    CustomButton(onClick = onOption1Click) {
                         Text(
                             text = option1,
                             fontSize = 20.sp,
@@ -343,7 +342,7 @@ fun CustomDialog(
                             color = Color.White
                         )
                     }
-                    Button(onClick = onOption2Click) {
+                    CustomButton(onClick = onOption2Click) {
                         Text(
                             text = option2,
                             fontSize = 20.sp,

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -44,6 +43,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.R
+import com.example.m08_p4_mapsapp.CustomButton
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -94,7 +94,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row {
-                Button(onClick = {
+                CustomButton(onClick = {
                     galleryLaunch.launch("image/*")
                 }) {
                     Text(text = "Abrir Galería")
@@ -138,7 +138,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             )
 
 
-            Button(
+            CustomButton(
                 onClick = {
                     vm.showSaveUserChangesDialog(true)
                 },
@@ -148,7 +148,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             ) {
                 Text("Guardar cambios", fontSize = 16.sp)
             }
-            Button(
+            CustomButton(
                 onClick = {
                     vm.showDeleteUserDialog(true)
                 },

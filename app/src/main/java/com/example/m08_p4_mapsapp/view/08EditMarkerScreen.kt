@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +21,7 @@ import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.R
+import com.example.m08_p4_mapsapp.CustomButton
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -104,7 +104,7 @@ private fun EditMarker(
     selectedCategory: String
 ) {
     val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
-    Button(onClick = {
+    CustomButton(onClick = {
         vm.showSaveChangesDialog(true)
     }, enabled = canAddMarker) {
         Text("Guardar cambios")

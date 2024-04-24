@@ -2,16 +2,12 @@ package com.example.m08_p4_mapsapp.firebase
 
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.model.User
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.google.maps.android.compose.MarkerState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
