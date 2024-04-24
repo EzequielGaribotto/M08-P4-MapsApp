@@ -71,7 +71,7 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
     val userPrefs = UserPrefs(context)
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
     println("Stored user data: ${storedUserData.value}")
-    UseStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
+    useStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
     if (goToNext) {
         navController.navigate(Routes.MapScreen.route)
         vm.modGoToNext(false)
@@ -132,8 +132,7 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
 
 }
 
-@Composable
-private fun UseStoredData(
+private fun useStoredData(
     storedUserData: State<List<String>>,
     vm: ViewModel,
     keepLogged: Boolean,

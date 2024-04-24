@@ -4,14 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -52,11 +56,14 @@ fun AddMarkerContent(
     val long by vm.inputLong.observeAsState("")
     val name by vm.markerName.observeAsState("")
     val context = LocalContext.current
-    val emptyIcon: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val emptyIcon: Bitmap =
+        ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val icon by vm.icon.observeAsState(emptyIcon)
     val url by vm.url.observeAsState(Uri.EMPTY)
     val photoTaken = if (url == Uri.EMPTY) !icon.sameAs(emptyIcon) else true
-
+    val markerCategories by vm.markerCategories.observeAsState(mapOf())
+    val selectedCategory by vm.category.observeAsState("")
+    vm.getMarkerCategories()
     ClickOutsideToDismissKeyboard {
         Box {
             Column(
@@ -65,8 +72,10 @@ fun AddMarkerContent(
                 verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
             ) {
                 SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
+                Row { MarkerCategories(markerCategories, vm) }
                 SetData(name, vm, lat, long)
-                AddMarker(photoTaken, name, lat, long, vm, url, navigationController, context)
+                AddMarker(photoTaken,selectedCategory, name, lat, long, vm, url, navigationController, context)
+                Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
             }
         }
     }
@@ -75,6 +84,7 @@ fun AddMarkerContent(
 @Composable
 fun AddMarker(
     photoTaken: Boolean,
+    selectedCategory: String,
     name: String,
     lat: String,
     long: String,
@@ -84,9 +94,9 @@ fun AddMarker(
     context: Context
 ) {
     val canAddMarker =
-        photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
+        photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
     Button(onClick = {
-        vm.addMarker(lat, long, name, url)
+        vm.addMarker(lat, long, name, url, selectedCategory)
         vm.uploadImage(url)
         vm.showBottomSheet(false)
 
@@ -129,6 +139,7 @@ fun SetName(name: String, vm: ViewModel) {
         label = { Text("Nombre") })
 }
 
+@SuppressLint("DiscouragedApi")
 @Composable
 @OptIn(ExperimentalGlideComposeApi::class)
 fun SetPhoto(
@@ -177,5 +188,22 @@ fun SetPhoto(
         navigationController.navigate(Routes.GalleryScreen.route)
     }) {
         Text("Buscar foto en galería")
+    }
+}
+
+@Composable
+fun MarkerCategories(markerCategories: Map<Int, String>, vm: ViewModel) {
+    markerCategories.forEach { category ->
+        IconButton(onClick = {
+            vm.modCategory(category.value.replace("cat_", "").replace(".png", ""))
+        }) {
+            Image(
+                painterResource(id = category.key),
+                contentDescription = category.value,
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(5.dp)
+            )
+        }
     }
 }

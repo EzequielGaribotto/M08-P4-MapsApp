@@ -32,15 +32,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.ui.theme.DarkBrown
 import com.example.m08_p4_mapsapp.ui.theme.LightBrown
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-
 @RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -88,6 +88,7 @@ fun MarkerItem(
     val photo = marker.getIcon()
     val name = marker.getName()
     val id = marker.getId()
+    val category = marker.getCategoria()
 
     Card(
         border = BorderStroke(2.dp, DarkBrown),
@@ -102,9 +103,13 @@ fun MarkerItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                GlideImage(
-                    model = marker.getUri(),
-                    contentDescription = "Marker Image",
+
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(marker.getUri())
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Foto del marcador",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.size(80.dp)
                 )
@@ -145,6 +150,7 @@ fun MarkerItem(
                         vm.modInputLat(lat.toString())
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)
+                        vm.modCategory(category)
                         vm.modPrevScreen("MarkerListScreen")
                         vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)

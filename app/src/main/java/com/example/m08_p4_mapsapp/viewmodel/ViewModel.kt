@@ -32,6 +32,23 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+    private val _markerCategories = MutableLiveData(mutableMapOf<Int,String>())
+    val markerCategories = _markerCategories
+
+    fun getMarkerCategories() {
+        for (r in R.drawable::class.java.declaredFields) {
+            if (r.name.startsWith("cat_")) {
+                _markerCategories.value?.put(r.getInt(r), r.name)
+            }
+        }
+    }
+    private val _category = MutableLiveData("")
+    val category = _category
+
+    fun modCategory(category: String) {
+        _category.value = category
+    }
+
     private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
     val deletingMarker = _deletingMarker
 
@@ -515,11 +532,11 @@ class ViewModel : ViewModel() {
         _isLoading.value = true
     }
 
-    fun addMarker(lat: String, long: String, name: String, url: Uri) {
+    fun addMarker(lat: String, long: String, name: String, url: Uri, selectedCategory: String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         val id = UUID.randomUUID().toString()
-        _currentMarker.value = Marker(_loggedUser.value, id, name, markerState, url.toString(), "")
+        _currentMarker.value = Marker(_loggedUser.value, id, name, markerState, url.toString(), selectedCategory)
         markersTemp.add(_currentMarker.value!!)
         _markers.value = markersTemp.toMutableList()
         repo.addMarker(_markers.value?.last()!!)

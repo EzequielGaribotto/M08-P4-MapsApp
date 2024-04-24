@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -41,6 +42,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
     val id by vm.markerId.observeAsState("")
     val showSaveChangesDialog by vm.showSaveChangesDialog.observeAsState(false)
     val loggedUser by vm.loggedUser.observeAsState("")
+    val selectedCategory by vm.category.observeAsState("")
 
     vm.showBottomSheet(false)
 
@@ -56,7 +58,8 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         ) {
             SetPhoto(url, icon, vm, lat, long, navController, true)
             SetName(name, vm)
-            EditMarker(name, lat, long, vm)
+            EditCategory(vm, selectedCategory)
+            EditMarker(name, lat, long, vm, selectedCategory)
         }
     }
 
@@ -73,7 +76,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
                     name = name,
                     icon = icon,
                     url = url.toString(),
-                    categoria = ""
+                    categoria = selectedCategory
                 )
             )
             vm.resetMarkerValues(context)
@@ -87,13 +90,22 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
 }
 
 @Composable
+fun EditCategory(vm: ViewModel, selectedCategory: String) {
+    val categories by vm.markerCategories.observeAsState(mapOf())
+    vm.getMarkerCategories()
+    Row { MarkerCategories(categories, vm) }
+    Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
+}
+
+@Composable
 private fun EditMarker(
     name: String,
     lat: String,
     long: String,
     vm: ViewModel,
+    selectedCategory: String
 ) {
-    val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty()
+    val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
     Button(onClick = {
         vm.showSaveChangesDialog(true)
     }, enabled = canAddMarker) {
