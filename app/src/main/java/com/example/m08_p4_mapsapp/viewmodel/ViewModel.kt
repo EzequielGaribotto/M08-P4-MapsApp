@@ -396,7 +396,8 @@ class ViewModel : ViewModel() {
                     }
                     _markers.value = tempList
                 }
-            })
+            }
+            )
     }
 
     fun isValidEmail(target: CharSequence?): Boolean {

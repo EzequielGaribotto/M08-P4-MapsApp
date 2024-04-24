@@ -491,6 +491,7 @@ fun MyTopAppBar(
     vm: ViewModel,
 ) {
     val loggedUser by vm.loggedUser.observeAsState("")
+    
     TopAppBar(title = { Text(text = "Los Mapas") },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = DarkBlue,
@@ -515,7 +516,7 @@ fun MyTopAppBar(
             }) {
                 Icon(
                     imageVector = Icons.Filled.run { if (loggedUser != "") ManageAccounts else AccountCircle },
-                    contentDescription = "Log In/ Log Out"
+                    contentDescription = "Log In/Log Out"
                 )
             }
         }
