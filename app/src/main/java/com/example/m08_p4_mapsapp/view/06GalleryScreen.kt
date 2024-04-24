@@ -47,7 +47,8 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 fun GalleryScreen(vm: ViewModel, navController: NavController) {
     val prevScreen by vm.prevScreen.observeAsState("")
     val context = LocalContext.current
-    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+    val emptyImg: Bitmap =
+        ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
     val selectedImage by vm.selectedImage.observeAsState(emptyImg)
     val selectedUri by vm.selectedUri.observeAsState(Uri.EMPTY)
     val launchImage = rememberLauncherForActivityResult(
@@ -57,23 +58,27 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
             vm.modSelectedUri(uri)
             vm.modSelectedImage(
                 if (Build.VERSION.SDK_INT < 28) {
-                    @Suppress("DEPRECATION")
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                    @Suppress("DEPRECATION") MediaStore.Images.Media.getBitmap(
+                        context.contentResolver,
+                        uri
+                    )
                 } else {
-                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri))
+                    ImageDecoder.decodeBitmap(
+                        ImageDecoder.createSource(
+                            context.contentResolver, uri
+                        )
+                    )
                 }
             )
         }
     }
 
-    CustomGoBackButton(prevScreen, vm, navController,
-        before = {
-            if (prevScreen == "MapScreen") {
-                vm.showBottomSheet(true)
-                vm.resetSelectedValues()
-            }
+    CustomGoBackButton(prevScreen, vm, navController, before = {
+        if (prevScreen == "MapScreen") {
+            vm.showBottomSheet(true)
+            vm.resetSelectedValues()
         }
-    )
+    })
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -104,8 +109,7 @@ fun GalleryScreen(vm: ViewModel, navController: NavController) {
                 if (prevScreen != null) {
                     navController.navigate(prevScreen)
                 }
-            },
-            enabled = !selectedImage.sameAs(emptyImg)
+            }, enabled = !selectedImage.sameAs(emptyImg)
         ) {
             Text(text = "Establecer como icono")
         }
@@ -128,6 +132,5 @@ fun CustomGoBackButton(
                 vm.goBack(navController, prevScreen)
                 after()
             }
-            .padding(16.dp)
-    )
+            .padding(16.dp))
 }

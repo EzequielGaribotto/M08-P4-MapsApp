@@ -148,7 +148,7 @@ class ViewModel : ViewModel() {
     private val _categoryFilter = MutableLiveData("")
     val categoryFilter = _categoryFilter
 
-    private val _markerCategories = MutableLiveData(mutableMapOf<String,Int>())
+    private val _markerCategories = MutableLiveData(mutableMapOf<String, Int>())
     val markerCategories = _markerCategories
 
     private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
@@ -200,6 +200,7 @@ class ViewModel : ViewModel() {
     fun showDeleteUserDialog(b: Boolean) {
         _showDeleteUserDialog.value = b
     }
+
     fun showSaveUserChangesDialog(b: Boolean) {
         _showSaveUserChangesDialog.value = b
     }
@@ -339,31 +340,31 @@ class ViewModel : ViewModel() {
     fun getMarkerCategories() {
         for (r in R.drawable::class.java.declaredFields) {
             if (r.name.startsWith("cat_")) {
-                _markerCategories.value?.put(r.name.replace("cat_",""),r.getInt(r))
+                _markerCategories.value?.put(r.name.replace("cat_", ""), r.getInt(r))
             }
         }
     }
 
     fun getUser() {
-        repo.getUsers().whereEqualTo("owner", _loggedUser.value).get().addOnSuccessListener { documents ->
-            for (document in documents) {
-                _currentUser.value = User(
-                    document.getString("avatarUrl") ?: "",
-                    document.getString("nombre") ?: "",
-                    document.getString("apellido") ?: "",
-                    document.getString("ciudad") ?: "",
-                    document.getString("owner") ?: ""
-                )
-                println("User found: ${_currentUser.value}")
+        repo.getUsers().whereEqualTo("owner", _loggedUser.value).get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    _currentUser.value = User(
+                        document.getString("avatarUrl") ?: "",
+                        document.getString("nombre") ?: "",
+                        document.getString("apellido") ?: "",
+                        document.getString("ciudad") ?: "",
+                        document.getString("owner") ?: ""
+                    )
+                    println("User found: ${_currentUser.value}")
+                }
+            }.addOnFailureListener {
+                Log.d("ERROR", "Error getting documents: ", it)
             }
-        }.addOnFailureListener {
-            Log.d("ERROR", "Error getting documents: ", it)
-        }
     }
 
     fun getMarkers() {
-        repo.getMarkersFromDatabase()
-            .whereEqualTo("owner", _loggedUser.value)
+        repo.getMarkersFromDatabase().whereEqualTo("owner", _loggedUser.value)
             .addSnapshotListener(object : EventListener<QuerySnapshot> {
                 override fun onEvent(value: QuerySnapshot?, error: FirebaseFirestoreException?) {
                     if (error != null) {
@@ -381,8 +382,7 @@ class ViewModel : ViewModel() {
                             val longitude = document.get("longitude") ?: ""
                             val markerState = MarkerState(
                                 LatLng(
-                                    latitude.toString().toDouble(),
-                                    longitude.toString().toDouble()
+                                    latitude.toString().toDouble(), longitude.toString().toDouble()
                                 )
                             )
 
@@ -401,28 +401,16 @@ class ViewModel : ViewModel() {
 
     fun isValidEmail(target: CharSequence?): Boolean {
         return !TextUtils.isEmpty(target) && target?.let {
-            android.util.Patterns.EMAIL_ADDRESS.matcher(it)
-                .matches()
+            android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches()
         } == true
-    }
-
-    fun isValidPass(password: CharSequence?): Boolean {
-        val passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
-        val passwordMatcher = Regex(passwordPattern)
-
-        return password != null && passwordMatcher.matches(password)
     }
 
     private val _errorEmailDuplicado = MutableLiveData<Boolean>()
     val errorEmailDuplicado: LiveData<Boolean> = _errorEmailDuplicado
     fun register(
-        username: String,
-        password: String,
-        keepLogged: Boolean = false,
-        userPrefs: UserPrefs
+        username: String, password: String, keepLogged: Boolean = false, userPrefs: UserPrefs
     ) {
-        auth.createUserWithEmailAndPassword(username, password)
-            .addOnCompleteListener { task ->
+        auth.createUserWithEmailAndPassword(username, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
@@ -436,13 +424,15 @@ class ViewModel : ViewModel() {
                     }
                     val userRef =
                         database.collection("user").whereEqualTo("owner", _loggedUser.value)
-                    userRef.get()
-                        .addOnSuccessListener { documents ->
+                    userRef.get().addOnSuccessListener { documents ->
                             if (documents.isEmpty) {
                                 repo.addUser(
-                                    User(_avatarUrl.value?:"",
-                                        _nombre.value!!, _apellido.value!!,
-                                        _ciudad.value!!, _email.value!!
+                                    User(
+                                        _avatarUrl.value ?: "",
+                                        _nombre.value!!,
+                                        _apellido.value!!,
+                                        _ciudad.value!!,
+                                        _email.value!!
                                     )
                                 )
                             }
@@ -477,8 +467,7 @@ class ViewModel : ViewModel() {
         keepLogged: Boolean = false,
         userPrefs: UserPrefs = null!!
     ) {
-        auth.signInWithEmailAndPassword(username, password)
-            .addOnCompleteListener { task ->
+        auth.signInWithEmailAndPassword(username, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
@@ -492,9 +481,12 @@ class ViewModel : ViewModel() {
                     userRef.get().addOnSuccessListener { documents ->
                         if (documents.isEmpty) {
                             repo.addUser(
-                                User( _avatarUrl.value?:"",
-                                    _nombre.value!!, _apellido.value!!,
-                                    _ciudad.value!!, _loggedUser.value!!
+                                User(
+                                    _avatarUrl.value ?: "",
+                                    _nombre.value!!,
+                                    _apellido.value!!,
+                                    _ciudad.value!!,
+                                    _loggedUser.value!!
                                 )
                             )
                         }
@@ -516,8 +508,7 @@ class ViewModel : ViewModel() {
                     _errorPass.value = true
                     _showLoginDialog.value = true
                 }
-            }
-            .addOnFailureListener {
+            }.addOnFailureListener {
                 Log.d("Error", "Error logging in: $it")
             }
     }
@@ -574,7 +565,9 @@ class ViewModel : ViewModel() {
     fun addMarker(lat: String, long: String, name: String, url: Uri, selectedCategory: String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
         val id = UUID.randomUUID().toString()
-        _currentMarker.value = Marker(owner = _loggedUser.value, id, name, markerState, url.toString(), selectedCategory)
+        _currentMarker.value = Marker(
+            owner = _loggedUser.value, id, name, markerState, url.toString(), selectedCategory
+        )
         repo.addMarker(_currentMarker.value!!)
     }
 
@@ -587,13 +580,12 @@ class ViewModel : ViewModel() {
     }
 
     fun filterMarkers(
-        markers: MutableList<Marker>,
-        categoryFilter: String,
-        nameFilter: String
+        markers: MutableList<Marker>, categoryFilter: String, nameFilter: String
     ): List<Marker> {
         val filteredMarkers = markers.filter { marker ->
-            (categoryFilter.isEmpty() || marker.categoria.lowercase().contains(categoryFilter.lowercase())) &&
-                    (nameFilter.isEmpty() || marker.name.lowercase().contains(nameFilter.lowercase()))
+            (categoryFilter.isEmpty() || marker.categoria.lowercase()
+                .contains(categoryFilter.lowercase())) && (nameFilter.isEmpty() || marker.name.lowercase()
+                .contains(nameFilter.lowercase()))
         }
         return filteredMarkers
     }
@@ -625,7 +617,7 @@ class ViewModel : ViewModel() {
         repo.deletePhoto(uri)
     }
 
-    fun modCurrentMarker(marker:Marker) {
+    fun modCurrentMarker(marker: Marker) {
         _currentMarker.value = marker
     }
 

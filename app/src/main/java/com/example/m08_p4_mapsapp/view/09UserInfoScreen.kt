@@ -66,13 +66,14 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             vm.modPfpUri(uri)
             vm.modSelectedPfp(
                 if (Build.VERSION.SDK_INT < 28) {
-                    @Suppress("DEPRECATION")
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                    @Suppress("DEPRECATION") MediaStore.Images.Media.getBitmap(
+                        context.contentResolver,
+                        uri
+                    )
                 } else {
                     ImageDecoder.decodeBitmap(
                         ImageDecoder.createSource(
-                            context.contentResolver,
-                            uri
+                            context.contentResolver, uri
                         )
                     )
                 }
@@ -102,7 +103,8 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             }
 
             GlideImage(
-                model = selectedUri.toString().ifEmpty { userAvatar.toString().ifEmpty { selectedPfp }},
+                model = selectedUri.toString()
+                    .ifEmpty { userAvatar.toString().ifEmpty { selectedPfp } },
                 contentDescription = "User Avatar",
                 modifier = Modifier
                     .size(250.dp)
@@ -112,37 +114,26 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                 contentScale = ContentScale.Crop
             )
 
-            UserTextField(
-                label = "Nombre",
-                value = userName.value,
-                onValueChange = { newValue ->
-                    userName.value = newValue
-                    vm.updateNombre(newValue)
-                }
-            )
-            UserTextField(
-                label = "Apellido",
+            UserTextField(label = "Nombre", value = userName.value, onValueChange = { newValue ->
+                userName.value = newValue
+                vm.updateNombre(newValue)
+            })
+            UserTextField(label = "Apellido",
                 value = userLastName.value,
                 onValueChange = { newValue ->
                     userLastName.value = newValue
                     vm.updateApellido(newValue)
-                }
-            )
-            UserTextField(
-                label = "Ciudad",
-                value = userCity.value,
-                onValueChange = { newValue ->
-                    userCity.value = newValue
-                    vm.updateCiudad(newValue)
-                }
-            )
+                })
+            UserTextField(label = "Ciudad", value = userCity.value, onValueChange = { newValue ->
+                userCity.value = newValue
+                vm.updateCiudad(newValue)
+            })
 
 
             CustomButton(
                 onClick = {
                     vm.showSaveUserChangesDialog(true)
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .padding(top = 5.dp)
             ) {
@@ -151,16 +142,14 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
             CustomButton(
                 onClick = {
                     vm.showDeleteUserDialog(true)
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .padding(top = 5.dp)
             ) {
                 Text("Desactivar cuenta", fontSize = 16.sp)
             }
         }
-        CustomDialog(
-            show = showSaveUserChangesDialog,
+        CustomDialog(show = showSaveUserChangesDialog,
             question = "¿Quieres cambiar los datos del usuario?",
             option1 = "Si",
             onOption1Click = {
@@ -173,10 +162,8 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                 vm.showSaveUserChangesDialog(false)
             },
             option2 = "No",
-            onOption2Click = { vm.showSaveUserChangesDialog(false) }
-        )
-        CustomDialog(
-            show = showDeleteUserDialog,
+            onOption2Click = { vm.showSaveUserChangesDialog(false) })
+        CustomDialog(show = showDeleteUserDialog,
             question = "¿Estás seguro de que quieres desactivar tu cuenta?",
             option1 = "Sí",
             onOption1Click = {
@@ -185,8 +172,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
                 vm.signOut(context, navController)
             },
             option2 = "No",
-            onOption2Click = { vm.showDeleteUserDialog(false) }
-        )
+            onOption2Click = { vm.showDeleteUserDialog(false) })
     } else {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -203,9 +189,7 @@ fun UserInfoScreen(vm: ViewModel, navController: NavController) {
 
 @Composable
 fun UserTextField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit
+    label: String, value: String, onValueChange: (String) -> Unit
 ) {
     TextField(
         value = value,

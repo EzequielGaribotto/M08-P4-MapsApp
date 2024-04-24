@@ -51,7 +51,12 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
     val prevScreen by vm.prevScreen.observeAsState("")
     val context = LocalContext.current
     val isLoading by vm.isLoading.observeAsState(true)
-    AskForPermission(permission = Manifest.permission.CAMERA, onDeclineMsg = "Esta app necesita que le proporciones permisos de cámara para funcionar.", isLoading, vm) {
+    AskForPermission(
+        permission = Manifest.permission.CAMERA,
+        onDeclineMsg = "Esta app necesita que le proporciones permisos de cámara para funcionar.",
+        isLoading,
+        vm
+    ) {
         val controller = remember {
             LifecycleCameraController(context).apply {
                 CameraController.IMAGE_CAPTURE
@@ -64,7 +69,9 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 CustomGoBackButton(prevScreen, vm, navController) {
                     vm.showBottomSheet(true)
                 }
@@ -77,9 +84,7 @@ fun CameraScreen(vm: ViewModel, navController: NavController) {
 
 @Composable
 private fun TakePhotoButton(
-    context: Context,
-    controller: LifecycleCameraController,
-    vm: ViewModel
+    context: Context, controller: LifecycleCameraController, vm: ViewModel
 ) {
     IconButton(
         onClick = {
@@ -142,12 +147,9 @@ fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
 }
 
 private fun takePhoto(
-    context: Context,
-    controller: LifecycleCameraController,
-    onPhotoTaken: (Bitmap) -> Unit
+    context: Context, controller: LifecycleCameraController, onPhotoTaken: (Bitmap) -> Unit
 ) {
-    controller.takePicture(
-        ContextCompat.getMainExecutor(context),
+    controller.takePicture(ContextCompat.getMainExecutor(context),
         object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 super.onCaptureSuccess(image)
@@ -155,13 +157,7 @@ private fun takePhoto(
                     postRotate(image.imageInfo.rotationDegrees.toFloat())
                 }
                 val rotatedBitmap = Bitmap.createBitmap(
-                    image.toBitmap(),
-                    0,
-                    0,
-                    image.width,
-                    image.height,
-                    matrix,
-                    true
+                    image.toBitmap(), 0, 0, image.width, image.height, matrix, true
                 )
 
                 onPhotoTaken(rotatedBitmap)
@@ -171,6 +167,5 @@ private fun takePhoto(
                 super.onError(exception)
                 Log.e("Camera", "Error taking photo", exception)
             }
-        }
-    )
+        })
 }

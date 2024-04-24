@@ -47,9 +47,7 @@ fun AddMarkerScreen(vm: ViewModel, navController: NavController) {
 
 @Composable
 fun AddMarkerContent(
-    vm: ViewModel,
-    markerScreen: Boolean = false,
-    navigationController: NavController
+    vm: ViewModel, markerScreen: Boolean = false, navigationController: NavController
 ) {
     val lat by vm.inputLat.observeAsState("")
     val long by vm.inputLong.observeAsState("")
@@ -71,8 +69,7 @@ fun AddMarkerContent(
         ) {
             SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
             Row(
-                modifier = Modifier.padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.padding(10.dp), horizontalArrangement = Arrangement.SpaceEvenly
 
             ) { MarkerCategories(markerCategories, vm) }
             Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
@@ -106,37 +103,34 @@ fun AddMarker(
 ) {
     val canAddMarker =
         photoTaken && name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
-    CustomButton(onClick = {
-        vm.addMarker(lat, long, name, url, selectedCategory)
-        vm.uploadImage(url)
-        vm.showBottomSheet(false)
+    CustomButton(
+        modifier = Modifier.padding(10.dp), onClick = {
+            vm.addMarker(lat, long, name, url, selectedCategory)
+            vm.uploadImage(url)
+            vm.showBottomSheet(false)
 
-        if (vm.prevScreen.value == "AddMarkerScreen") {
-            navigationController.navigate(Routes.MapScreen.route)
-        } else {
-            vm.resetMarkerValues(context)
-        }
-    }, enabled = canAddMarker) {
+            if (vm.prevScreen.value == "AddMarkerScreen") {
+                navigationController.navigate(Routes.MapScreen.route)
+            } else {
+                vm.resetMarkerValues(context)
+            }
+        }, enabled = canAddMarker
+    ) {
         Text("Agregar marcador")
     }
 }
 
 @Composable
 fun SetData(
-    name: String,
-    vm: ViewModel,
-    lat: String,
-    long: String
+    name: String, vm: ViewModel, lat: String, long: String
 ) {
     SetName(name, vm)
-    TextField(
-        value = lat,
+    TextField(value = lat,
         onValueChange = { vm.modInputLat(it) },
         label = { Text("Latitud") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
     )
-    TextField(
-        value = long,
+    TextField(value = long,
         onValueChange = { vm.modInputLong(it) },
         label = { Text("Longitud") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -145,9 +139,7 @@ fun SetData(
 
 @Composable
 fun SetName(name: String, vm: ViewModel) {
-    TextField(value = name,
-        onValueChange = { vm.modMarkerName(it) },
-        label = { Text("Nombre") })
+    TextField(value = name, onValueChange = { vm.modMarkerName(it) }, label = { Text("Nombre") })
 }
 
 @SuppressLint("DiscouragedApi")
@@ -164,22 +156,19 @@ fun SetPhoto(
 ) {
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    GlideImage(
-        model = if (url.takeIf { it != Uri.EMPTY } != null) url else icon!!,
+    GlideImage(model = if (url.takeIf { it != Uri.EMPTY } != null) url else icon!!,
         contentDescription = "Marker Image",
         contentScale = ContentScale.Crop,
         modifier = Modifier
             .size(120.dp)
-            .padding(bottom = 10.dp)
-    )
+            .padding(bottom = 10.dp))
     CustomButton(onClick = {
         if (currentRoute != null) {
             vm.modPrevScreen(currentRoute)
         }
         vm.showBottomSheet(false)
         vm.modPosicionActual(
-            lat.toDoubleOrNull() ?: 0.0,
-            long.toDoubleOrNull() ?: 0.0
+            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
         )
         navigationController.navigate(Routes.CameraScreen.route)
     }) {
@@ -193,8 +182,7 @@ fun SetPhoto(
         }
         vm.showBottomSheet(false)
         vm.modPosicionActual(
-            lat.toDoubleOrNull() ?: 0.0,
-            long.toDoubleOrNull() ?: 0.0
+            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
         )
         navigationController.navigate(Routes.GalleryScreen.route)
     }) {

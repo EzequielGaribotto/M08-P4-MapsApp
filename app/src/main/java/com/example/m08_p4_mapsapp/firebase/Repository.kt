@@ -15,7 +15,6 @@ import java.util.Locale
 class Repository {
     private val database = FirebaseFirestore.getInstance()
 
-    // INSERT
     fun addUser(newUser: User) {
         database.collection("user").add(
             hashMapOf(
@@ -28,12 +27,8 @@ class Repository {
         )
     }
 
-
-    // UPDATE
     fun editUser(user: User) {
-        database.collection("user")
-            .whereEqualTo("owner", user.owner)
-            .get()
+        database.collection("user").whereEqualTo("owner", user.owner).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     database.collection("user").document(document.id).set(
@@ -46,9 +41,11 @@ class Repository {
                         )
                     )
                 }
-                Log.d("User", "User updated successfully, new user name: ${user.nombre} ${user.apellido}")
-            }
-            .addOnFailureListener { exception ->
+                Log.d(
+                    "User",
+                    "User updated successfully, new user name: ${user.nombre} ${user.apellido}"
+                )
+            }.addOnFailureListener { exception ->
                 Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
@@ -58,8 +55,7 @@ class Repository {
         val now = Date()
         val fileName = formatter.format(now)
         val storage = FirebaseStorage.getInstance().getReference("images/$fileName")
-        storage.putFile(imageUri)
-            .addOnSuccessListener {
+        storage.putFile(imageUri).addOnSuccessListener {
                 Log.i("Image upload", "Image uploaded correctly")
                 storage.downloadUrl.addOnSuccessListener {
                     user.avatarUrl = it.toString()
@@ -68,6 +64,7 @@ class Repository {
                 }.addOnFailureListener { Log.e("Image upload", "Image upload failed") }
             }
     }
+
     fun deleteUserAuth() {
         val user = FirebaseAuth.getInstance().currentUser
         user?.delete()?.addOnCompleteListener { task ->
@@ -76,17 +73,14 @@ class Repository {
             }
         }
     }
-    // DELETE
+
     fun removeUser(user: User) {
-        database.collection("user")
-            .whereEqualTo("owner", user.owner)
-            .get()
+        database.collection("user").whereEqualTo("owner", user.owner).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     database.collection("user").document(document.id).delete()
                 }
-            }
-            .addOnFailureListener { exception ->
+            }.addOnFailureListener { exception ->
                 Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
@@ -106,9 +100,7 @@ class Repository {
     }
 
     fun editMarker(marker: Marker) {
-        database.collection("markers")
-            .whereEqualTo("id", marker.id)
-            .get()
+        database.collection("markers").whereEqualTo("id", marker.id).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     database.collection("markers").document(document.id).set(
@@ -123,17 +115,14 @@ class Repository {
                         )
                     )
                 }
-            }
-            .addOnFailureListener { exception ->
+            }.addOnFailureListener { exception ->
                 Log.w("ERROR", "Error getting documents: ", exception)
             }
     }
 
     fun removeMarker(marker: Marker) {
         println("Nom del marcador a borrar: ${marker.name}")
-        database.collection("markers")
-            .whereEqualTo("id", marker.id)
-            .get()
+        database.collection("markers").whereEqualTo("id", marker.id).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     database.collection("markers").document(document.id).delete()
@@ -143,7 +132,6 @@ class Repository {
             }
     }
 
-    // SELECT
     fun getUsers(): CollectionReference {
         return database.collection("user")
     }
@@ -158,25 +146,21 @@ class Repository {
         val now = Date()
         val fileName = formatter.format(now)
         val storage = FirebaseStorage.getInstance().getReference("images/$fileName")
-        storage.putFile(imageUri)
-            .addOnSuccessListener {
+        storage.putFile(imageUri).addOnSuccessListener {
                 Log.i("Image upload", "Image uploaded correctly")
                 storage.downloadUrl.addOnSuccessListener {
                     marker.url = it.toString()
                     editMarker(marker)
                     Log.i("Image upload", it.toString())
-                }
-                    .addOnFailureListener { Log.e("Image upload", "Image upload failed") }
+                }.addOnFailureListener { Log.e("Image upload", "Image upload failed") }
             }
     }
 
     fun deletePhoto(uri: Uri) {
         val storage = FirebaseStorage.getInstance().getReferenceFromUrl(uri.toString())
-        storage.delete()
-            .addOnSuccessListener {
+        storage.delete().addOnSuccessListener {
                 Log.i("Image delete", "Image deleted correctly")
-            }
-            .addOnFailureListener { Log.e("Image delete", "Image delete failed") }
+            }.addOnFailureListener { Log.e("Image delete", "Image delete failed") }
     }
 
 }

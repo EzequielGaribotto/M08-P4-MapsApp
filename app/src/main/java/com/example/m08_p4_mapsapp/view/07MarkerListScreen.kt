@@ -78,8 +78,7 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
             }
             if (showFilter) {
                 Row(Modifier.fillMaxWidth()) {
-                    TextField(
-                        value = categoryFilter,
+                    TextField(value = categoryFilter,
                         onValueChange = { vm.modCategoryFilter(it) },
                         label = {
                             Text("Filtrar por categoría", fontSize = 14.sp)
@@ -87,8 +86,7 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
                         modifier = Modifier.weight(1f)
                     )
 
-                    TextField(
-                        value = nameFilter,
+                    TextField(value = nameFilter,
                         onValueChange = { vm.modNameFilter(it) },
                         label = { Text("Filtrar por nombre", fontSize = 14.sp) },
                         modifier = Modifier.weight(1f)
@@ -153,8 +151,7 @@ fun MarkerItem(
                         .crossfade(false).build(),
                     contentDescription = "Foto del marcador",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(150.dp)
+                    modifier = Modifier.size(150.dp)
                 )
                 val categoryId = categories[category]
                 if (categoryId != null) {
@@ -176,9 +173,7 @@ fun MarkerItem(
                         style = MaterialTheme.typography.headlineLarge,
                     )
                     Text(
-                        "Categoría: $category\n" +
-                                "Lat. $lat\n" +
-                                "Long. $long\n",
+                        "Categoría: $category\n" + "Lat. $lat\n" + "Long. $long\n",
                         textAlign = TextAlign.Center,
                         fontSize = 12.sp
                     )

@@ -25,11 +25,12 @@ fun CustomButton(
     enabled: Boolean = true,
     shape: Shape = CutCornerShape(30),
     colors: ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = MediumBlue,
-        contentColor = Color.White
+        containerColor = MediumBlue, contentColor = Color.White
     ),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(15.dp),
-    border: BorderStroke? = BorderStroke(5.dp, DarkBlue).takeIf { enabled }?: BorderStroke(5.dp, Color.Gray),
+    border: BorderStroke? = BorderStroke(5.dp, DarkBlue).takeIf { enabled } ?: BorderStroke(
+        5.dp, Color.Gray
+    ),
     contentPadding: PaddingValues = PaddingValues(all = 12.dp),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     content: @Composable RowScope.() -> Unit

@@ -45,20 +45,21 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
 
     vm.showBottomSheet(false)
 
-        CustomGoBackButton("MarkerListScreen",
-            vm,
-            navController,
-            after = { vm.resetMarkerValues(context) })
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            SetPhoto(url, icon, vm, lat, long, navController, true)
-            SetName(name, vm)
-            EditCategory(vm, selectedCategory)
-            EditMarker(name, lat, long, vm, selectedCategory)
-        }
+    CustomGoBackButton(
+        "MarkerListScreen",
+        vm,
+        navController,
+        after = { vm.resetMarkerValues(context) })
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        SetPhoto(url, icon, vm, lat, long, navController, true)
+        SetName(name, vm)
+        EditCategory(vm, selectedCategory)
+        EditMarker(name, lat, long, vm, selectedCategory)
+    }
 
     CustomDialog(show = showSaveChangesDialog,
         question = "¿Seguro que quieres guardar los cambios?",
@@ -83,8 +84,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
         option2 = "No",
         onOption2Click = {
             vm.showSaveChangesDialog(false)
-        }
-    )
+        })
 }
 
 @Composable
@@ -97,13 +97,10 @@ fun EditCategory(vm: ViewModel, selectedCategory: String) {
 
 @Composable
 private fun EditMarker(
-    name: String,
-    lat: String,
-    long: String,
-    vm: ViewModel,
-    selectedCategory: String
+    name: String, lat: String, long: String, vm: ViewModel, selectedCategory: String
 ) {
-    val canAddMarker = name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
+    val canAddMarker =
+        name.isNotEmpty() && lat.isNotEmpty() && long.isNotEmpty() && selectedCategory.isNotEmpty()
     CustomButton(onClick = {
         vm.showSaveChangesDialog(true)
     }, enabled = canAddMarker) {

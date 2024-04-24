@@ -33,16 +33,20 @@ fun MapScreen(vm: ViewModel) {
     ) {
         val prevScreen = vm.prevScreen.value
         val posicionActual by vm.posicionActual.observeAsState(LatLng(0.0, 0.0))
-        val cameraPositionState = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(posicionActual, 12f) }
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(posicionActual, 12f)
+        }
         val getUserLocation by vm.getUserLocation.observeAsState(true)
         if (getUserLocation) {
             val context = LocalContext.current
-            val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+            val fusedLocationProviderClient =
+                remember { LocationServices.getFusedLocationProviderClient(context) }
             val locationResult = fusedLocationProviderClient.getCurrentLocation(100, null)
             locationResult.addOnCompleteListener(context as MainActivity) { task ->
                 if (task.isSuccessful) {
                     vm.modPosicionActual(task.result.latitude, task.result.longitude)
-                    cameraPositionState.position =  CameraPosition.fromLatLngZoom(posicionActual, 12f)
+                    cameraPositionState.position =
+                        CameraPosition.fromLatLngZoom(posicionActual, 12f)
                     vm.modGetUserLocation(false)
                 } else {
                     Log.e("Error", "Exception: %s", task.exception)
@@ -60,8 +64,7 @@ fun MapScreen(vm: ViewModel) {
 
 @Composable
 private fun Map(
-    cameraPositionState: CameraPositionState,
-    vm: ViewModel
+    cameraPositionState: CameraPositionState, vm: ViewModel
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -72,8 +75,7 @@ private fun Map(
                 vm.modInputLat(it.latitude.toString())
                 vm.modInputLong(it.longitude.toString())
                 vm.showBottomSheet(true)
-            }
-        ) {
+            }) {
             val markers by vm.markers.observeAsState(mutableListOf())
             vm.getMarkers()
             markers?.forEach { marker ->

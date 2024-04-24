@@ -134,9 +134,9 @@ fun CustomClickableText(
     vm: ViewModel
 ) {
     val text = buildAnnotatedString {
-        pushStyle(style = SpanStyle(color = Color.Black, fontSize = 24.sp))
+        pushStyle(style = SpanStyle(color = Color.Black, fontSize = 20.sp))
         append(normalText)
-        pushStyle(style = SpanStyle(color = Color.Blue, fontSize = 24.sp))
+        pushStyle(style = SpanStyle(color = Color.Blue, fontSize = 22.sp))
         append(clickableText)
         pop()
     }
