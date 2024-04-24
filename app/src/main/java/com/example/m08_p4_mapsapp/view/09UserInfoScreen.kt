@@ -41,9 +41,9 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.m08_p4_mapsapp.CustomDialog
+import com.example.m08_p4_mapsapp.utils.CustomDialog
 import com.example.m08_p4_mapsapp.R
-import com.example.m08_p4_mapsapp.CustomButton
+import com.example.m08_p4_mapsapp.utils.CustomButton
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 @OptIn(ExperimentalGlideComposeApi::class)

@@ -1,4 +1,4 @@
-package com.example.m08_p4_mapsapp
+package com.example.m08_p4_mapsapp.utils
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource

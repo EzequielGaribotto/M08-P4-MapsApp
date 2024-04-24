@@ -1,26 +1,18 @@
 package com.example.m08_p4_mapsapp
 
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +26,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,19 +47,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -79,6 +63,9 @@ import com.example.m08_p4_mapsapp.ui.theme.DarkBlue
 import com.example.m08_p4_mapsapp.ui.theme.LightRed
 import com.example.m08_p4_mapsapp.ui.theme.LighterGreen160
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
+import com.example.m08_p4_mapsapp.utils.ClickOutsideToDismissKeyboard
+import com.example.m08_p4_mapsapp.utils.CustomDialog
+import com.example.m08_p4_mapsapp.utils.PermissionDeclinedScreen
 import com.example.m08_p4_mapsapp.view.AddMarkerContent
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
 import com.example.m08_p4_mapsapp.view.CameraScreen
@@ -168,44 +155,6 @@ fun AskForPermission(
 
         else -> {
             PermissionDeclinedScreen(onDeclineMsg)
-        }
-    }
-}
-
-@Composable
-fun PermissionDeclinedScreen(message: String = "Esta app requiere que le proporciones permisos") {
-    val context = LocalContext.current
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(26.dp)
-    ) {
-        Text(
-            text = "Permisos necesarios",
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            textAlign = TextAlign.Center
-        )
-        Text(text = message, textAlign = TextAlign.Center)
-        CustomButton(onClick = {
-            val activity = context as Activity
-            val intent = Intent().apply {
-                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                data = Uri.fromParts("package", activity.packageName, null)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            activity.startActivity(intent)
-        }) {
-            Text(text = "Aceptar")
-        }
-
-        IconButton(onClick = { (context as Activity).recreate() }) {
-            Icon(
-                imageVector = Icons.Rounded.CheckCircle,
-                contentDescription = "Recargar"
-            )
         }
     }
 }
@@ -303,73 +252,6 @@ fun MyDrawer(vm: ViewModel, context: Context) {
         }
     }) {
         MyScaffold(vm, state, scope, navigationController)
-    }
-}
-
-@Composable
-fun CustomDialog(
-    show: Boolean,
-    question: String,
-    option1: String,
-    onOption1Click: () -> Unit,
-    option2: String,
-    onOption2Click: () -> Unit
-) {
-    if (show) {
-        Dialog(onDismissRequest = onOption2Click) {
-            Column(
-                Modifier
-                    .background(Color.White)
-                    .padding(24.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = question,
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp),
-                    textAlign = TextAlign.Center
-                )
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CustomButton(onClick = onOption1Click) {
-                        Text(
-                            text = option1,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                    CustomButton(onClick = onOption2Click) {
-                        Text(
-                            text = option2,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ClickOutsideToDismissKeyboard(content: @Composable () -> Unit) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                keyboardController?.hide()
-            }
-    ) {
-        content()
     }
 }
 

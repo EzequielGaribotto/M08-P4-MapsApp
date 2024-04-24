@@ -19,9 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.CustomDialog
+import com.example.m08_p4_mapsapp.utils.CustomDialog
 import com.example.m08_p4_mapsapp.R
-import com.example.m08_p4_mapsapp.CustomButton
+import com.example.m08_p4_mapsapp.utils.CustomButton
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.maps.model.LatLng

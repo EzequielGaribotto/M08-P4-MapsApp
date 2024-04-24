@@ -1,11 +1,18 @@
 package com.example.m08_p4_mapsapp.viewmodel
 
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.net.Uri
+import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.view.LifecycleCameraController
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.lifecycle.LiveData
@@ -29,6 +36,7 @@ import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.OutputStream
 import java.util.UUID
 
 class ViewModel : ViewModel() {
@@ -336,7 +344,26 @@ class ViewModel : ViewModel() {
     fun editMarker(marker: Marker) {
         repo.editMarker(marker)
     }
+    fun updateUser() {
+        repo.editUser(_currentUser.value!!)
+    }
 
+    fun removeUser() {
+        repo.removeUser(_currentUser.value!!)
+        repo.deleteUserAuth()
+    }
+
+    fun deletePhoto(uri: Uri) {
+        repo.deletePhoto(uri)
+    }
+
+    fun modCurrentMarker(marker: Marker) {
+        _currentMarker.value = marker
+    }
+
+    fun modErrorEmailDuplicado(b: Boolean) {
+        _errorEmailDuplicado.value = b
+    }
     fun getMarkerCategories() {
         for (r in R.drawable::class.java.declaredFields) {
             if (r.name.startsWith("cat_")) {
@@ -604,24 +631,50 @@ class ViewModel : ViewModel() {
         _selectedUri.value = Uri.EMPTY
     }
 
-    fun updateUser() {
-        repo.editUser(_currentUser.value!!)
+
+
+    fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri? {
+        val filename = "${System.currentTimeMillis()}.jpg"
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.TITLE, filename)
+            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+        }
+
+        val uri: Uri? =
+            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        uri?.let { ur1 ->
+            val outstream: OutputStream? = context.contentResolver.openOutputStream(ur1)
+            outstream?.let { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+            outstream?.close()
+        }
+
+        return uri
     }
 
-    fun removeUser() {
-        repo.removeUser(_currentUser.value!!)
-        repo.deleteUserAuth()
-    }
+    fun takePhoto(
+        context: Context, controller: LifecycleCameraController, onPhotoTaken: (Bitmap) -> Unit
+    ) {
+        controller.takePicture(ContextCompat.getMainExecutor(context),
+            object : ImageCapture.OnImageCapturedCallback() {
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    super.onCaptureSuccess(image)
+                    val matrix = Matrix().apply {
+                        postRotate(image.imageInfo.rotationDegrees.toFloat())
+                    }
+                    val rotatedBitmap = Bitmap.createBitmap(
+                        image.toBitmap(), 0, 0, image.width, image.height, matrix, true
+                    )
 
-    fun deletePhoto(uri: Uri) {
-        repo.deletePhoto(uri)
-    }
+                    onPhotoTaken(rotatedBitmap)
+                }
 
-    fun modCurrentMarker(marker: Marker) {
-        _currentMarker.value = marker
-    }
-
-    fun modErrorEmailDuplicado(b: Boolean) {
-        _errorEmailDuplicado.value = b
+                override fun onError(exception: ImageCaptureException) {
+                    super.onError(exception)
+                    Log.e("Camera", "Error taking photo", exception)
+                }
+            })
     }
 }

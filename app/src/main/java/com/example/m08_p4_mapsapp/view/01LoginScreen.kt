@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,8 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,10 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.CustomDialog
-import com.example.m08_p4_mapsapp.CustomButton
+import com.example.m08_p4_mapsapp.utils.CustomDialog
+import com.example.m08_p4_mapsapp.utils.CustomButton
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
+import com.example.m08_p4_mapsapp.utils.CustomClickableText
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import java.lang.StringBuilder
 
@@ -123,36 +121,6 @@ private fun useStoredData(
     } else {
         vm.modShowLoading(false)
     }
-}
-
-@Composable
-fun CustomClickableText(
-    normalText: String,
-    clickableText: String,
-    route: String,
-    navController: NavController,
-    vm: ViewModel
-) {
-    val text = buildAnnotatedString {
-        pushStyle(style = SpanStyle(color = Color.Black, fontSize = 20.sp))
-        append(normalText)
-        pushStyle(style = SpanStyle(color = Color.Blue, fontSize = 22.sp))
-        append(clickableText)
-        pop()
-    }
-
-    ClickableText(
-        text = text,
-        onClick = { offset ->
-            vm.showRegisterRequestDialog(false)
-            vm.showLoginDialog(false)
-            vm.showRegisterDialog(false)
-
-            if (offset in normalText.length until text.length) {
-                navController.navigate(route)
-            }
-        }
-    )
 }
 
 @Composable

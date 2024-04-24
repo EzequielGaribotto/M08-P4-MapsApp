@@ -32,9 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.CustomButton
+import com.example.m08_p4_mapsapp.utils.CustomButton
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
+import com.example.m08_p4_mapsapp.utils.CustomClickableText
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import java.lang.StringBuilder
 
