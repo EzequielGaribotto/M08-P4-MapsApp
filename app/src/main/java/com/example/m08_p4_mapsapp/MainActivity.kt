@@ -1,6 +1,7 @@
 package com.example.m08_p4_mapsapp
 
 
+import android.Manifest
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
@@ -44,7 +43,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,9 +61,9 @@ import com.example.m08_p4_mapsapp.ui.theme.DarkBlue
 import com.example.m08_p4_mapsapp.ui.theme.LightRed
 import com.example.m08_p4_mapsapp.ui.theme.LighterGreen160
 import com.example.m08_p4_mapsapp.ui.theme.M08P4MapsAppTheme
+import com.example.m08_p4_mapsapp.utils.AskForPermission
 import com.example.m08_p4_mapsapp.utils.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.utils.CustomDialog
-import com.example.m08_p4_mapsapp.utils.PermissionDeclinedScreen
 import com.example.m08_p4_mapsapp.view.AddMarkerContent
 import com.example.m08_p4_mapsapp.view.AddMarkerScreen
 import com.example.m08_p4_mapsapp.view.CameraScreen
@@ -77,9 +75,6 @@ import com.example.m08_p4_mapsapp.view.MarkerListScreen
 import com.example.m08_p4_mapsapp.view.RegisterScreen
 import com.example.m08_p4_mapsapp.view.UserInfoScreen
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -99,7 +94,7 @@ class MainActivity : ComponentActivity() {
                     val isLoading by viewModel.isLoading.observeAsState(true)
 
                     AskForPermission(
-                        permission = android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        permission = Manifest.permission.ACCESS_FINE_LOCATION,
                         onDeclineMsg = "Esta app requiere que le proporciones permisos de localización para funcionar",
                         isLoading,
                         viewModel
@@ -109,52 +104,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.P)
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun AskForPermission(
-    permission: String,
-    onDeclineMsg: String = "Esta app requiere que le proporciones permisos",
-    isLoading: Boolean,
-    vm: ViewModel,
-    onAccept: @Composable () -> Unit = {}
-) {
-    val permissionState = rememberPermissionState(permission)
-
-    if (!permissionState.status.isGranted && !isLoading) {
-        LaunchedEffect(Unit) {
-            permissionState.launchPermissionRequest()
-        }
-    }
-
-    when {
-        isLoading -> {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.width(64.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(1000)
-                    vm.modShowLoading(false)
-                }
-            }
-        }
-
-        permissionState.status.isGranted -> {
-            onAccept()
-        }
-
-        else -> {
-            PermissionDeclinedScreen(onDeclineMsg)
         }
     }
 }

@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.AskForPermission
+import com.example.m08_p4_mapsapp.utils.AskForPermission
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 
 
