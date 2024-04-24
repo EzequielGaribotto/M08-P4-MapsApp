@@ -32,19 +32,18 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-    private val _markerCategories = MutableLiveData(mutableMapOf<Int,String>())
+    private val _markerCategories = MutableLiveData(mutableMapOf<String,Int>())
     val markerCategories = _markerCategories
 
     fun getMarkerCategories() {
         for (r in R.drawable::class.java.declaredFields) {
             if (r.name.startsWith("cat_")) {
-                _markerCategories.value?.put(r.getInt(r), r.name)
+                _markerCategories.value?.put(r.name.replace("cat_",""),r.getInt(r))
             }
         }
     }
     private val _category = MutableLiveData("")
     val category = _category
-
     fun modCategory(category: String) {
         _category.value = category
     }

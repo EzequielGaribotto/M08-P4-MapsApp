@@ -192,14 +192,14 @@ fun SetPhoto(
 }
 
 @Composable
-fun MarkerCategories(markerCategories: Map<Int, String>, vm: ViewModel) {
+fun MarkerCategories(markerCategories: Map<String, Int>, vm: ViewModel) {
     markerCategories.forEach { category ->
         IconButton(onClick = {
-            vm.modCategory(category.value.replace("cat_", "").replace(".png", ""))
+            vm.modCategory(category.key)
         }) {
             Image(
-                painterResource(id = category.key),
-                contentDescription = category.value,
+                painterResource(id = category.value),
+                contentDescription = category.key,
                 modifier = Modifier
                     .size(50.dp)
                     .padding(5.dp)
