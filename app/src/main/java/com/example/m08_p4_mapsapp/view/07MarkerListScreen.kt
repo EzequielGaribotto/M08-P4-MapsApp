@@ -59,15 +59,12 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
     val showFilter by vm.showFilter.observeAsState(false)
     val markers: MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
     vm.getMarkers()
-    val filteredMarkers = markers.filter { marker ->
-        (categoryFilter.isEmpty() || marker.categoria.contains(categoryFilter)) &&
-                (nameFilter.isEmpty() || marker.name.contains(nameFilter))
-    }
+    val filteredMarkers = vm.filterMarkers(markers, categoryFilter, nameFilter)
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(Modifier.fillMaxWidth(),) {
+        Row(Modifier.fillMaxWidth()) {
             if (filteredMarkers.isNotEmpty()) {
                 IconButton(onClick = { vm.switchShowFilter() }) {
                     Icon(
@@ -173,9 +170,9 @@ fun MarkerItem(
                         style = MaterialTheme.typography.headlineLarge,
                     )
                     Text(
-                        "Lat. $lat\n" +
-                                "Long. $long\n" +
-                                "Categoría: $category",
+                        "Categoría: $category\n" +
+                                "Lat. $lat\n" +
+                                "Long. $long\n",
                         textAlign = TextAlign.Center,
                         fontSize = 12.sp
                     )
@@ -213,6 +210,7 @@ fun MarkerItem(
                 onOption1Click = {
                     vm.showDeleteMarkerDialog(false)
                     vm.removeMarker(deletingMarker!!)
+                    vm.deletePhoto(deletingMarker!!.getUri())
                 },
                 option2 = "NO",
                 onOption2Click = { vm.showDeleteMarkerDialog(false) })

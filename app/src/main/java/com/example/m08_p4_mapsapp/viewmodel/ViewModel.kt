@@ -557,16 +557,25 @@ class ViewModel : ViewModel() {
 
     fun addMarker(lat: String, long: String, name: String, url: Uri, selectedCategory: String) {
         val markerState = MarkerState(LatLng(lat.toDouble(), long.toDouble()))
-        val markersTemp = _markers.value?.toMutableSet() ?: mutableSetOf()
         val id = UUID.randomUUID().toString()
-        _currentMarker.value = Marker(_loggedUser.value, id, name, markerState, url.toString(), selectedCategory)
-        markersTemp.add(_currentMarker.value!!)
-        _markers.value = markersTemp.toMutableList()
-        repo.addMarker(_markers.value?.last()!!)
+        _currentMarker.value = Marker(owner = _loggedUser.value, id, name, markerState, url.toString(), selectedCategory)
+        repo.addMarker(_currentMarker.value!!)
     }
 
     fun uploadImage(imageUri: Uri) {
-        repo.uploadImage(imageUri)
+        repo.uploadImage(imageUri, _currentMarker.value!!)
+    }
+
+    fun filterMarkers(
+        markers: MutableList<Marker>,
+        categoryFilter: String,
+        nameFilter: String
+    ): List<Marker> {
+        val filteredMarkers = markers.filter { marker ->
+            (categoryFilter.isEmpty() || marker.categoria.contains(categoryFilter)) &&
+                    (nameFilter.isEmpty() || marker.name.contains(nameFilter))
+        }
+        return filteredMarkers
     }
 
     fun resetMarkerValues(context: Context) {
@@ -590,5 +599,9 @@ class ViewModel : ViewModel() {
     fun removeUser() {
         repo.removeUser(_currentUser.value!!)
         repo.deleteUserAuth()
+    }
+
+    fun deletePhoto(uri: Uri) {
+        repo.deletePhoto(uri)
     }
 }

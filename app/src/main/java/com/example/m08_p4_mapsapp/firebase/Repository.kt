@@ -6,7 +6,6 @@ import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
@@ -138,18 +137,29 @@ class Repository {
         return database.collection("markers")
     }
 
-    fun uploadImage(imageUri: Uri) {
+    fun uploadImage(imageUri: Uri, marker: Marker) {
         val formatter = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
         val now = Date()
         val fileName = formatter.format(now)
         val storage = FirebaseStorage.getInstance().getReference("images/$fileName")
         storage.putFile(imageUri)
             .addOnSuccessListener {
-                Log.i("IMAGE UPLOADED", "Image uploaded successfully")
-            }
-            .addOnCanceledListener {
-                Log.i("IMAGE UPLOAD CANCELED", "Image upload canceled")
+                Log.i("Image upload", "Image uploaded correctly")
+                storage.downloadUrl.addOnSuccessListener {
+                    marker.url = it.toString()
+                    editMarker(marker)
+                    Log.i("Image upload", it.toString())
+                }
+                    .addOnFailureListener { Log.e("Image upload", "Image upload failed") }
             }
     }
 
+    fun deletePhoto(uri: Uri) {
+        val storage = FirebaseStorage.getInstance().getReferenceFromUrl(uri.toString())
+        storage.delete()
+            .addOnSuccessListener {
+                Log.i("Image delete", "Image deleted correctly")
+            }
+            .addOnFailureListener { Log.e("Image delete", "Image delete failed") }
+    }
 }
