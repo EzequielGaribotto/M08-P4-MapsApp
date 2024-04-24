@@ -146,7 +146,7 @@ fun SetPhoto(
 fun SetData(
     name: String, vm: ViewModel, lat: String, long: String
 ) {
-    SetName(name, vm)
+    TextField(value = name, onValueChange = { vm.modMarkerName(it) }, label = { Text("Nombre") })
     TextField(value = lat,
         onValueChange = { vm.modInputLat(it) },
         label = { Text("Latitud") },
@@ -157,11 +157,6 @@ fun SetData(
         label = { Text("Longitud") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
     )
-}
-
-@Composable
-fun SetName(name: String, vm: ViewModel) {
-    TextField(modifier = Modifier.padding(15.dp), value = name, onValueChange = { vm.modMarkerName(it) }, label = { Text("Nombre") })
 }
 @Composable
 fun MarkerCategories(markerCategories: Map<String, Int>, vm: ViewModel) {
