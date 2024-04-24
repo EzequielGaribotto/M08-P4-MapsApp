@@ -75,58 +75,38 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
         navController.navigate(Routes.MapScreen.route)
         vm.modGoToNext(false)
     }
-    when {
-        isLoading -> {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                androidx.compose.material.CircularProgressIndicator(
-                    modifier = Modifier.width(64.dp),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                LaunchedEffect(Unit) {
-                    vm.modGoToNext(true)
-                    delay(1000)
-                }
-            }
-        }
-
-        else -> {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                EmailTextfield(email, vm, keyboardController)
-                PasswordTextfield(password, vm, verContrasena)
-                KeepMeLoggedInCheckbox(keepLogged, vm)
-                LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
-                CustomClickableText(
-                    "¿No tienes cuenta? ",
-                    "Regístrate",
-                    "RegisterScreen",
-                    navController,
-                    vm
-                )
-                InvalidLoginDialog(showLoginDialog, vm)
-                CustomDialog(
-                    show = showRegisterRequestDialog,
-                    question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
-                    option1 = "SÍ",
-                    onOption1Click = {
-                        vm.showRegisterRequestDialog(false)
-                        navController.navigate("RegisterScreen")
-                    },
-                    option2 = "NO",
-                    onOption2Click = { vm.showRegisterRequestDialog(false) }
-                )
-            }
-        }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        EmailTextfield(email, vm, keyboardController)
+        PasswordTextfield(password, vm, verContrasena)
+        KeepMeLoggedInCheckbox(keepLogged, vm)
+        LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
+        CustomClickableText(
+            "¿No tienes cuenta? ",
+            "Regístrate",
+            "RegisterScreen",
+            navController,
+            vm
+        )
+        InvalidLoginDialog(showLoginDialog, vm)
+        CustomDialog(
+            show = showRegisterRequestDialog,
+            question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
+            option1 = "SÍ",
+            onOption1Click = {
+                vm.showRegisterRequestDialog(false)
+                navController.navigate("RegisterScreen")
+            },
+            option2 = "NO",
+            onOption2Click = { vm.showRegisterRequestDialog(false) }
+        )
     }
+
 
 }
 
@@ -257,8 +237,12 @@ private fun LogInButton(
 
 @Composable
 fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
-    if (show) {
-        Dialog(onDismissRequest = { vm.showLoginDialog(false) }) {
+    if (show && (vm.errorEmail.value == true || vm.errorPass.value == true)) {
+        Dialog(onDismissRequest = {
+            vm.showLoginDialog(false)
+            vm.modErrorPass(false)
+            vm.modErrorEmail(false)
+        }) {
             Column(
                 Modifier
                     .background(Color.White)
@@ -266,8 +250,9 @@ fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
                     .fillMaxWidth()
             ) {
                 val message = StringBuilder()
-                if (vm.errorPass.value == true) message.appendLine("Contraseña incorrecta")
+                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida")
                 if (vm.errorEmail.value == true) message.appendLine("El email no es válido")
+
                 Text(text = message.toString().trim())
             }
         }

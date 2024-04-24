@@ -396,8 +396,7 @@ class ViewModel : ViewModel() {
                     }
                     _markers.value = tempList
                 }
-            }
-            )
+            })
     }
 
     fun isValidEmail(target: CharSequence?): Boolean {
@@ -414,6 +413,8 @@ class ViewModel : ViewModel() {
         return password != null && passwordMatcher.matches(password)
     }
 
+    private val _errorEmailDuplicado = MutableLiveData<Boolean>()
+    val errorEmailDuplicado: LiveData<Boolean> = _errorEmailDuplicado
     fun register(
         username: String,
         password: String,
@@ -426,7 +427,8 @@ class ViewModel : ViewModel() {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
                     _goToNext.value = true
-                    modShowLoading(false)
+                    _errorEmailDuplicado.value = false
+                    _isLoading.value = false
                     if (keepLogged) {
                         CoroutineScope(Dispatchers.IO).launch {
                             userPrefs.saveUserData(_email.value!!, _password.value!!)
@@ -448,7 +450,8 @@ class ViewModel : ViewModel() {
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error creating user : ${task.exception}")
-                    modShowLoading(true)
+                    _errorEmailDuplicado.value = true
+                    _showRegisterDialog.value = true
                 }
             }
     }
@@ -496,18 +499,26 @@ class ViewModel : ViewModel() {
                             )
                         }
                     }
+                    println("Pasa aquí")
+                    _errorPass.value = false
+                    _errorEmailDuplicado.value = false
+                    _errorEmail.value = false
                     _goToNext.value = true
+                    _showLoginDialog.value = false
+                    _showRegisterRequestDialog.value = false
+
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error logging in: ${task.exception}")
                     modShowLoading(false)
-                    _showRegisterRequestDialog.value = true
+                    _errorEmailDuplicado.value = false
+                    _showRegisterRequestDialog.value = false
+                    _errorPass.value = true
+                    _showLoginDialog.value = true
                 }
             }
             .addOnFailureListener {
                 Log.d("Error", "Error logging in: $it")
-                modShowLoading(false)
-                _showRegisterRequestDialog.value = true
             }
     }
 
@@ -616,5 +627,9 @@ class ViewModel : ViewModel() {
 
     fun modCurrentMarker(marker:Marker) {
         _currentMarker.value = marker
+    }
+
+    fun modErrorEmailDuplicado(b: Boolean) {
+        _errorEmailDuplicado.value = b
     }
 }
