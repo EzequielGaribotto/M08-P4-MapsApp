@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -89,6 +91,95 @@ fun AddMarkerContent(
     }
 }
 
+@SuppressLint("DiscouragedApi")
+@Composable
+@OptIn(ExperimentalGlideComposeApi::class)
+fun SetPhoto(
+    url: Uri,
+    icon: Bitmap?,
+    vm: ViewModel,
+    lat: String,
+    long: String,
+    navigationController: NavController,
+    photoTaken: Boolean
+) {
+    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    GlideImage(model = if (url.takeIf { it != Uri.EMPTY } != null) url else icon!!,
+        contentDescription = "Marker Image",
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+            .size(240.dp)
+            .padding(bottom = 10.dp)
+            .clip(RoundedCornerShape(15.dp))
+    )
+    CustomButton(onClick = {
+        if (currentRoute != null) {
+            vm.modPrevScreen(currentRoute)
+        }
+        vm.showBottomSheet(false)
+        vm.modPosicionActual(
+            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
+        )
+        navigationController.navigate(Routes.CameraScreen.route)
+    }) {
+        Text((if (photoTaken) "Retomar foto" else "Tomar foto"))
+    }
+
+
+    CustomButton(onClick = {
+        if (currentRoute != null) {
+            vm.modPrevScreen(currentRoute)
+        }
+        vm.showBottomSheet(false)
+        vm.modPosicionActual(
+            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
+        )
+        navigationController.navigate(Routes.GalleryScreen.route)
+    }) {
+        Text("Buscar foto en galería")
+    }
+}
+
+
+@Composable
+fun SetData(
+    name: String, vm: ViewModel, lat: String, long: String
+) {
+    SetName(name, vm)
+    TextField(value = lat,
+        onValueChange = { vm.modInputLat(it) },
+        label = { Text("Latitud") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    )
+    TextField(value = long,
+        onValueChange = { vm.modInputLong(it) },
+        label = { Text("Longitud") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    )
+}
+
+@Composable
+fun SetName(name: String, vm: ViewModel) {
+    TextField(modifier = Modifier.padding(15.dp), value = name, onValueChange = { vm.modMarkerName(it) }, label = { Text("Nombre") })
+}
+@Composable
+fun MarkerCategories(markerCategories: Map<String, Int>, vm: ViewModel) {
+    markerCategories.forEach { category ->
+        IconButton(onClick = {
+            vm.modCategory(category.key)
+        }) {
+            Image(
+                painterResource(id = category.value),
+                contentDescription = category.key,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp)
+            )
+        }
+    }
+}
+
 @Composable
 fun AddMarker(
     photoTaken: Boolean,
@@ -120,89 +211,3 @@ fun AddMarker(
     }
 }
 
-@Composable
-fun SetData(
-    name: String, vm: ViewModel, lat: String, long: String
-) {
-    SetName(name, vm)
-    TextField(value = lat,
-        onValueChange = { vm.modInputLat(it) },
-        label = { Text("Latitud") },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-    )
-    TextField(value = long,
-        onValueChange = { vm.modInputLong(it) },
-        label = { Text("Longitud") },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-    )
-}
-
-@Composable
-fun SetName(name: String, vm: ViewModel) {
-    TextField(value = name, onValueChange = { vm.modMarkerName(it) }, label = { Text("Nombre") })
-}
-
-@SuppressLint("DiscouragedApi")
-@Composable
-@OptIn(ExperimentalGlideComposeApi::class)
-fun SetPhoto(
-    url: Uri,
-    icon: Bitmap?,
-    vm: ViewModel,
-    lat: String,
-    long: String,
-    navigationController: NavController,
-    photoTaken: Boolean
-) {
-    val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-    GlideImage(model = if (url.takeIf { it != Uri.EMPTY } != null) url else icon!!,
-        contentDescription = "Marker Image",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(120.dp)
-            .padding(bottom = 10.dp))
-    CustomButton(onClick = {
-        if (currentRoute != null) {
-            vm.modPrevScreen(currentRoute)
-        }
-        vm.showBottomSheet(false)
-        vm.modPosicionActual(
-            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
-        )
-        navigationController.navigate(Routes.CameraScreen.route)
-    }) {
-        Text((if (photoTaken) "Retomar foto" else "Tomar foto"))
-    }
-
-
-    CustomButton(onClick = {
-        if (currentRoute != null) {
-            vm.modPrevScreen(currentRoute)
-        }
-        vm.showBottomSheet(false)
-        vm.modPosicionActual(
-            lat.toDoubleOrNull() ?: 0.0, long.toDoubleOrNull() ?: 0.0
-        )
-        navigationController.navigate(Routes.GalleryScreen.route)
-    }) {
-        Text("Buscar foto en galería")
-    }
-}
-
-@Composable
-fun MarkerCategories(markerCategories: Map<String, Int>, vm: ViewModel) {
-    markerCategories.forEach { category ->
-        IconButton(onClick = {
-            vm.modCategory(category.key)
-        }) {
-            Image(
-                painterResource(id = category.value),
-                contentDescription = category.key,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(5.dp)
-            )
-        }
-    }
-}
