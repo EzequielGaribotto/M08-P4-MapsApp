@@ -32,59 +32,6 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-    private val _showFilter = MutableLiveData(false)
-    val showFilter = _showFilter
-    fun switchShowFilter() {
-        _showFilter.value = !_showFilter.value!!
-    }
-    private val _nameFilter = MutableLiveData("")
-    val nameFilter = _nameFilter
-
-    fun modNameFilter(name: String) {
-        _nameFilter.value = name
-    }
-
-    private val _categoryFilter = MutableLiveData("")
-    val categoryFilter = _categoryFilter
-    fun modCategoryFilter(category: String) {
-        _categoryFilter.value = category
-    }
-    private val _markerCategories = MutableLiveData(mutableMapOf<String,Int>())
-    val markerCategories = _markerCategories
-
-    fun getMarkerCategories() {
-        for (r in R.drawable::class.java.declaredFields) {
-            if (r.name.startsWith("cat_")) {
-                _markerCategories.value?.put(r.name.replace("cat_",""),r.getInt(r))
-            }
-        }
-    }
-    private val _category = MutableLiveData("")
-    val category = _category
-    fun modCategory(category: String) {
-        _category.value = category
-    }
-
-    private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
-    val deletingMarker = _deletingMarker
-
-    fun modDeletingMarker(marker: Marker) {
-        _deletingMarker.value = marker
-    }
-
-    private val _showSaveUserChangesDialog = MutableLiveData(false)
-    val showSaveUserChangesDialog = _showSaveUserChangesDialog
-
-    private val _showDeleteUserDialog = MutableLiveData(false)
-    val showDeleteUserDialog = _showDeleteUserDialog
-    fun showDeleteUserDialog(b: Boolean) {
-        _showDeleteUserDialog.value = b
-    }
-    fun showSaveUserChangesDialog(b: Boolean) {
-        _showSaveUserChangesDialog.value = b
-    }
-
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
@@ -157,21 +104,6 @@ class ViewModel : ViewModel() {
 
     private val _currentUser = MutableLiveData<User?>()
     val currentUser = _currentUser
-    fun getUser() {
-        repo.getUsers().whereEqualTo("owner", _loggedUser.value).get().addOnSuccessListener { documents ->
-            for (document in documents) {
-                _currentUser.value = User(
-                    document.getString("avatarUrl") ?: "",
-                    document.getString("nombre") ?: "",
-                    document.getString("apellido") ?: "",
-                    document.getString("ciudad") ?: "",
-                    document.getString("owner") ?: ""
-                )
-            }
-        }.addOnFailureListener {
-            Log.d("ERROR", "Error getting documents: ", it)
-        }
-    }
 
     private val _verContrasena = MutableLiveData(false)
     val verContrasena = _verContrasena
@@ -211,6 +143,57 @@ class ViewModel : ViewModel() {
 
     private val _currentMarker: MutableLiveData<Marker?> = MutableLiveData()
     val currentMarker = _currentMarker
+
+    private val _showFilter = MutableLiveData(false)
+    val showFilter = _showFilter
+
+    private val _nameFilter = MutableLiveData("")
+    val nameFilter = _nameFilter
+
+    private val _categoryFilter = MutableLiveData("")
+    val categoryFilter = _categoryFilter
+
+    private val _markerCategories = MutableLiveData(mutableMapOf<String,Int>())
+    val markerCategories = _markerCategories
+
+    private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
+    val deletingMarker = _deletingMarker
+
+    private val _showSaveUserChangesDialog = MutableLiveData(false)
+    val showSaveUserChangesDialog = _showSaveUserChangesDialog
+
+    private val _showDeleteUserDialog = MutableLiveData(false)
+    val showDeleteUserDialog = _showDeleteUserDialog
+
+    private val _category = MutableLiveData("")
+    val category = _category
+
+    fun switchShowFilter() {
+        _showFilter.value = !_showFilter.value!!
+    }
+
+    fun modNameFilter(name: String) {
+        _nameFilter.value = name
+    }
+
+    fun modCategoryFilter(category: String) {
+        _categoryFilter.value = category
+    }
+
+    fun modCategory(category: String) {
+        _category.value = category
+    }
+
+    fun modDeletingMarker(marker: Marker) {
+        _deletingMarker.value = marker
+    }
+
+    fun showDeleteUserDialog(b: Boolean) {
+        _showDeleteUserDialog.value = b
+    }
+    fun showSaveUserChangesDialog(b: Boolean) {
+        _showSaveUserChangesDialog.value = b
+    }
 
     fun modCurrentMarker(marker: Marker) {
         _currentMarker.value = marker
@@ -346,6 +329,30 @@ class ViewModel : ViewModel() {
 
     fun editMarker(marker: Marker) {
         repo.editMarker(marker)
+    }
+
+    fun getMarkerCategories() {
+        for (r in R.drawable::class.java.declaredFields) {
+            if (r.name.startsWith("cat_")) {
+                _markerCategories.value?.put(r.name.replace("cat_",""),r.getInt(r))
+            }
+        }
+    }
+
+    fun getUser() {
+        repo.getUsers().whereEqualTo("owner", _loggedUser.value).get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                _currentUser.value = User(
+                    document.getString("avatarUrl") ?: "",
+                    document.getString("nombre") ?: "",
+                    document.getString("apellido") ?: "",
+                    document.getString("ciudad") ?: "",
+                    document.getString("owner") ?: ""
+                )
+            }
+        }.addOnFailureListener {
+            Log.d("ERROR", "Error getting documents: ", it)
+        }
     }
 
     fun getMarkers() {
