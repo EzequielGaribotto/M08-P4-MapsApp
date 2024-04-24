@@ -385,7 +385,7 @@ fun MyScaffold(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route?: "LoginScreen"
+    val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
     ClickOutsideToDismissKeyboard {
         Scaffold(topBar = {
@@ -396,7 +396,9 @@ fun MyScaffold(
                     "UserInfoScreen"
                 )
             ) {
-                MyTopAppBar(currentRoute, state, scope, navigationController, vm)
+                if (currentRoute != null) {
+                    MyTopAppBar(currentRoute, state, scope, navigationController, vm)
+                }
             }
         }) { paddingValues ->
             Box(

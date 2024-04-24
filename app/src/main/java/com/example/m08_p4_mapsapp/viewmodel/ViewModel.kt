@@ -32,10 +32,6 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
-
-
-
-
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private val repo = Repository()
