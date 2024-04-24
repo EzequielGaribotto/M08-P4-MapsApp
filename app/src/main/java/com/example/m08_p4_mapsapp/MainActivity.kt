@@ -114,7 +114,10 @@ class MainActivity : ComponentActivity() {
 
                     AskForPermission(
                         permission = android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        onDeclineMsg = "Esta app requiere que le proporciones permisos de localización para funcionar", isLoading, viewModel) {
+                        onDeclineMsg = "Esta app requiere que le proporciones permisos de localización para funcionar",
+                        isLoading,
+                        viewModel
+                    ) {
 
                         MyDrawer(viewModel, context)
                     }
@@ -159,9 +162,11 @@ fun AskForPermission(
                 }
             }
         }
+
         permissionState.status.isGranted -> {
             onAccept()
         }
+
         else -> {
             PermissionDeclinedScreen(onDeclineMsg)
         }
@@ -382,90 +387,93 @@ fun MyScaffold(
     val navBackStackEntry by navigationController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomSheet by vm.showBottomSheet.observeAsState(false)
-    Scaffold(topBar = {
-        if (currentRoute in arrayOf(
-                "AddMarkerScreen",
-                "MapScreen",
-                "MarkerListScreen",
-                "UserInfoScreen"
-            ) && currentRoute != null
-        ) {
-            MyTopAppBar(currentRoute, state, scope, navigationController, vm)
-        }
-    }) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            NavHost(
-                navController = navigationController, startDestination = Routes.LoginScreen.route
+    ClickOutsideToDismissKeyboard {
+        Scaffold(topBar = {
+            if (currentRoute in arrayOf(
+                    "AddMarkerScreen",
+                    "MapScreen",
+                    "MarkerListScreen",
+                    "UserInfoScreen"
+                ) && currentRoute != null
             ) {
+                MyTopAppBar(currentRoute, state, scope, navigationController, vm)
+            }
+        }) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                NavHost(
+                    navController = navigationController,
+                    startDestination = Routes.LoginScreen.route
+                ) {
 
-                composable(Routes.LoginScreen.route) {
-                    LoginScreen(
-                        navigationController, vm
-                    )
-                }
+                    composable(Routes.LoginScreen.route) {
+                        LoginScreen(
+                            navigationController, vm
+                        )
+                    }
 
-                composable(Routes.RegisterScreen.route) {
-                    RegisterScreen(
-                        navigationController, vm
-                    )
-                }
-                composable(Routes.MapScreen.route) {
-                    MapScreen(
-                        navigationController, vm
-                    )
-                }
-                composable(Routes.MarkerListScreen.route) {
-                    MarkerListScreen(
-                        navigationController, vm,
-                    )
-                }
-                composable(Routes.AddMarkerScreen.route) {
-                    AddMarkerScreen(
-                        vm, navigationController
-                    )
-                }
-                composable(Routes.CameraScreen.route) {
-                    CameraScreen(vm, navigationController)
-                }
-                composable(Routes.GalleryScreen.route) {
-                    GalleryScreen(vm, navigationController)
-                }
-                composable(Routes.EditMarkerScreen.route) {
-                    EditMarkerScreen(vm, navigationController)
-                }
+                    composable(Routes.RegisterScreen.route) {
+                        RegisterScreen(
+                            navigationController, vm
+                        )
+                    }
+                    composable(Routes.MapScreen.route) {
+                        MapScreen(
+                            navigationController, vm
+                        )
+                    }
+                    composable(Routes.MarkerListScreen.route) {
+                        MarkerListScreen(
+                            navigationController, vm,
+                        )
+                    }
+                    composable(Routes.AddMarkerScreen.route) {
+                        AddMarkerScreen(
+                            vm, navigationController
+                        )
+                    }
+                    composable(Routes.CameraScreen.route) {
+                        CameraScreen(vm, navigationController)
+                    }
+                    composable(Routes.GalleryScreen.route) {
+                        GalleryScreen(vm, navigationController)
+                    }
+                    composable(Routes.EditMarkerScreen.route) {
+                        EditMarkerScreen(vm, navigationController)
+                    }
 
-                composable(Routes.UserInfoScreen.route) {
-                    UserInfoScreen(vm, navigationController)
+                    composable(Routes.UserInfoScreen.route) {
+                        UserInfoScreen(vm, navigationController)
+                    }
                 }
             }
-        }
 
-        if (showBottomSheet && vm.prevScreen.value != Routes.AddMarkerScreen.route) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    vm.showBottomSheet(false)
-                }, sheetState = sheetState
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.End,
+            if (showBottomSheet && vm.prevScreen.value != Routes.AddMarkerScreen.route) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        vm.showBottomSheet(false)
+                    }, sheetState = sheetState
                 ) {
-                    IconButton(onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                vm.showBottomSheet(false)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.End,
+                    ) {
+                        IconButton(onClick = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    vm.showBottomSheet(false)
+                                }
                             }
+                        }) {
+                            Icon(Icons.Filled.Clear, contentDescription = "Close")
                         }
-                    }) {
-                        Icon(Icons.Filled.Clear, contentDescription = "Close")
-                    }
-                    if (currentRoute != null) {
-                        AddMarkerContent(vm, false, navigationController)
+                        if (currentRoute != null) {
+                            AddMarkerContent(vm, false, navigationController)
+                        }
                     }
                 }
             }

@@ -32,9 +32,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -46,8 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.Marker
 import com.example.m08_p4_mapsapp.navigation.Routes
@@ -59,62 +54,60 @@ import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MarkerListScreen(navController: NavController, vm: ViewModel) {
-    var categoryFilter by remember { mutableStateOf("") }
-    var nameFilter by remember { mutableStateOf("") }
-    var showFilters by remember { mutableStateOf(false) }
+    val categoryFilter by vm.categoryFilter.observeAsState("")
+    val nameFilter by vm.nameFilter.observeAsState("")
+    val showFilter by vm.showFilter.observeAsState(false)
     val markers: MutableList<Marker> by vm.markers.observeAsState(mutableListOf())
     vm.getMarkers()
     val filteredMarkers = markers.filter { marker ->
         (categoryFilter.isEmpty() || marker.categoria.contains(categoryFilter)) &&
                 (nameFilter.isEmpty() || marker.name.contains(nameFilter))
     }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
 
-    ClickOutsideToDismissKeyboard {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        Row(Modifier.fillMaxWidth()) {
+            IconButton(onClick = { vm.switchShowFilter() }) {
+                Icon(
+                    Icons.Filled.run { if (showFilter) FilterList else FilterListOff },
+                    contentDescription = "Filtro"
+                )
+            }
+            if (showFilter) {
+                Row(Modifier.fillMaxWidth()) {
+                    TextField(
+                        value = categoryFilter,
+                        onValueChange = { vm.modCategoryFilter(it) },
+                        label = {
+                            Text("Filtrar por categoría", fontSize = 14.sp)
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
 
-            Row(Modifier.fillMaxWidth()) {
-                IconButton(onClick = { showFilters = !showFilters }) {
-                    val icon =
-                        if (showFilters) Icons.Filled.FilterList else Icons.Filled.FilterListOff
-                    Icon(icon, contentDescription = "Filtro")
-                }
-                if (showFilters) {
-                    Row(Modifier.fillMaxWidth()) {
-                        TextField(
-                            value = categoryFilter,
-                            onValueChange = { categoryFilter = it },
-                            label = {
-                                Text("Filtrar por categoría", fontSize = 14.sp)
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        TextField(
-                            value = nameFilter,
-                            onValueChange = { nameFilter = it },
-                            label = { Text("Filtrar por nombre", fontSize = 14.sp) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                    TextField(
+                        value = nameFilter,
+                        onValueChange = { vm.modNameFilter(it) },
+                        label = { Text("Filtrar por nombre", fontSize = 14.sp) },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
+        }
 
-            if (filteredMarkers.isNotEmpty()) {
-                LazyColumn {
-                    items(filteredMarkers) { marker ->
-                        MarkerItem(marker, vm, navController, onClickGo = { lat, long ->
-                            vm.modPosicionActual(lat, long)
-                            navController.navigate(Routes.MapScreen.route)
-                        })
-                    }
+        if (filteredMarkers.isNotEmpty()) {
+            LazyColumn {
+                items(filteredMarkers) { marker ->
+                    MarkerItem(marker, vm, navController, onClickGo = { lat, long ->
+                        vm.modPosicionActual(lat, long)
+                        navController.navigate(Routes.MapScreen.route)
+                    })
                 }
-            } else {
-                Text("No se encontraron marcadores")
             }
+        } else {
+            Text("No se encontraron marcadores")
         }
     }
 }

@@ -33,7 +33,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -64,19 +63,27 @@ fun AddMarkerContent(
     val markerCategories by vm.markerCategories.observeAsState(mapOf())
     val selectedCategory by vm.category.observeAsState("")
     vm.getMarkerCategories()
-    ClickOutsideToDismissKeyboard {
-        Box {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
-            ) {
-                SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
-                Row { MarkerCategories(markerCategories, vm) }
-                SetData(name, vm, lat, long)
-                AddMarker(photoTaken,selectedCategory, name, lat, long, vm, url, navigationController, context)
-                Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
-            }
+    Box {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.run { if (markerScreen) Center else Top },
+        ) {
+            SetPhoto(url, icon, vm, lat, long, navigationController, photoTaken)
+            Row { MarkerCategories(markerCategories, vm) }
+            SetData(name, vm, lat, long)
+            AddMarker(
+                photoTaken,
+                selectedCategory,
+                name,
+                lat,
+                long,
+                vm,
+                url,
+                navigationController,
+                context
+            )
+            Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
         }
     }
 }

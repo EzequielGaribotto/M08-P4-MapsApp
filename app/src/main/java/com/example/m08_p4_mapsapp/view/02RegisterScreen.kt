@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
@@ -65,45 +64,43 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
         navController.navigate(Routes.MapScreen.route)
         vm.modGoToNext(false)
     }
-    ClickOutsideToDismissKeyboard {
-        if (isLoading) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
-                )
-            }
-            if (goToNext) {
-                navController.navigate(Routes.MapScreen.route)
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                DatosTextField(nombre, "Nombre", vm::modificarNombreState)
-                DatosTextField(apellido, "Apellido", vm::modificarApellidoState)
-                DatosTextField(ciudad, "Ciudad", vm::modificarCiudadState)
-                EmailTextfield(email, vm, keyboardController)
-                PasswordTextfield(password, vm, verContrasena)
-                KeepMeLoggedInCheckbox(keepLogged, vm)
-                RegisterButton(
-                    vm, email, password, errorEmail, errorPass, keepLogged, userPrefs, goToNext
-                )
-                CustomClickableText(
-                    "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
-                )
-            }
-
-            InvalidRegisterDialog(showRegisterDialog, vm)
-            SuccessfulRegisterDialog(successfulRegister, vm)
+    if (isLoading) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.width(64.dp), color = MaterialTheme.colorScheme.secondary
+            )
         }
+        if (goToNext) {
+            navController.navigate(Routes.MapScreen.route)
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            DatosTextField(nombre, "Nombre", vm::modificarNombreState)
+            DatosTextField(apellido, "Apellido", vm::modificarApellidoState)
+            DatosTextField(ciudad, "Ciudad", vm::modificarCiudadState)
+            EmailTextfield(email, vm, keyboardController)
+            PasswordTextfield(password, vm, verContrasena)
+            KeepMeLoggedInCheckbox(keepLogged, vm)
+            RegisterButton(
+                vm, email, password, errorEmail, errorPass, keepLogged, userPrefs, goToNext
+            )
+            CustomClickableText(
+                "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
+            )
+        }
+
+        InvalidRegisterDialog(showRegisterDialog, vm)
+        SuccessfulRegisterDialog(successfulRegister, vm)
     }
 }
 

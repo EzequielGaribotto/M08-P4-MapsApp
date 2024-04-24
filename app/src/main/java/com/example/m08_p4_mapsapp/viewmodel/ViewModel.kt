@@ -32,6 +32,23 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 class ViewModel : ViewModel() {
+    private val _showFilter = MutableLiveData(false)
+    val showFilter = _showFilter
+    fun switchShowFilter() {
+        _showFilter.value = !_showFilter.value!!
+    }
+    private val _nameFilter = MutableLiveData("")
+    val nameFilter = _nameFilter
+
+    fun modNameFilter(name: String) {
+        _nameFilter.value = name
+    }
+
+    private val _categoryFilter = MutableLiveData("")
+    val categoryFilter = _categoryFilter
+    fun modCategoryFilter(category: String) {
+        _categoryFilter.value = category
+    }
     private val _markerCategories = MutableLiveData(mutableMapOf<String,Int>())
     val markerCategories = _markerCategories
 

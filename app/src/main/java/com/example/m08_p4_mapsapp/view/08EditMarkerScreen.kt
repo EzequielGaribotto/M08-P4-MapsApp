@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.R
 import com.example.m08_p4_mapsapp.model.Marker
@@ -46,7 +45,6 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
 
     vm.showBottomSheet(false)
 
-    ClickOutsideToDismissKeyboard {
         CustomGoBackButton("MarkerListScreen",
             vm,
             navController,
@@ -61,7 +59,6 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
             EditCategory(vm, selectedCategory)
             EditMarker(name, lat, long, vm, selectedCategory)
         }
-    }
 
     CustomDialog(show = showSaveChangesDialog,
         question = "¿Seguro que quieres guardar los cambios?",

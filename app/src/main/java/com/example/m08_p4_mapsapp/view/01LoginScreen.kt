@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.m08_p4_mapsapp.ClickOutsideToDismissKeyboard
 import com.example.m08_p4_mapsapp.CustomDialog
 import com.example.m08_p4_mapsapp.model.UserPrefs
 import com.example.m08_p4_mapsapp.navigation.Routes
@@ -93,39 +92,38 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
                 }
             }
         }
+
         else -> {
-            ClickOutsideToDismissKeyboard {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    EmailTextfield(email, vm, keyboardController)
-                    PasswordTextfield(password, vm, verContrasena)
-                    KeepMeLoggedInCheckbox(keepLogged, vm)
-                    LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
-                    CustomClickableText(
-                        "¿No tienes cuenta? ",
-                        "Regístrate",
-                        "RegisterScreen",
-                        navController,
-                        vm
-                    )
-                    InvalidLoginDialog(showLoginDialog, vm)
-                    CustomDialog(
-                        show = showRegisterRequestDialog,
-                        question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
-                        option1 = "SÍ",
-                        onOption1Click = {
-                            vm.showRegisterRequestDialog(false)
-                            navController.navigate("RegisterScreen")
-                        },
-                        option2 = "NO",
-                        onOption2Click = { vm.showRegisterRequestDialog(false) }
-                    )
-                }
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                EmailTextfield(email, vm, keyboardController)
+                PasswordTextfield(password, vm, verContrasena)
+                KeepMeLoggedInCheckbox(keepLogged, vm)
+                LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
+                CustomClickableText(
+                    "¿No tienes cuenta? ",
+                    "Regístrate",
+                    "RegisterScreen",
+                    navController,
+                    vm
+                )
+                InvalidLoginDialog(showLoginDialog, vm)
+                CustomDialog(
+                    show = showRegisterRequestDialog,
+                    question = "Parece que aún no te has registrado.\n¿Deseas registrarte?",
+                    option1 = "SÍ",
+                    onOption1Click = {
+                        vm.showRegisterRequestDialog(false)
+                        navController.navigate("RegisterScreen")
+                    },
+                    option2 = "NO",
+                    onOption2Click = { vm.showRegisterRequestDialog(false) }
+                )
             }
         }
     }
