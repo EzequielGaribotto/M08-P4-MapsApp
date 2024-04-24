@@ -580,8 +580,8 @@ class ViewModel : ViewModel() {
         nameFilter: String
     ): List<Marker> {
         val filteredMarkers = markers.filter { marker ->
-            (categoryFilter.isEmpty() || marker.categoria.contains(categoryFilter)) &&
-                    (nameFilter.isEmpty() || marker.name.contains(nameFilter))
+            (categoryFilter.isEmpty() || marker.categoria.lowercase().contains(categoryFilter.lowercase())) &&
+                    (nameFilter.isEmpty() || marker.name.lowercase().contains(nameFilter.lowercase()))
         }
         return filteredMarkers
     }

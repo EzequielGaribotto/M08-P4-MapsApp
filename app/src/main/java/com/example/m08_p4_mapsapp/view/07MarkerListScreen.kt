@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.FilterListOff
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -95,6 +97,7 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
                 }
             }
         }
+        HorizontalDivider()
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -148,10 +151,11 @@ fun MarkerItem(
 
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(marker.getUri())
-                        .crossfade(true).build(),
+                        .crossfade(false).build(),
                     contentDescription = "Foto del marcador",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier
+                        .size(150.dp)
                 )
                 val categoryId = categories[category]
                 if (categoryId != null) {
@@ -203,7 +207,18 @@ fun MarkerItem(
                         vm.modInputLong(long.toString())
                         vm.modMarkerId(id)
                         vm.modCategory(category)
-                        vm.modCurrentMarker(Marker(loggedUser, id, name, MarkerState(LatLng(lat,long)), marker.getUri().toString(), category))
+                        vm.modCurrentMarker(
+                            Marker(
+                                loggedUser,
+                                id,
+                                name,
+                                MarkerState(LatLng(lat, long)),
+                                marker
+                                    .getUri()
+                                    .toString(),
+                                category
+                            )
+                        )
                         vm.modPrevScreen("MarkerListScreen")
                         vm.showBottomSheet(false)
                         navController.navigate(Routes.EditMarkerScreen.route)
