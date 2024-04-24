@@ -65,16 +65,16 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
     }
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-
-        Row(Modifier.fillMaxWidth()) {
-            IconButton(onClick = { vm.switchShowFilter() }) {
-                Icon(
-                    Icons.Filled.run { if (showFilter) FilterList else FilterListOff },
-                    contentDescription = "Filtro"
-                )
+        Row(Modifier.fillMaxWidth(),) {
+            if (filteredMarkers.isNotEmpty()) {
+                IconButton(onClick = { vm.switchShowFilter() }) {
+                    Icon(
+                        Icons.Filled.run { if (showFilter) FilterList else FilterListOff },
+                        contentDescription = "Filtro"
+                    )
+                }
             }
             if (showFilter) {
                 Row(Modifier.fillMaxWidth()) {
@@ -96,18 +96,23 @@ fun MarkerListScreen(navController: NavController, vm: ViewModel) {
                 }
             }
         }
-
-        if (filteredMarkers.isNotEmpty()) {
-            LazyColumn {
-                items(filteredMarkers) { marker ->
-                    MarkerItem(marker, vm, navController, onClickGo = { lat, long ->
-                        vm.modPosicionActual(lat, long)
-                        navController.navigate(Routes.MapScreen.route)
-                    })
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (filteredMarkers.isNotEmpty()) {
+                LazyColumn {
+                    items(filteredMarkers) { marker ->
+                        MarkerItem(marker, vm, navController, onClickGo = { lat, long ->
+                            vm.modPosicionActual(lat, long)
+                            navController.navigate(Routes.MapScreen.route)
+                        })
+                    }
                 }
+            } else {
+                Text("No se encontraron marcadores")
             }
-        } else {
-            Text("No se encontraron marcadores")
         }
     }
 }
