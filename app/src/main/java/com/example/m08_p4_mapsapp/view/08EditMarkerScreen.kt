@@ -92,8 +92,7 @@ fun EditMarkerScreen(vm: ViewModel, navController: NavController) {
 
 @Composable
 fun EditCategory(vm: ViewModel, selectedCategory: String) {
-    val categories by vm.markerCategories.observeAsState(mapOf())
-    vm.getMarkerCategories()
+    val categories by vm.markerCategories.observeAsState(emptyMap())
     Row { MarkerCategories(categories, vm) }
     Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
 }

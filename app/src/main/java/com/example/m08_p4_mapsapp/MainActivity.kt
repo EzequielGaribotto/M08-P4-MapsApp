@@ -3,6 +3,8 @@ package com.example.m08_p4_mapsapp
 
 import android.Manifest
 import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -50,7 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -166,7 +171,8 @@ fun MyDrawer(vm: ViewModel, context: Context) {
                         icon = icon,
                         state = state,
                         scope = scope,
-                        navigationController = navigationController
+                        navigationController = navigationController,
+                        vm = vm
                     )
                 }
             }
@@ -372,7 +378,9 @@ fun CreateNavigationDrawerItem(
     state: DrawerState,
     scope: CoroutineScope,
     navigationController: NavHostController,
+    vm: ViewModel
 ) {
+    val context = LocalContext.current
     val formattedText = targetRoute.replace(Regex("([A-Z])"), " $1").replace("Screen", "")
     NavigationDrawerItem(
         label = {
@@ -384,6 +392,12 @@ fun CreateNavigationDrawerItem(
             if (currentRoute != targetRoute) {
                 scope.launch {
                     state.close()
+                }
+                if (currentRoute == "UserInfoScreen") {
+
+                    val emptyImg: Bitmap = ContextCompat.getDrawable(context, R.drawable.empty_image)?.toBitmapOrNull()!!
+                    vm.modSelectedPfp(emptyImg)
+                    vm.modSelectedPfpUri(Uri.EMPTY)
                 }
                 navigationController.navigate(targetRoute)
             }

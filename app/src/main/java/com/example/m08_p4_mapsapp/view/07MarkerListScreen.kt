@@ -129,8 +129,7 @@ fun MarkerItem(
     val name = marker.getName()
     val id = marker.getId()
     val category = marker.getCategoria()
-    val categories by vm.markerCategories.observeAsState(mapOf())
-    vm.getMarkerCategories()
+    val categories by vm.markerCategories.observeAsState(emptyMap())
 
     Card(
         border = BorderStroke(2.dp, DarkBrown),
@@ -173,7 +172,7 @@ fun MarkerItem(
                         style = MaterialTheme.typography.headlineLarge,
                     )
                     Text(
-                        "Categoría: $category\n" + "Lat. $lat\n" + "Long. $long\n",
+                        "Categoría: $category\nLat. $lat\nLong. $long\n",
                         textAlign = TextAlign.Center,
                         fontSize = 12.sp
                     )

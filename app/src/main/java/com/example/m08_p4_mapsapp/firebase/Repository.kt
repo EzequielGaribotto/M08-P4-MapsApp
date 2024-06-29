@@ -27,7 +27,7 @@ class Repository {
         )
     }
 
-    fun editUser(user: User) {
+    private fun editUser(user: User) {
         database.collection("user").whereEqualTo("owner", user.owner).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {

@@ -53,9 +53,6 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
     val ciudad by vm.ciudad.observeAsState("")
     val verContrasena by vm.verContrasena.observeAsState(false)
     val keepLogged by vm.keepLogged.observeAsState(false)
-
-    val errorEmail by vm.errorEmail.observeAsState(false)
-    val errorPass by vm.errorPass.observeAsState(false)
     val showRegisterDialog by vm.showRegisterDialog.observeAsState(false)
     val successfulRegister by vm.successfulRegister.observeAsState(false)
     val context = LocalContext.current
@@ -92,9 +89,7 @@ fun RegisterScreen(navController: NavController, vm: ViewModel) {
             EmailTextfield(email, vm, keyboardController)
             PasswordTextfield(password, vm, verContrasena)
             KeepMeLoggedInCheckbox(keepLogged, vm)
-            RegisterButton(
-                vm, email, password, errorEmail, errorPass, keepLogged, userPrefs
-            )
+            RegisterButton(vm, email, password, keepLogged, userPrefs)
             CustomClickableText(
                 "¿Ya tienes una? ", "Iniciar Sesión", "LoginScreen", navController, vm
             )
@@ -147,20 +142,12 @@ private fun RegisterButton(
     vm: ViewModel,
     email: String,
     pass: String,
-    errorEmail: Boolean,
-    errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
 ) {
     CustomButton(
-        onClick = {
-            vm.modErrorEmail(!vm.isValidEmail(email))
-            if (errorEmail || errorPass) {
-                vm.showRegisterDialog(true)
-            } else {
-                vm.register(email, pass, keepLogged, userPrefs)
-            }
-        }, modifier = Modifier.fillMaxWidth(), enabled = email.isNotEmpty() && pass.isNotEmpty()
+        onClick = { vm.register(email, pass, keepLogged, userPrefs) },
+        modifier = Modifier.fillMaxWidth(), enabled = email.isNotEmpty() && pass.isNotEmpty()
     ) {
         Text(
             text = "Registrar", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White
@@ -188,9 +175,9 @@ fun InvalidRegisterDialog(showRegisterDialog: Boolean, vm: ViewModel) {
     if (showRegisterDialog) {
         Dialog(onDismissRequest = {
             vm.showRegisterDialog(false)
-            vm.modErrorPass(false)
-            vm.modErrorEmail(false)
-            vm.modErrorEmailDuplicado(false)
+            vm.modErrorPassFormat(false)
+            vm.modErrorEmailFormat(false)
+            vm.modErrorEmailDupe(false)
         }) {
             Column(
                 Modifier
@@ -199,8 +186,8 @@ fun InvalidRegisterDialog(showRegisterDialog: Boolean, vm: ViewModel) {
                     .fillMaxWidth()
             ) {
                 val message = StringBuilder()
-                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida\nLa contraseña debe tener como mínimo 6 caracteres.")
-                if (vm.errorEmail.value == true) message.appendLine("El email tiene un formato incorrecto")
+                if (vm.errorPassFormat.value == true) message.appendLine("La contraseña debe tener como mínimo 6 caracteres.")
+                if (vm.errorEmailFormat.value == true) message.appendLine("El email tiene un formato incorrecto")
                 if (vm.errorEmailDuplicado.value == true) message.appendLine("Ya existe una cuenta con este email")
                 Text(text = message.toString().trim())
             }

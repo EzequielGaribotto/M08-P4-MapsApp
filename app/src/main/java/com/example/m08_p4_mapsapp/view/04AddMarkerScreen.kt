@@ -60,9 +60,8 @@ fun AddMarkerContent(
     val icon by vm.icon.observeAsState(emptyIcon)
     val url by vm.url.observeAsState(Uri.EMPTY)
     val photoTaken = if (url == Uri.EMPTY) !icon.sameAs(emptyIcon) else true
-    val markerCategories by vm.markerCategories.observeAsState(mapOf())
+    val categories by vm.markerCategories.observeAsState(emptyMap())
     val selectedCategory by vm.category.observeAsState("")
-    vm.getMarkerCategories()
     Box {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -73,7 +72,7 @@ fun AddMarkerContent(
             Row(
                 modifier = Modifier.padding(10.dp), horizontalArrangement = Arrangement.SpaceEvenly
 
-            ) { MarkerCategories(markerCategories, vm) }
+            ) { MarkerCategories(categories, vm) }
             Text("Categoría seleccionada: ${selectedCategory.ifEmpty { "Ninguna" }}")
             SetData(name, vm, lat, long)
             AddMarker(

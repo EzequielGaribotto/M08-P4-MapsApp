@@ -12,13 +12,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.example.m08_p4_mapsapp.MainActivity
 import com.example.m08_p4_mapsapp.viewmodel.ViewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
@@ -71,22 +76,37 @@ private fun Map(
     ) {
         GoogleMap(modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
+            properties = MapProperties(
+                isBuildingEnabled = true,
+                mapType = MapType.NORMAL,
+                isMyLocationEnabled = true
+            ),
             onMapLongClick = {
                 vm.modInputLat(it.latitude.toString())
                 vm.modInputLong(it.longitude.toString())
                 vm.showBottomSheet(true)
             }) {
-            val markers by vm.markers.observeAsState(mutableListOf())
-            vm.getMarkers()
-            markers?.forEach { marker ->
-                val markerState = rememberMarkerState(position = marker.markerState.position)
-                Marker(
-                    state = markerState,
-                    title = marker.name,
-                    snippet = "Marker at ${markerState.position.latitude}, ${markerState.position.longitude}",
-                )
+            val markers by vm.markers.observeAsState(emptyList())
+            val categories by vm.markerCategories.observeAsState(emptyMap())
+            if (markers.isEmpty()) { vm.getMarkers()
+            } else {
+                markers?.forEach { marker ->
+                    val context = LocalContext.current
+                    val markerState = rememberMarkerState(position = marker.markerState.position)
+                    val iconId = categories[marker.categoria]
+                    val icon = iconId?.let { id -> ContextCompat.getDrawable(context, id) }
+                    val bitmapDescriptor =
+                        icon?.let { BitmapDescriptorFactory.fromBitmap(it.toBitmap()) }
+                    Marker(
+                        state = markerState,
+                        title = marker.name,
+                        snippet = "Categoria: ${marker.categoria}",
+                        icon = bitmapDescriptor
+                    )
+                }
             }
         }
     }
 }
+
 

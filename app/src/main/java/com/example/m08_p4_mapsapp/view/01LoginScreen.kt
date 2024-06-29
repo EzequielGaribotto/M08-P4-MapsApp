@@ -51,18 +51,14 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
 
     val email by vm.email.observeAsState("")
     val password by vm.password.observeAsState("")
-    val errorEmail by vm.errorEmail.observeAsState(false)
-    val errorPass by vm.errorPass.observeAsState(false)
     val showLoginDialog by vm.showLoginDialog.observeAsState(false)
     val verContrasena by vm.verContrasena.observeAsState(false)
     val keepLogged by vm.keepLogged.observeAsState(false)
     val showRegisterRequestDialog by vm.showRegisterRequestDialog.observeAsState(false)
     val goToNext by vm.goToNext.observeAsState(false)
-
     val context = LocalContext.current
     val userPrefs = UserPrefs(context)
     val storedUserData = userPrefs.getUserData.collectAsState(initial = emptyList())
-    println("Stored user data: ${storedUserData.value}")
     useStoredData(storedUserData, vm, keepLogged, userPrefs, navController)
     if (goToNext) {
         navController.navigate(Routes.MapScreen.route)
@@ -78,7 +74,7 @@ fun LoginScreen(navController: NavController, vm: ViewModel) {
         EmailTextfield(email, vm, keyboardController)
         PasswordTextfield(password, vm, verContrasena)
         KeepMeLoggedInCheckbox(keepLogged, vm)
-        LogInButton(vm, email, password, errorEmail, errorPass, keepLogged, userPrefs)
+        LogInButton(vm, email, password, keepLogged, userPrefs)
         CustomClickableText(
             "¿No tienes cuenta? ",
             "Regístrate",
@@ -174,20 +170,11 @@ private fun LogInButton(
     vm: ViewModel,
     email: String,
     pass: String,
-    errorEmail: Boolean,
-    errorPass: Boolean,
     keepLogged: Boolean,
     userPrefs: UserPrefs,
 ) {
     CustomButton(
-        onClick = {
-            vm.modErrorEmail(!vm.isValidEmail(email))
-            if (errorEmail || errorPass) {
-                vm.showLoginDialog(true)
-            } else {
-                vm.login(email, pass, keepLogged, userPrefs)
-            }
-        },
+        onClick = { vm.login(email, pass, keepLogged, userPrefs) },
         modifier = Modifier.fillMaxWidth(),
         enabled = email.isNotEmpty() && pass.isNotEmpty()
     ) {
@@ -199,11 +186,12 @@ private fun LogInButton(
 
 @Composable
 fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
-    if (show && (vm.errorEmail.value == true || vm.errorPass.value == true)) {
+    if (show) {
         Dialog(onDismissRequest = {
             vm.showLoginDialog(false)
-            vm.modErrorPass(false)
-            vm.modErrorEmail(false)
+            vm.modErrorPassFormat(false)
+            vm.modErrorEmailFormat(false)
+            vm.modErrorCuentaInexistente(false)
         }) {
             Column(
                 Modifier
@@ -212,8 +200,9 @@ fun InvalidLoginDialog(show: Boolean, vm: ViewModel) {
                     .fillMaxWidth()
             ) {
                 val message = StringBuilder()
-                if (vm.errorPass.value == true) message.appendLine("Contraseña inválida o incorrecta")
-                if (vm.errorEmail.value == true) message.appendLine("El email no es válido")
+                if (vm.errorCuentaInexistente.value == true) message.appendLine("Cuenta inexistente o contraseña incorrecta")
+                if (vm.errorPassFormat.value == true) message.appendLine("Contraseña inválida o incorrecta")
+                if (vm.errorEmailFormat.value == true) message.appendLine("El email no es válido")
 
                 Text(text = message.toString().trim())
             }

@@ -95,8 +95,8 @@ class ViewModel : ViewModel() {
     private val _password = MutableLiveData("")
     val password: LiveData<String> = _password
 
-    private val _errorPass = MutableLiveData(false)
-    val errorPass: LiveData<Boolean> = _errorPass
+    private val _errorPassFormat = MutableLiveData(false)
+    val errorPassFormat: LiveData<Boolean> = _errorPassFormat
 
     private val _showLoginDialog = MutableLiveData(false)
     val showLoginDialog: LiveData<Boolean> = _showLoginDialog
@@ -124,8 +124,8 @@ class ViewModel : ViewModel() {
     private val _showRegisterDialog = MutableLiveData(false)
     val showRegisterDialog: LiveData<Boolean> = _showRegisterDialog
 
-    private val _errorEmail = MutableLiveData(false)
-    val errorEmail: LiveData<Boolean> = _errorEmail
+    private val _errorEmailFormat = MutableLiveData(false)
+    val errorEmailFormat: LiveData<Boolean> = _errorEmailFormat
 
     private val _loggedUser = MutableLiveData("")
     val loggedUser = _loggedUser
@@ -157,7 +157,15 @@ class ViewModel : ViewModel() {
     val categoryFilter = _categoryFilter
 
     private val _markerCategories = MutableLiveData(mutableMapOf<String, Int>())
-    val markerCategories = _markerCategories
+    val markerCategories: MutableLiveData<MutableMap<String, Int>> = _markerCategories
+
+    init {
+        for (r in R.drawable::class.java.declaredFields) {
+            if (r.name.startsWith("cat_")) {
+                _markerCategories.value?.put(r.name.replace("cat_", ""), r.getInt(r))
+            }
+        }
+    }
 
     private val _deletingMarker: MutableLiveData<Marker?> = MutableLiveData()
     val deletingMarker = _deletingMarker
@@ -177,7 +185,31 @@ class ViewModel : ViewModel() {
     private val _selectedPfpUri = MutableLiveData(Uri.EMPTY)
     val selectedPfpUri = _selectedPfpUri
 
-    fun modPfpUri(uri: Uri) {
+    private val _userName = MutableLiveData<String>()
+    val userName: LiveData<String> = _userName
+
+    private val _userLastName = MutableLiveData<String>()
+    val userLastName: LiveData<String> = _userLastName
+
+    private val _userCity = MutableLiveData<String>()
+    val userCity: LiveData<String> = _userCity
+
+    private val _userAvatar = MutableLiveData<String>()
+    val userAvatar: LiveData<String> = _userAvatar
+
+    fun modUserName(newName: String) {
+        _userName.value = newName
+    }
+
+    fun modUserLastName(newLastName: String) {
+        _userLastName.value = newLastName
+    }
+
+    fun modUserCity(newCity: String) {
+        _userCity.value = newCity
+    }
+
+    fun modSelectedPfpUri(uri: Uri) {
         _selectedPfpUri.value = uri
     }
 
@@ -269,12 +301,12 @@ class ViewModel : ViewModel() {
         _showLoginDialog.value = boolean
     }
 
-    fun modErrorPass(boolean: Boolean) {
-        _errorPass.value = boolean
+    fun modErrorPassFormat(boolean: Boolean) {
+        _errorPassFormat.value = boolean
     }
 
-    fun modErrorEmail(boolean: Boolean) {
-        _errorEmail.value = boolean
+    fun modErrorEmailFormat(boolean: Boolean) {
+        _errorEmailFormat.value = boolean
     }
 
     fun modShowLoading(boolean: Boolean) {
@@ -344,9 +376,6 @@ class ViewModel : ViewModel() {
     fun editMarker(marker: Marker) {
         repo.editMarker(marker)
     }
-    fun updateUser() {
-        repo.editUser(_currentUser.value!!)
-    }
 
     fun removeUser() {
         repo.removeUser(_currentUser.value!!)
@@ -361,16 +390,11 @@ class ViewModel : ViewModel() {
         _currentMarker.value = marker
     }
 
-    fun modErrorEmailDuplicado(b: Boolean) {
+    fun modErrorEmailDupe(b: Boolean) {
         _errorEmailDuplicado.value = b
     }
-    fun getMarkerCategories() {
-        for (r in R.drawable::class.java.declaredFields) {
-            if (r.name.startsWith("cat_")) {
-                _markerCategories.value?.put(r.name.replace("cat_", ""), r.getInt(r))
-            }
-        }
-    }
+
+
 
     fun getUser() {
         repo.getUsers().whereEqualTo("owner", _loggedUser.value).get()
@@ -383,6 +407,10 @@ class ViewModel : ViewModel() {
                         document.getString("ciudad") ?: "",
                         document.getString("owner") ?: ""
                     )
+                    _userName.value = _currentUser.value?.nombre
+                    _userLastName.value = _currentUser.value?.apellido
+                    _userCity.value = _currentUser.value?.ciudad
+                    _userAvatar.value = _currentUser.value?.avatarUrl
                     println("User found: ${_currentUser.value}")
                 }
             }.addOnFailureListener {
@@ -434,6 +462,14 @@ class ViewModel : ViewModel() {
 
     private val _errorEmailDuplicado = MutableLiveData<Boolean>()
     val errorEmailDuplicado: LiveData<Boolean> = _errorEmailDuplicado
+
+    private val _errorCuentaInexistente = MutableLiveData<Boolean>()
+    val errorCuentaInexistente: LiveData<Boolean> = _errorCuentaInexistente
+
+    fun modErrorCuentaInexistente(b: Boolean) {
+        _errorCuentaInexistente.value = b
+    }
+
     fun register(
         username: String, password: String, keepLogged: Boolean = false, userPrefs: UserPrefs
     ) {
@@ -442,7 +478,6 @@ class ViewModel : ViewModel() {
                     _userId.value = task.result.user?.uid
                     _loggedUser.value = task.result.user?.email
                     _goToNext.value = true
-                    _errorEmailDuplicado.value = false
                     _isLoading.value = false
                     if (keepLogged) {
                         CoroutineScope(Dispatchers.IO).launch {
@@ -467,7 +502,15 @@ class ViewModel : ViewModel() {
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error creating user : ${task.exception}")
-                    _errorEmailDuplicado.value = true
+                    if (password.length >= 6) {
+                        if (!isValidEmail(username)) {
+                            _errorEmailFormat.value = true
+                        } else {
+                            _errorEmailDuplicado.value = true
+                        }
+                    } else {
+                        _errorPassFormat.value = true
+                    }
                     _showRegisterDialog.value = true
                 }
             }
@@ -519,20 +562,21 @@ class ViewModel : ViewModel() {
                         }
                     }
                     println("Pasa aquí")
-                    _errorPass.value = false
-                    _errorEmailDuplicado.value = false
-                    _errorEmail.value = false
                     _goToNext.value = true
-                    _showLoginDialog.value = false
-                    _showRegisterRequestDialog.value = false
 
                 } else {
                     _goToNext.value = false
                     Log.d("Error", "Error logging in: ${task.exception}")
                     modShowLoading(false)
-                    _errorEmailDuplicado.value = false
-                    _showRegisterRequestDialog.value = false
-                    _errorPass.value = true
+                    if (!isValidEmail(username)) {
+                        _errorEmailFormat.value = true
+                    } else {
+                        if (password.length >= 6) {
+                            _errorCuentaInexistente.value = true
+                        } else {
+                            _errorPassFormat.value = true
+                        }
+                    }
                     _showLoginDialog.value = true
                 }
             }.addOnFailureListener {
@@ -584,8 +628,8 @@ class ViewModel : ViewModel() {
 
         _getUserLocation.value = true
         _prevScreen.value = "MapScreen"
-        _errorPass.value = false
-        _errorEmail.value = false
+        _errorPassFormat.value = false
+        _errorEmailFormat.value = false
         _isLoading.value = true
     }
 
@@ -602,8 +646,11 @@ class ViewModel : ViewModel() {
         repo.uploadImage(imageUri, _currentMarker.value!!)
     }
 
-    fun uploadPfp(imageUri: Uri) {
+    fun updatePfp(imageUri: Uri) {
         repo.uploadPfp(imageUri, _currentUser.value!!)
+    }
+    fun updateAvatar(toString: String) {
+        _userAvatar.value = toString
     }
 
     fun filterMarkers(
@@ -677,4 +724,5 @@ class ViewModel : ViewModel() {
                 }
             })
     }
+
 }

@@ -1,20 +1,24 @@
 package com.example.m08_p4_mapsapp.utils
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.m08_p4_mapsapp.ui.theme.DarkBlue
 
 @Composable
 fun CustomDialog(
@@ -29,9 +33,11 @@ fun CustomDialog(
         Dialog(onDismissRequest = onOption2Click) {
             Column(
                 Modifier
-                    .background(Color.White)
-                    .padding(24.dp)
+                    .background(Color.White.copy(alpha = 0.65f), shape = RoundedCornerShape(24.dp))
                     .fillMaxWidth()
+                    .border(2.dp, DarkBlue, shape = RoundedCornerShape(24.dp))
+                    .padding(24.dp)
+                    .clipToBounds()
             ) {
                 Text(
                     text = question,
@@ -49,7 +55,7 @@ fun CustomDialog(
                             text = option1,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
                         )
                     }
                     CustomButton(onClick = onOption2Click) {
